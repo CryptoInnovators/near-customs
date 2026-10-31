@@ -1,0 +1,37 @@
+{
+ "method": "ft_balance_of via rpc.mainnet.fastnear.com call_function",
+ "block": 222392783,
+ "block_hash": "9c7rUxWVaBfd1Liau3QVSjtMQRdZu49rWhMP7cWuHuTm",
+ "launches": {
+  "phire": {
+   "wallets": 24,
+   "zero_balance": 24,
+   "held_share_bps": 0,
+   "sold_share_bps_replay": 10000
+  },
+  "justai": {
+   "wallets": 12,
+   "zero_balance": 10,
+   "held_share_bps": 277,
+   "sold_share_bps_replay": 9722
+  },
+  "celadon": {
+   "wallets": 32,
+   "zero_balance": 32,
+   "held_share_bps": 0,
+   "sold_share_bps_replay": 10000
+  },
+  "nearvember": {
+   "wallets": 19,
+   "zero_balance": 19,
+   "held_share_bps": 0,
+   "sold_share_bps_replay": 9961
+  },
+  "grlant": {
+   "wallets": 27,
+   "zero_balance": 26,
+   "held_share_bps": 98,
+   "sold_share_bps_replay": 9706
+  }
+ }
+}

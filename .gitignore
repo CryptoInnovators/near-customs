@@ -7,3 +7,4 @@ node_modules/
 .DS_Store
 .progress/
 .walker-cache/
+mitm_mcp_traffic.db
