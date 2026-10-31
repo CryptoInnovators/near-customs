@@ -6,13 +6,13 @@ Every account on screen is a team account. The story on screen is the dare: we b
 
 ## Before recording
 
-Recording needs the mainnet dry run (JUDGE-REVIEW.md change 1). The deploy run writes these to `docs/EVIDENCE.md`; export them in the recording shell:
+Recording needs the mainnet dry-run coin. The deploy run writes these to `docs/EVIDENCE.md`; export them in the recording shell:
 
 ```sh
 export TOKEN=...          # token contract account
 export CREATOR=...        # creator_id in customs_params
 export INSIDER_DIRECT=... # funded by the creator with a plain transfer, bought in the window
-export INSIDER_INTENTS=...# funded by the creator through an Intents native_withdraw, bought in the window
+export INSIDER_INTENTS=... # funded by the creator through an Intents native_withdraw, bought in the window
 export OUTSIDER=...       # aged account, bought in the window, no creator money
 export HUNTER=...         # registered with the token, files the challenges
 export WITHDRAW_TX=...    # the native_withdraw tx that paid INSIDER_INTENTS

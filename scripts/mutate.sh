@@ -6,10 +6,15 @@
 set -u
 cd "$(dirname "$0")/.."
 [ -f ../env.sh ] && source ../env.sh
+# a private target dir keeps this run off the lock other cargo jobs hold on a shared one
+export CARGO_TARGET_DIR="${CUSTOMS_TARGET:-$PWD/target}"
 export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-3}"
 want=" $* "
 fails=0
-before=$(git diff --stat -- contracts crates | md5)
+before=$(git diff -- contracts crates | md5)
+ORIGS=()
+restore_all() { for f in "${ORIGS[@]:-}"; do [ -n "$f" ] && cp "${f#*:}" "${f%%:*}"; done; }
+trap restore_all EXIT
 
 TOK=contracts/token/src/lib.rs
 RULE=crates/walker/src/pathrule.rs
@@ -22,7 +27,7 @@ walker() { cargo test -p customs-walker --lib "$1" 2>&1; }
 mut() {
   local name=$1 file=$2 pat=$3 rep=$4 runner=$5 test=$6
   if [ "$want" != "  " ]; then case "$want" in *" $name "*) ;; *) return;; esac; fi
-  local orig; orig=$(mktemp); cp "$file" "$orig"
+  local orig; orig=$(mktemp); cp "$file" "$orig"; ORIGS+=("$file:$orig")
   if ! PAT="$pat" REP="$rep" perl -0pi -e 'BEGIN{$p=$ENV{PAT};$r=$ENV{REP}} $n = s/\Q$p\E/$r/; END{exit($n?0:3)}' "$file"; then
     echo "BAD MUTATION $name: pattern not found in $file"; fails=$((fails+1)); cp "$orig" "$file"; return
   fi
@@ -38,7 +43,7 @@ mut() {
   else
     echo "FAIL       $name | $file | guarded by $test | red=$red restored_green=$green"; fails=$((fails+1))
   fi
-  rm -f "$orig"
+
 }
 
 # ---- the hold -------------------------------------------------------------------------------
@@ -93,7 +98,7 @@ mut checker_window $CHK 'if first.ts_ns < window_ns.0 || first.ts_ns >= window_n
 mut checker_buy_is_market_sale $CHK 'm.from == market && m.to == wallet' 'm.to == wallet' sandbox a_transaction_that_is_not_a_market_sale_is_rejected_by_the_enclave
 mut checker_path_hash $CHK 'if hex_lower(&Sha256::digest(path_hash_input(&path))) != path_hash {' 'if false {' sandbox the_enclave_refuses_a_path_hash_that_does_not_match_the_path
 
-after=$(git diff --stat -- contracts crates | md5)
+after=$(git diff -- contracts crates | md5)
 [ "$before" = "$after" ] || { echo "WORKING TREE CHANGED BY THE RUN"; fails=$((fails+1)); }
 echo "failures: $fails"
 [ $fails -eq 0 ]

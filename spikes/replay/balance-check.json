@@ -1,37 +1,74 @@
 {
- "method": "ft_balance_of via rpc.mainnet.fastnear.com call_function",
+ "method": "ft_balance_of via call_function",
+ "rpc": "https://archival-rpc.mainnet.fastnear.com",
  "block": 222392783,
  "block_hash": "9c7rUxWVaBfd1Liau3QVSjtMQRdZu49rWhMP7cWuHuTm",
  "launches": {
-  "phire": {
+  "phire.nearlytrade.near": {
    "wallets": 24,
    "zero_balance": 24,
    "held_share_bps": 0,
    "sold_share_bps_replay": 10000
   },
-  "justai": {
+  "justai.nearlytrade.near": {
    "wallets": 12,
    "zero_balance": 10,
    "held_share_bps": 277,
    "sold_share_bps_replay": 9722
   },
-  "celadon": {
+  "celadon.nearlytrade.near": {
    "wallets": 32,
    "zero_balance": 32,
    "held_share_bps": 0,
    "sold_share_bps_replay": 10000
   },
-  "nearvember": {
+  "nearvember.nearlytrade.near": {
    "wallets": 19,
    "zero_balance": 19,
    "held_share_bps": 0,
    "sold_share_bps_replay": 9961
   },
-  "grlant": {
+  "grlant.nearlytrade.near": {
    "wallets": 27,
    "zero_balance": 26,
    "held_share_bps": 98,
    "sold_share_bps_replay": 9706
+  },
+  "clearline.nearlytrade.near": {
+   "wallets": 24,
+   "zero_balance": 24,
+   "held_share_bps": 0,
+   "sold_share_bps_replay": 10000
+  },
+  "wmark.nearlytrade.near": {
+   "wallets": 31,
+   "zero_balance": 31,
+   "held_share_bps": 0,
+   "sold_share_bps_replay": 10000
+  },
+  "mob.nearlytrade.near": {
+   "wallets": 16,
+   "zero_balance": 16,
+   "held_share_bps": 0,
+   "sold_share_bps_replay": 10000
+  },
+  "drita.nearlytrade.near": {
+   "wallets": 31,
+   "zero_balance": 31,
+   "held_share_bps": 0,
+   "sold_share_bps_replay": 10000
+  },
+  "doljabi.nearlytrade.near": {
+   "wallets": 19,
+   "zero_balance": 19,
+   "held_share_bps": 0,
+   "sold_share_bps_replay": 10000
+  },
+  "ss.nearlytrade.near": {
+   "wallets": 12,
+   "zero_balance": 12,
+   "held_share_bps": 0,
+   "sold_share_bps_replay": 10000
   }
  }
 }
