@@ -186,11 +186,17 @@ impl Signer for Enclave {
 pub struct Chain {
     txs: Mutex<Vec<Value>>,
     counts: Mutex<std::collections::HashMap<String, u64>>,
+    unmeasurable: Mutex<Vec<String>>,
 }
 
 impl Chain {
     pub fn put(&self, raw: Value) {
         self.txs.lock().unwrap().push(raw);
+    }
+
+    /// The source errors when asked about `account`, as an unreachable API would.
+    pub fn fail_tx_count(&self, account: &str) {
+        self.unmeasurable.lock().unwrap().push(account.to_string());
     }
 
     /// How many transactions the chain says `account` has touched. Unset accounts have touched 3.
@@ -212,6 +218,9 @@ impl TxSource for Chain {
     }
 
     fn tx_count(&self, account: &str) -> Result<u64, String> {
+        if self.unmeasurable.lock().unwrap().iter().any(|a| a == account) {
+            return Err(format!("cannot count transactions of {account}"));
+        }
         Ok(self.counts.lock().unwrap().get(account).copied().unwrap_or(3))
     }
 }

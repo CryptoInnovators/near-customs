@@ -509,3 +509,97 @@ async fn nothing_can_be_challenged_before_the_key_is_pinned() -> anyhow::Result<
     assert!(r.is_failure() && failure_text(&r).contains("not pinned yet"), "{}", failure_text(&r));
     Ok(())
 }
+
+#[tokio::test]
+async fn on_pin_is_private() -> anyhow::Result<()> {
+    let w = World::unpinned(Knobs::default()).await?;
+    let r = w.outsider.call(w.token.id(), "on_pin").args_json(json!({})).gas(near_workspaces::types::Gas::from_tgas(50)).transact().await?;
+    assert!(r.is_failure() && failure_text(&r).contains("Method on_pin is private"), "{}", failure_text(&r));
+    Ok(())
+}
+
+// ---- the checker, run directly: the same code OutLayer runs, over transactions the test writes ----
+
+mod enclave {
+    use customs_checker::run as run_checker;
+    use customs_tests::*;
+    use serde_json::{json, Value};
+    use sha2::{Digest, Sha256};
+
+    const NS: u64 = 1_000_000_000;
+
+    /// creator.near paid w.near 10 NEAR at t=100s; the market sold w.near tokens for 10 NEAR at t=200s.
+    fn chain() -> (Chain, Vec<String>) {
+        let c = Chain::default();
+        c.put(transfer_tx(&fake_tx(1), "creator.near", "w.near", 10 * NEAR_Y, 100 * NS));
+        c.put(buy_tx(&fake_tx(2), "t.near", "market.near", "w.near", 1000 * UNIT, 10 * NEAR_Y, 200 * NS));
+        (c, vec![fake_tx(1), fake_tx(2)])
+    }
+
+    fn input(path: &[String], window: (u64, u64), path_hash: Option<String>) -> String {
+        let ph = path_hash.unwrap_or_else(|| hex(&Sha256::digest(path.join("\n").as_bytes())));
+        json!({"op": "verify_funding_path", "token": "t.near", "creator": "creator.near", "market": "market.near",
+               "wallet": "w.near", "challenge_id": 0, "path": path, "path_hash": ph, "max_hops": 3, "block": 10,
+               "window_start_ns": window.0 * NS, "window_end_ns": window.1 * NS})
+        .to_string()
+    }
+
+    fn verdict(c: &Chain, input: &str) -> Result<String, String> {
+        let out: Value = run_checker(input, c, &Enclave(SEED))?;
+        Ok(out["verdict"].as_str().unwrap().to_string())
+    }
+
+    #[test]
+    fn the_positive_control_is_upheld() {
+        let (c, p) = chain();
+        assert_eq!(verdict(&c, &input(&p, (150, 300), None)).unwrap(), "upheld");
+    }
+
+    #[test]
+    fn a_buy_outside_the_opening_window_is_rejected_by_the_enclave() {
+        let (c, p) = chain();
+        assert_eq!(verdict(&c, &input(&p, (250, 400), None)).unwrap(), "rejected");
+        assert_eq!(verdict(&c, &input(&p, (50, 150), None)).unwrap(), "rejected");
+    }
+
+    #[test]
+    fn a_transaction_that_is_not_a_market_sale_is_rejected_by_the_enclave() {
+        let (c, p) = chain();
+        // the wallet received the tokens from another account and paid the market: not a sale by the market
+        let mut raw = serde_json::to_string(&buy_tx(&fake_tx(3), "t.near", "market.near", "w.near", 1000 * UNIT, 10 * NEAR_Y, 200 * NS)).unwrap();
+        raw = raw.replace(r#"\"old_owner_id\":\"market.near\""#, r#"\"old_owner_id\":\"other.near\""#);
+        assert!(raw.contains("other.near"));
+        c.put(serde_json::from_str(&raw).unwrap());
+        let forged = vec![fake_tx(1), fake_tx(3)];
+        assert_eq!(verdict(&c, &input(&forged, (150, 300), None)).unwrap(), "rejected");
+        assert_eq!(verdict(&c, &input(&p, (150, 300), None)).unwrap(), "upheld", "the unforged path still convicts");
+    }
+
+    #[test]
+    fn the_enclave_refuses_a_path_hash_that_does_not_match_the_path() {
+        let (c, p) = chain();
+        let bad = hex(&Sha256::digest(b"other path"));
+        let err = verdict(&c, &input(&p, (150, 300), Some(bad))).unwrap_err();
+        assert!(err.contains("path_hash does not match"), "{err}");
+    }
+
+    #[test]
+    fn a_transaction_the_source_cannot_find_gives_no_verdict() {
+        let (c, mut p) = chain();
+        p[0] = fake_tx(77);
+        let err = verdict(&c, &input(&p, (150, 300), None)).unwrap_err();
+        assert!(err.contains("not found"), "{err}");
+    }
+
+    #[test]
+    fn an_account_that_cannot_be_measured_gives_no_verdict() {
+        // a two-hop path: the relay's activity is unknown, so the enclave refuses to judge rather than assume it is quiet
+        let c = Chain::default();
+        c.put(transfer_tx(&fake_tx(1), "creator.near", "relay.near", 10 * NEAR_Y, 100 * NS));
+        c.put(transfer_tx(&fake_tx(4), "relay.near", "w.near", 10 * NEAR_Y, 150 * NS));
+        c.put(buy_tx(&fake_tx(2), "t.near", "market.near", "w.near", 1000 * UNIT, 10 * NEAR_Y, 200 * NS));
+        c.fail_tx_count("relay.near");
+        let err = verdict(&c, &input(&[fake_tx(1), fake_tx(4), fake_tx(2)], (150, 300), None)).unwrap_err();
+        assert!(err.contains("cannot count"), "{err}");
+    }
+}
