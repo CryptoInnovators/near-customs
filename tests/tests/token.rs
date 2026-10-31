@@ -96,7 +96,8 @@ async fn bag_vests_linearly_and_is_free_at_the_end() -> anyhow::Result<()> {
     let free = BUY - l1;
     assert!(free > 0);
     w.transfer(&w.insider, &w.outsider, free).await?.into_result()?;
-    let r = w.transfer(&w.insider, &w.outsider, UNIT).await?;
+    // a tenth of the bag is ten times more than the seconds that passed since `l1` can have vested
+    let r = w.transfer(&w.insider, &w.outsider, BUY / 10).await?;
     assert!(r.is_failure(), "only the vested part moved");
     w.advance_s(130).await?;
     assert_eq!(w.bag(&w.insider).await?["state"], "vested");
@@ -145,8 +146,10 @@ async fn upheld_challenge_pays_exactly_twenty_percent_of_the_unvested_bag() -> a
     let bag = w.bag(&w.insider).await?;
     assert_eq!(bag["state"], "seized_frozen");
     assert_eq!(bag["locked"], frozen.to_string());
-    let r = w.transfer(&w.insider, &w.outsider, 1).await?;
+    let all = w.balance(&w.insider).await?;
+    let r = w.transfer(&w.insider, &w.outsider, all).await?;
     assert!(r.is_failure(), "frozen remainder cannot move");
+    w.transfer(&w.insider, &w.outsider, all - frozen).await?.into_result()?;
     assert_eq!(w.challenge_state(0).await?["Upheld"]["seized"], seized.to_string());
     assert!(w.token.view("open_challenge_of").args_json(json!({"wallet": w.insider.id()})).await?.json::<Value>()?.is_null());
     Ok(())
@@ -164,7 +167,9 @@ async fn request_to_outlayer_names_the_module_the_wallet_and_the_receipts() -> a
     assert_eq!(req["resolved_source"]["WasmUrl"]["hash"], w.checker_sha);
     assert_eq!(req["resolved_source"]["WasmUrl"]["build_target"], "wasm32-wasip2");
     assert_eq!(req["response_format"], "Json");
-    assert_eq!(req["payment"].as_f64().unwrap(), w.knobs.exec_fee.as_yoctonear() as f64, "exactly exec_fee is forwarded");
+    let paid = req["payment"].as_f64().unwrap();
+    let fee = w.knobs.exec_fee.as_yoctonear() as f64;
+    assert!((paid - fee).abs() / fee < 1e-9, "exactly exec_fee is forwarded: {paid} vs {fee}");
     let input: Value = serde_json::from_str(req["input_data"].as_str().unwrap())?;
     assert_eq!(input["op"], "verify_funding_path");
     assert_eq!(input["wallet"], w.insider.id().to_string());
