@@ -1,0 +1,42 @@
+{
+  "backward_path": [],
+  "backward_search": "unlinked",
+  "creator": "celadonstub.near",
+  "forward": [
+    {
+      "block": 221700659,
+      "from": "celadonstub.near",
+      "kind": "Transfer",
+      "to": "a9b3d1b74e8e570f2a00af1bd3287b7514ecc268d97f39925abf957f64f3cc9c",
+      "ts_ns": 1793024770687514942,
+      "tx": "67qYpAJELzoDHLxE3VfuwTi73fVunZpzaghmiGEJBN6s",
+      "yocto": "39335673156546839214240191"
+    },
+    {
+      "block": 221702299,
+      "from": "a9b3d1b74e8e570f2a00af1bd3287b7514ecc268d97f39925abf957f64f3cc9c",
+      "kind": "Transfer",
+      "to": "30d6205b89e02d2c34ade165ae9705f8d9e80d0e304061cb10b8e56c8e703f62",
+      "ts_ns": 1793025731358819596,
+      "tx": "B1P4yjnGSjnZpQxhgsFmiKpChQYcS44z6NAYWEmmhVA8",
+      "yocto": "39280673156500000000000000"
+    },
+    {
+      "block": 222332818,
+      "from": "30d6205b89e02d2c34ade165ae9705f8d9e80d0e304061cb10b8e56c8e703f62",
+      "kind": "Transfer",
+      "to": "5b43682c64f3dce763b73d5f5d17a98fe9133d5d2a2dd7d6dc33e5d703c90cbe",
+      "ts_ns": 1793398871156232310,
+      "tx": "6XEdTywC2NesJ7LdTdq1byQsM9cvRdbDUonvjzAFgmcZ",
+      "yocto": "321939030000000000000000000000"
+    }
+  ],
+  "forward_hops": 3,
+  "head": {
+    "hash": "9DrZ1DYRZaeuRmxE4uMZhCBX8P7FehUeDi4P77STFJ7X",
+    "height": 222392444,
+    "rpc": "archival-rpc.mainnet.fastnear.com block final"
+  },
+  "same_wallet_other_creator_unlinked": true,
+  "wallet": "5b43682c64f3dce763b73d5f5d17a98fe9133d5d2a2dd7d6dc33e5d703c90cbe"
+}

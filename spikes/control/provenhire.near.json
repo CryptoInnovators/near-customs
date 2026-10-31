@@ -1,0 +1,42 @@
+{
+  "backward_path": [],
+  "backward_search": "unlinked",
+  "creator": "provenhire.near",
+  "forward": [
+    {
+      "block": 222297550,
+      "from": "provenhire.near",
+      "kind": "Transfer",
+      "to": "a9b3d1b74e8e570f2a00af1bd3287b7514ecc268d97f39925abf957f64f3cc9c",
+      "ts_ns": 1793378360958720534,
+      "tx": "JDGdC4hqibtYV6qQEyWpsfvMtbxphLDSRYD9Vd1mhLMQ",
+      "yocto": "35552593269851397005045586"
+    },
+    {
+      "block": 222297835,
+      "from": "a9b3d1b74e8e570f2a00af1bd3287b7514ecc268d97f39925abf957f64f3cc9c",
+      "kind": "Transfer",
+      "to": "30d6205b89e02d2c34ade165ae9705f8d9e80d0e304061cb10b8e56c8e703f62",
+      "ts_ns": 1793378531858293669,
+      "tx": "FarWqnY5fhRZpnLQNr6Cgz5GqSydqifg1jwuU8QeDaEd",
+      "yocto": "35551758280300000000000000"
+    },
+    {
+      "block": 222332818,
+      "from": "30d6205b89e02d2c34ade165ae9705f8d9e80d0e304061cb10b8e56c8e703f62",
+      "kind": "Transfer",
+      "to": "5b43682c64f3dce763b73d5f5d17a98fe9133d5d2a2dd7d6dc33e5d703c90cbe",
+      "ts_ns": 1793398871156232310,
+      "tx": "6XEdTywC2NesJ7LdTdq1byQsM9cvRdbDUonvjzAFgmcZ",
+      "yocto": "321939030000000000000000000000"
+    }
+  ],
+  "forward_hops": 3,
+  "head": {
+    "hash": "9DrZ1DYRZaeuRmxE4uMZhCBX8P7FehUeDi4P77STFJ7X",
+    "height": 222392444,
+    "rpc": "archival-rpc.mainnet.fastnear.com block final"
+  },
+  "same_wallet_other_creator_unlinked": true,
+  "wallet": "5b43682c64f3dce763b73d5f5d17a98fe9133d5d2a2dd7d6dc33e5d703c90cbe"
+}

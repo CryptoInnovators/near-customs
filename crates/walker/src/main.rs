@@ -1,6 +1,6 @@
 use customs_walker::chain::{cost_into, ft_moves, path_edges, Client};
 use customs_walker::pathrule::{check, Buy, Rule};
-use customs_walker::replay::{run, Config};
+use customs_walker::replay::{control, run, Config};
 use serde_json::{json, Value};
 
 fn arg(args: &[String], name: &str) -> Option<String> {
@@ -42,6 +42,14 @@ fn main() {
             let mut report = run(&mut c, &cfg);
             report["head"] = head_block();
             println!("{}", serde_json::to_string_pretty(&report).unwrap());
+        }
+        // customs-walker control --creator C [--depth 3]
+        Some("control") => {
+            let mut c = Client::new(&cache, gap);
+            let depth = arg(&args, "--depth").and_then(|v| v.parse().ok()).unwrap_or(3);
+            let mut out = control(&mut c, &need(&args, "--creator"), depth);
+            out["head"] = head_block();
+            println!("{}", serde_json::to_string_pretty(&out).unwrap());
         }
         // customs-walker check-path --token T --creator C --wallet W --buy-tx H --path h1,h2,h3
         Some("check-path") => {

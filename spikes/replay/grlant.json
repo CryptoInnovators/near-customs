@@ -1,0 +1,324 @@
+{
+  "buyers": 27,
+  "client": {
+    "cache_hits": 67,
+    "fastnear_calls": 0
+  },
+  "creator": "greenlanternillia.near",
+  "creator_direct_tokens": "954248291380848867418700",
+  "creator_funding_of_buyers": {
+    "after": [],
+    "before": [],
+    "wallets_funded_before_first_buy": 0,
+    "wallets_funded_only_after": 0
+  },
+  "creator_linked_bps_by_hops": {
+    "1": 0,
+    "2": 0,
+    "3": 0
+  },
+  "creator_linked_tokens": "0",
+  "first_block_scanned": 221357517,
+  "head": {
+    "hash": "7xHiYG1VQ8Zoky1u3LuEEpjug3d2jg8dy9T5PNzo6mmT",
+    "height": 222392017,
+    "rpc": "archival-rpc.mainnet.fastnear.com block final"
+  },
+  "market": "dclv2.ref-labs.near",
+  "opening_starts_ns": 1792827126782865921,
+  "opening_tokens": "340879615207394627554570455",
+  "placebo": {
+    "buyers_tested": 19,
+    "creator": "justai.near",
+    "linked_bps": 0,
+    "linked_tokens": "0"
+  },
+  "rows": [
+    {
+      "buy_block": 221357601,
+      "class": "unpriced",
+      "cost_yocto": "0",
+      "first_buy_tx": "6Gi15MpMRr2a3R1i2U7kQjWtL5rG8jXUdo3TXopan3vy",
+      "path": [],
+      "sold_within_vest": "70612047139787230495037105",
+      "tokens": "70612047139787230495037105",
+      "wallet": "807c0817f8b8bc8c3209b3d8f6eb17f5257f8d83dcac65d1b91fb5d5bb0eefc9"
+    },
+    {
+      "buy_block": 221357603,
+      "class": "unpriced",
+      "cost_yocto": "0",
+      "first_buy_tx": "FiCwJ5hq8m6ZTwJ7z5MYALY1YKGst64Z9sAqwu2VTvZt",
+      "path": [],
+      "sold_within_vest": "60784126378259442638849164",
+      "tokens": "60784126378259442638849164",
+      "wallet": "3ab30e9ce2099d06fc0e119965f1dc36d8d74b7b35feb96e1e0e68de2a7c3804"
+    },
+    {
+      "buy_block": 221358157,
+      "class": "unlinked",
+      "cost_yocto": "84149999999999999928696832",
+      "first_buy_tx": "Fib4CB8BBCvJmBsFUgfHYHX5TjkyHT7gfSgyzRfwsf9Q",
+      "path": [],
+      "sold_within_vest": "52240672966382674855622114",
+      "tokens": "52240672966382674855622114",
+      "wallet": "hmmmm.user.intear.near"
+    },
+    {
+      "buy_block": 221357527,
+      "class": "unlinked",
+      "cost_yocto": "21676700000000000000000000",
+      "first_buy_tx": "FjM69yX2bLYkDodQZzc5AN296r5UpJYvTBUA9EekA8SU",
+      "path": [],
+      "sold_within_vest": "20125127366195484483152078",
+      "tokens": "20125127366195484483152078",
+      "wallet": "976b2ad5b28f7665d2890ee05b331a8996e37b548f7072ed9d4bbf0069493fe8"
+    },
+    {
+      "buy_block": 221357877,
+      "class": "unlinked",
+      "cost_yocto": "29699999999999999974834176",
+      "first_buy_tx": "867THUZBEgMyw7roKWRkgBkXLYwKcjXcAKYefWtEf5Bs",
+      "path": [],
+      "sold_within_vest": "19244304328719737432350804",
+      "tokens": "19244304328719737432350804",
+      "wallet": "teeflux.user.intear.near"
+    },
+    {
+      "buy_block": 221357912,
+      "class": "unlinked",
+      "cost_yocto": "28709999999999999970639872",
+      "first_buy_tx": "5f6h4MfbBnoG9Pp4eS85NgNpSR5FJLaUdXe7zTzXSRWh",
+      "path": [],
+      "sold_within_vest": "18645172707680195368073503",
+      "tokens": "18645172707680195368073503",
+      "wallet": "shortgirl.user.intear.near"
+    },
+    {
+      "buy_block": 221357620,
+      "class": "unlinked",
+      "cost_yocto": "24997500000000000000000000",
+      "first_buy_tx": "9KXhJu1aGovVAiDDLYHEdQe89vkipRpSrxiaRNg8zqFy",
+      "path": [],
+      "sold_within_vest": "16024755343075287316491008",
+      "tokens": "16024755343075287316491008",
+      "wallet": "magaji11.near"
+    },
+    {
+      "buy_block": 221358382,
+      "class": "unlinked",
+      "cost_yocto": "24749999999999999970639872",
+      "first_buy_tx": "FxbtTNwEwD1vc8yDDoBQTjqFMven6jS5SQp3g6NWRMBk",
+      "path": [],
+      "sold_within_vest": "16017072295717577087451514",
+      "tokens": "16017072295717577087451514",
+      "wallet": "fastest.user.intear.near"
+    },
+    {
+      "buy_block": 221357589,
+      "class": "unpriced",
+      "cost_yocto": "0",
+      "first_buy_tx": "7aWSdhdN6LKbDeoa8NU88ZNYKmXZ1ZJn8eDU9wfWdisA",
+      "path": [],
+      "sold_within_vest": "9636209755233038284912126",
+      "tokens": "9636209755233038284912126",
+      "wallet": "62d1b9c88f352529dad2f945e757ee540a946383e1ac41476914d73d492f6973"
+    },
+    {
+      "buy_block": 221358379,
+      "class": "unpriced",
+      "cost_yocto": "0",
+      "first_buy_tx": "2JSDUeUcX85fTXpidnQsZvoZ4d9v2va16XbjeUANmHzo",
+      "path": [],
+      "sold_within_vest": "7326678042374181333350345",
+      "tokens": "7326678042374181333350345",
+      "wallet": "49149698e58a511ff326a3d0200f138ae9a9341a9b107511abc143a6664953cf"
+    },
+    {
+      "buy_block": 221358380,
+      "class": "unpriced",
+      "cost_yocto": "0",
+      "first_buy_tx": "2nL4YdHqozdNcxJR8NBcVbQ6AxzQU5zNTJXnctx7UAAz",
+      "path": [],
+      "sold_within_vest": "7200063410548591458982258",
+      "tokens": "7200063410548591458982258",
+      "wallet": "5d8f34a3434e2ecbc6920a5fd2fb7f51fb5e9e361d6a0443e8f6cda4b37d9c57"
+    },
+    {
+      "buy_block": 221357689,
+      "class": "unpriced",
+      "cost_yocto": "0",
+      "first_buy_tx": "HwBLuzmA49rgscB6S4DoDXxW784nRkesCsB1anAZMobJ",
+      "path": [],
+      "sold_within_vest": "6889108828274017146640733",
+      "tokens": "6889108828274017146640733",
+      "wallet": "3e5f029edb67f024d37b82ddf5d6356188594729596b469616ebeef92e84bd45"
+    },
+    {
+      "buy_block": 221357653,
+      "class": "unpriced",
+      "cost_yocto": "0",
+      "first_buy_tx": "GcQnR5JsCKLUur4WrciN3nfnDY4j4biEiwpQM2WbC1N2",
+      "path": [],
+      "sold_within_vest": "3373097039027450375120477",
+      "tokens": "6746194078054900750240954",
+      "wallet": "6777c764a8bf9366fedcef7578ffe5b588cdc6216140518e7041c0d09f7043c1"
+    },
+    {
+      "buy_block": 221358506,
+      "class": "unlinked",
+      "cost_yocto": "9999000000000000000000000",
+      "first_buy_tx": "7RMzfHNsP5rMgRE68319Wrf49Cg4s7VCxa6xAuPJVJtn",
+      "path": [],
+      "sold_within_vest": "0",
+      "tokens": "5683259680316049387532888",
+      "wallet": "sticky_virus5.user.intear.near"
+    },
+    {
+      "buy_block": 221358187,
+      "class": "unlinked",
+      "cost_yocto": "8820899999999999983013068",
+      "first_buy_tx": "CLThWF3NN1WkfMb834hoqhiB4Rw6cEpMgctjXm6BuHbo",
+      "path": [],
+      "sold_within_vest": "5336254416980189715282521",
+      "tokens": "5336254416980189715282521",
+      "wallet": "rusty_bot84.user.intear.near"
+    },
+    {
+      "buy_block": 221357538,
+      "class": "unlinked",
+      "cost_yocto": "5000000000000000000000000",
+      "first_buy_tx": "EqNgTwYEVTL8JE4Uz9kBrMMqhJXaGGQJzAjLBxCvN5h5",
+      "path": [],
+      "sold_within_vest": "4517223467097748294777490",
+      "tokens": "4517223467097748294777490",
+      "wallet": "30fa5c4f5bc5e320372723eb7aa605bb6c28c9df4bc63729397db3b6e2257e92"
+    },
+    {
+      "buy_block": 221358057,
+      "class": "unlinked",
+      "cost_yocto": "6000000000000000000000000",
+      "first_buy_tx": "BnRGpJmDmZcAdpkb2Rh11dTK4gXff3XYU9Nn7EutoN8r",
+      "path": [],
+      "sold_within_vest": "3916589774466076035802122",
+      "tokens": "3916589774466076035802122",
+      "wallet": "5d194c7b6c82ebeefbade009e71eefccaae24d2ff54fdaf65b358613ab22b4cc"
+    },
+    {
+      "buy_block": 221357525,
+      "class": "unlinked",
+      "cost_yocto": "2999999999999999949668352",
+      "first_buy_tx": "4fZ1rRg4QPHAUvHQZWXYhhLKcvVsfra53eQApAZCMVF4",
+      "path": [],
+      "sold_within_vest": "2851708242281393593678104",
+      "tokens": "2851708242281393593678104",
+      "wallet": "wrapz-z.near"
+    },
+    {
+      "buy_block": 221357525,
+      "class": "unlinked",
+      "cost_yocto": "1000000000000000000000000",
+      "first_buy_tx": "7czYwY2p9UBJuy6S7w6bzzMDu3mJd7GfW4scPjyUDq4e",
+      "path": [],
+      "sold_within_vest": "959809676015370661517134",
+      "tokens": "959809676015370661517134",
+      "wallet": "tyty.sendler-b.near"
+    },
+    {
+      "buy_block": 221357525,
+      "class": "unlinked",
+      "cost_yocto": "1000000000000000000000000",
+      "first_buy_tx": "GGoSAvbZZEsvE6jbGkPvfrf82piWEFPKRSjY2BXrAktk",
+      "path": [],
+      "sold_within_vest": "957333899399206138583970",
+      "tokens": "957333899399206138583970",
+      "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486"
+    },
+    {
+      "buy_block": 221357525,
+      "class": "unlinked",
+      "cost_yocto": "1000000000000000000000000",
+      "first_buy_tx": "CR5whjcYhiDbspqWTQujMHM29WoBiAyoVXQkB4rfZvuf",
+      "path": [],
+      "sold_within_vest": "956714485406175333177762",
+      "tokens": "956714485406175333177762",
+      "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899"
+    },
+    {
+      "buy_block": 221357525,
+      "class": "creator",
+      "cost_yocto": "1000000000000000000000000",
+      "first_buy_tx": "9Av8t9qxPyj3StJyBXxdJKSYQaWSMfikTUbRHjL1YqLg",
+      "path": [],
+      "sold_within_vest": "0",
+      "tokens": "954248291380848867418700",
+      "wallet": "greenlanternillia.near"
+    },
+    {
+      "buy_block": 221357530,
+      "class": "unlinked",
+      "cost_yocto": "1000000000000000000000000",
+      "first_buy_tx": "8poe9YQPteZjPUYuubDrGGMpVeXFUY4uNZVxPGou6utG",
+      "path": [],
+      "sold_within_vest": "908562451249922962801203",
+      "tokens": "908562451249922962801203",
+      "wallet": "onlyrekt.near"
+    },
+    {
+      "buy_block": 221358440,
+      "class": "unlinked",
+      "cost_yocto": "1423316769647770596844119",
+      "first_buy_tx": "GjcxZvmVJJMvzv3fBZgYKsBWQGrgCrqRHqwRE19FzAY5",
+      "path": [],
+      "sold_within_vest": "847432947626109582251083",
+      "tokens": "847432947626109582251083",
+      "wallet": "private_circuit5.user.intear.near"
+    },
+    {
+      "buy_block": 221358539,
+      "class": "unlinked",
+      "cost_yocto": "1089000000000000000000000",
+      "first_buy_tx": "5rWsca1qWRhTtAuQKtynztu1daahyzVYaq1ZkcsF3yMA",
+      "path": [],
+      "sold_within_vest": "613868922363835204546149",
+      "tokens": "613868922363835204546149",
+      "wallet": "chilly_virus.user.intear.near"
+    },
+    {
+      "buy_block": 221358362,
+      "class": "unlinked",
+      "cost_yocto": "786004619161359116994870",
+      "first_buy_tx": "FaYAPafhC1UdRrtbwFEkpNEYjTHwHJ7UM1uUSxmuQHJf",
+      "path": [],
+      "sold_within_vest": "546494762393943440566357",
+      "tokens": "546494762393943440566357",
+      "wallet": "bamashin.near"
+    },
+    {
+      "buy_block": 221358561,
+      "class": "unlinked",
+      "cost_yocto": "600000000000000000000000",
+      "first_buy_tx": "HKVvECPwHY1WE3JRWspGYzhXzcGdh4GgshWb5EDTXdrZ",
+      "path": [],
+      "sold_within_vest": "338581550115399685481266",
+      "tokens": "338581550115399685481266",
+      "wallet": "h2onear.near"
+    }
+  ],
+  "shares_bps": {
+    "creator_direct": 27,
+    "creator_linked": 0,
+    "creator_total": 27,
+    "sold_within_vest": 9706,
+    "sold_within_vest_by_creator_side": 0,
+    "sold_within_vest_by_unlinked": 9667,
+    "unpriced": 4963
+  },
+  "sold_within_vest_tokens": "330869010196670278924498390",
+  "token": "grlant.nearlytrade.near",
+  "txs_scanned": 269,
+  "unlinked_tokens": "170730939283482376579139070",
+  "unpriced_tokens": "169194427632531402108012685",
+  "vest_s": 86400,
+  "window_s": 600
+}

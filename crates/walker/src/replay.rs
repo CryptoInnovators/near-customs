@@ -165,3 +165,52 @@ pub fn run(c: &mut Client, cfg: &Config) -> Value {
         "client": {"fastnear_calls": c.calls.get(), "cache_hits": c.hits.get()},
     })
 }
+
+/// Positive control on real chain data. Walks forward from `creator` along its largest real NEAR transfers
+/// for up to `depth` hops, invents a purchase by the account reached (cost chosen so every real hop clears
+/// the half-cost floor, time just after the last hop), and asks the backward search to find the path from
+/// the wallet alone. A walker that cannot find a path that provably exists would also report "0 linked"
+/// on a launch that has some, so every spike run is paired with this.
+pub fn control(c: &mut Client, creator: &str, depth: usize) -> Value {
+    let mut at = creator.to_string();
+    let mut edges: Vec<Edge> = Vec::new();
+    let mut seen = vec![creator.to_string()];
+    for _ in 0..depth {
+        let (list, _, _) = c.account_page(&at, json!({"desc": true, "limit": 60}));
+        let hashes: Vec<String> = list.iter().map(|t| t.hash.clone()).collect();
+        let last_ts = edges.last().map(|e| e.ts_ns).unwrap_or(0);
+        let next = c
+            .txs(&hashes)
+            .iter()
+            .flat_map(edges_all)
+            .filter(|e| e.from == at && e.ts_ns > last_ts && !crate::pathrule::is_hub(&e.to) && !seen.contains(&e.to) && e.yocto >= 10u128.pow(23))
+            .max_by_key(|e| e.yocto);
+        match next {
+            Some(e) => {
+                at = e.to.clone();
+                seen.push(at.clone());
+                edges.push(e);
+            }
+            None => break,
+        }
+    }
+    let Some(last) = edges.last().cloned() else {
+        return json!({"creator": creator, "forward_hops": 0, "backward_search": "no forward chain to test"});
+    };
+    let cost = edges.iter().map(|e| e.yocto).min().unwrap();
+    let buy = Buy { wallet: last.to.clone(), cost_yocto: cost, ts_ns: last.ts_ns + 1 };
+    let found = trace(c, &buy, last.height + 1, &Rule::new(creator));
+    let (verdict, back) = match &found {
+        Trace::Linked(p) => ("linked", p.clone()),
+        Trace::Direct => ("direct", vec![]),
+        Trace::Unlinked => ("unlinked", vec![]),
+    };
+    // the same buy against a creator that never sent this wallet anything
+    let wrong = trace(c, &buy, last.height + 1, &Rule::new("customs-no-such-creator.near"));
+    json!({
+        "creator": creator, "wallet": last.to, "forward_hops": edges.len(),
+        "forward": edges.iter().map(edge_json).collect::<Vec<_>>(),
+        "backward_search": verdict, "backward_path": back.iter().map(edge_json).collect::<Vec<_>>(),
+        "same_wallet_other_creator_unlinked": matches!(wrong, Trace::Unlinked),
+    })
+}

@@ -1,0 +1,34 @@
+{
+  "backward_path": [
+    {
+      "block": 221519093,
+      "from": "greenlanternillia.near",
+      "kind": "Transfer",
+      "to": "broken_phantom.near",
+      "ts_ns": 1792919813198732748,
+      "tx": "HmGMkKuiTUDnjAS89e2u48TrCY7Pxjh88f65zUY9BQVz",
+      "yocto": "2000000000000000000000000"
+    }
+  ],
+  "backward_search": "linked",
+  "creator": "greenlanternillia.near",
+  "forward": [
+    {
+      "block": 221519093,
+      "from": "greenlanternillia.near",
+      "kind": "Transfer",
+      "to": "broken_phantom.near",
+      "ts_ns": 1792919813198732748,
+      "tx": "HmGMkKuiTUDnjAS89e2u48TrCY7Pxjh88f65zUY9BQVz",
+      "yocto": "2000000000000000000000000"
+    }
+  ],
+  "forward_hops": 1,
+  "head": {
+    "hash": "854PG4t9noKj5WrFnwYVBRPHu3e7ZPEr8kQzZio6oP9c",
+    "height": 222392473,
+    "rpc": "archival-rpc.mainnet.fastnear.com block final"
+  },
+  "same_wallet_other_creator_unlinked": true,
+  "wallet": "broken_phantom.near"
+}
