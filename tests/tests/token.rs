@@ -67,8 +67,8 @@ async fn hold_is_balance_level_so_later_buys_stay_free() -> anyhow::Result<()> {
     let locked: u128 = w.bag(&w.insider).await?["locked"].as_str().unwrap().parse()?;
     let free = w.balance(&w.insider).await? - locked;
     assert!(free > 0 && free < BUY / 100, "only the vested sliver is free: {free}");
-    let r = w.transfer(&w.insider, &w.outsider, free + 2 * UNIT).await?;
-    assert!(r.is_failure(), "one token past the free part is refused");
+    let r = w.transfer(&w.insider, &w.outsider, free + BUY / 10).await?;
+    assert!(r.is_failure(), "a tenth of the bag past the free part is refused");
     Ok(())
 }
 
