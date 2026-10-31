@@ -22,7 +22,7 @@
 
 ## OutLayer path
 
-The token calls `request_execution` on `outlayer.name` through the real OutLayer contract code read from mainnet (block 222386104, sha256 checked by `scripts/fetch-outlayer.sh`). No stand-in remains in the code or docs.
+The token calls `request_execution` on `outlayer.near` through the real OutLayer contract code read from mainnet (block 222386104, sha256 checked by `scripts/fetch-outlayer.sh`). No stand-in remains in the code or docs.
 
 ## Review
 
