@@ -23,6 +23,12 @@ pub fn verdict_message(
         .into_bytes()
 }
 
+/// The exact bytes the module signs to prove it controls the key it reports, and the token checks once
+/// when it pins that key. Binds the key to one token account.
+pub fn pin_message(token: &str, public_key: &str) -> Vec<u8> {
+    format!("{MESSAGE_DOMAIN}/pin\n{token}\n{public_key}").into_bytes()
+}
+
 pub fn hex_lower(bytes: &[u8]) -> String {
     const H: &[u8; 16] = b"0123456789abcdef";
     let mut s = String::with_capacity(bytes.len() * 2);
@@ -52,6 +58,14 @@ mod tests {
         assert_ne!(base, verdict_message("t.near", "w.near", 7, "ac", VERDICT_UPHELD, 99));
         assert_ne!(base, verdict_message("t.near", "w.near", 7, "ab", VERDICT_REJECTED, 99));
         assert_ne!(base, verdict_message("t.near", "w.near", 7, "ab", VERDICT_UPHELD, 100));
+    }
+
+    #[test]
+    fn pin_message_binds_token_and_key() {
+        let m = pin_message("t.near", "ed25519:K");
+        assert_eq!(m, b"customs/v1/pin\nt.near\ned25519:K".to_vec());
+        assert_ne!(m, pin_message("u.near", "ed25519:K"));
+        assert_ne!(m, pin_message("t.near", "ed25519:L"));
     }
 
     #[test]

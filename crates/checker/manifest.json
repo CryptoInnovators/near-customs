@@ -1,0 +1,8 @@
+{
+  "display": { "name": "Customs path checker" },
+  "operations": ["public_key", "verify_funding_path"],
+  "capabilities": { "network": ["tx.main.fastnear.com"] },
+  "signing_keys": [
+    { "path": "verdict", "type": "ed25519", "bind": "wasm", "caller": "predecessor" }
+  ]
+}

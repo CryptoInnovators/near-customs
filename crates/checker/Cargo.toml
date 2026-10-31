@@ -1,0 +1,28 @@
+[package]
+name = "customs-checker"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "customs_checker"
+path = "src/lib.rs"
+
+[[bin]]
+name = "customs-checker"
+path = "src/main.rs"
+
+[dependencies]
+customs-common = { path = "../common" }
+customs-walker = { path = "../walker", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+bs58 = "0.5"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wit-bindgen = "0.36"
+wasi-http-client = "0.2"
+
+[dev-dependencies]
+ed25519-dalek = "2"

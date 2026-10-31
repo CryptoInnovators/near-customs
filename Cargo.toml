@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["contracts/token", "crates/common", "crates/walker", "fixtures/outlayer-sim", "tests"]
+members = ["contracts/token", "crates/common", "crates/walker", "crates/checker", "tests"]
 
 [profile.release]
 codegen-units = 1

@@ -1,4 +1,4 @@
-use customs_walker::chain::{cost_into, edges_all, ft_moves, Client};
+use customs_walker::chain::{cost_into, ft_moves, path_edges, Client};
 use customs_walker::pathrule::{check, Buy, Rule};
 use customs_walker::replay::{run, Config};
 use serde_json::{json, Value};
@@ -51,18 +51,7 @@ fn main() {
             let bm = ft_moves(&buy_tx, &token).into_iter().find(|m| m.to == wallet && m.from == market).expect("buy tx does not pay the wallet");
             let buy = Buy { wallet: wallet.clone(), cost_yocto: cost_into(&buy_tx, &market), ts_ns: bm.ts_ns };
             let hashes: Vec<String> = need(&args, "--path").split(',').filter(|s| !s.is_empty()).map(String::from).collect();
-            let mut edges = Vec::new();
-            let mut at = creator.clone();
-            for tx in c.txs(&hashes) {
-                let pick = edges_all(&tx).into_iter().filter(|e| e.from == at).max_by_key(|e| e.yocto);
-                match pick {
-                    Some(e) => {
-                        at = e.to.clone();
-                        edges.push(e);
-                    }
-                    None => break,
-                }
-            }
+            let edges = path_edges(&creator, &c.txs(&hashes));
             let rule = Rule::new(&creator);
             let (verdict, reason) = match check(&edges, &buy, &rule) {
                 Ok(()) => ("upheld", Value::Null),

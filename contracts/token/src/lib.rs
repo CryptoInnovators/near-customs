@@ -2,7 +2,7 @@
 //! by anyone who proves, through an OutLayer enclave verdict, that the creator's money paid
 //! for the buy. The vest floor never depends on a backend. The verdict can only convict.
 
-use customs_common::{hex_lower, path_hash_input, verdict_message, VERDICT_REJECTED, VERDICT_UPHELD};
+use customs_common::{hex_lower, path_hash_input, pin_message, verdict_message, VERDICT_REJECTED, VERDICT_UPHELD};
 use near_contract_standards::fungible_token::events::FtMint;
 use near_contract_standards::fungible_token::metadata::{
     FungibleTokenMetadata, FungibleTokenMetadataProvider,
@@ -25,6 +25,7 @@ use near_sdk::{
 
 const REQUEST_GAS: Gas = Gas::from_tgas(100);
 const VERDICT_GAS: Gas = Gas::from_tgas(60);
+const PIN_GAS: Gas = Gas::from_tgas(30);
 const MIN_RECLAIM_BLOCKS: u64 = 201;
 
 #[derive(BorshSerialize, BorshStorageKey)]
@@ -48,8 +49,6 @@ pub struct Params {
     pub creator_id: AccountId,
     /// The OutLayer contract that runs the path checker.
     pub outlayer_id: AccountId,
-    /// ed25519 key the path checker signs verdicts with. Verified on chain in `on_verdict`.
-    pub verdict_key: PublicKey,
     /// The checker module OutLayer is asked to run, and the sha256 it must match.
     pub module_url: String,
     pub module_sha256: String,
@@ -117,6 +116,16 @@ pub struct WindowView {
     pub vest_ends_s: Option<u64>,
 }
 
+/// What the path checker returns for `public_key`: the key OutLayer derived for this token, and a signature
+/// by that key over `pin_message`, so the key is only ever one the checker module can sign with.
+#[derive(Clone)]
+#[near(serializers = [json])]
+pub struct PinOutput {
+    pub token: AccountId,
+    pub public_key: String,
+    pub sig: String,
+}
+
 /// What the path checker returns as its stdout JSON. OutLayer hands this to the callback as the result.
 #[derive(Clone)]
 #[near(serializers = [json])]
@@ -137,6 +146,8 @@ pub struct Customs {
     token: FungibleToken,
     metadata: LazyOption<FungibleTokenMetadata>,
     params: Params,
+    /// ed25519 key OutLayer derives for this token and the checker module. Set once by `pin_verdict_key`.
+    verdict_key: Option<PublicKey>,
     window_start_s: Option<u64>,
     bags: LookupMap<AccountId, Bag>,
     challenges: LookupMap<u64, Challenge>,
@@ -203,10 +214,6 @@ impl Customs {
         require!(params.max_age_blocks > 0, "max_age_blocks must be positive");
         require!(params.min_bond.0 > 0, "min_bond must be positive");
         require!(
-            params.verdict_key.curve_type() == near_sdk::CurveType::ED25519,
-            "verdict_key must be an ed25519 key"
-        );
-        require!(
             params.market_id != owner_id && params.market_id != env::current_account_id(),
             "the market must be a separate account"
         );
@@ -214,6 +221,7 @@ impl Customs {
             token: FungibleToken::new(StorageKey::Token),
             metadata: LazyOption::new(StorageKey::Metadata, Some(&metadata)),
             params,
+            verdict_key: None,
             window_start_s: None,
             bags: LookupMap::new(StorageKey::Bags),
             challenges: LookupMap::new(StorageKey::Challenges),
@@ -228,7 +236,7 @@ impl Customs {
     }
 
     /// File a challenge: `path` names the transactions through which the creator's money reached
-    /// `wallet` before its opening buy. Attach `bond + exec_fee`. An upheld verdict pays the
+    /// `wallet`, in order, followed by the wallet's opening buy transaction. Attach `bond + exec_fee`. An upheld verdict pays the
     /// challenger `seize_bps` of the wallet's unvested bag and returns the bond. A rejected one
     /// forfeits the bond. No answer from the enclave changes nothing and the bond can be reclaimed.
     #[payable]
@@ -245,7 +253,11 @@ impl Customs {
             self.token.accounts.contains_key(&challenger),
             "customs: the challenger must be registered with the token to receive a seizure"
         );
-        require!(path.len() <= p.max_hops as usize, "customs: path is longer than max_hops");
+        require!(self.verdict_key.is_some(), "customs: the verdict key is not pinned yet; call pin_verdict_key");
+        require!(
+            path.len() >= 2 && path.len() <= p.max_hops as usize + 1,
+            "customs: path is 1..=max_hops hop transactions followed by the opening buy transaction"
+        );
         for h in &path {
             let ok = near_sdk::bs58::decode(h).into_vec().map(|b| b.len() == 32).unwrap_or(false);
             require!(ok, "customs: every path entry must be a base58 transaction hash");
@@ -283,30 +295,62 @@ impl Customs {
             "path": path,
             "path_hash": path_hash,
             "max_hops": p.max_hops,
+            "block": env::block_height(),
+            // two seconds of slack: an indexer may stamp the first sale's receipt a block before the block clock the contract read
+            "window_start_ns": start.saturating_sub(2) * 1_000_000_000,
+            "window_end_ns": (start + p.window_s) * 1_000_000_000,
         })
         .to_string();
-        let args = json!({
-            "source": { "WasmUrl": {
-                "url": p.module_url, "hash": p.module_sha256, "build_target": "wasm32-wasip2"
-            }},
-            "resource_limits": {
-                "max_instructions": 2_000_000_000u64, "max_memory_mb": 256, "max_execution_seconds": 60
-            },
-            "input_data": input,
-            "response_format": "Json",
-            "payer_account_id": challenger,
-        })
-        .to_string()
-        .into_bytes();
         log!(
             "EVENT_JSON:{}",
             json!({"standard":"customs","version":"1.0.0","event":"challenge_filed","data":{
                 "challenge_id": id, "wallet": wallet, "challenger": challenger, "bond": bond, "path_hash": path_hash
             }})
         );
-        near_sdk::Promise::new(p.outlayer_id)
-            .function_call("request_execution".to_string(), args, NearToken::from_yoctonear(p.exec_fee.0), REQUEST_GAS)
-            .then(Self::ext(env::current_account_id()).with_static_gas(VERDICT_GAS).on_verdict(id))
+        self.request_checker(input, challenger).then(Self::ext(env::current_account_id()).with_static_gas(VERDICT_GAS).on_verdict(id))
+    }
+
+    /// Ask the checker module for the public key OutLayer derives for this token, and pin it. Anyone can
+    /// call it once; it takes no argument, so the caller chooses nothing the key depends on. Attach `exec_fee`.
+    #[payable]
+    pub fn pin_verdict_key(&mut self) -> near_sdk::Promise {
+        require!(self.verdict_key.is_none(), "customs: the verdict key is already pinned");
+        require!(
+            env::attached_deposit().as_yoctonear() == self.params.exec_fee.0,
+            "customs: attach exactly exec_fee"
+        );
+        let input = json!({"op": "public_key", "token": env::current_account_id()}).to_string();
+        self.request_checker(input, env::predecessor_account_id())
+            .then(Self::ext(env::current_account_id()).with_static_gas(PIN_GAS).on_pin())
+    }
+
+    /// Callback of the key request. The key is accepted only when the module proved it can sign with it,
+    /// and only while none is pinned: a second answer changes nothing.
+    #[private]
+    pub fn on_pin(&mut self, #[callback_result] result: Result<Option<PinOutput>, PromiseError>) -> bool {
+        let Ok(Some(out)) = result else {
+            log!("customs: no key answer; the key stays unpinned");
+            return false;
+        };
+        if self.verdict_key.is_some() {
+            return false;
+        }
+        require!(out.token == env::current_account_id(), "customs: key answer names another token");
+        let key: PublicKey = out.public_key.parse().unwrap_or_else(|_| env::panic_str("customs: malformed public key"));
+        require!(key.curve_type() == near_sdk::CurveType::ED25519, "customs: the verdict key must be ed25519");
+        let sig: [u8; 64] = near_sdk::bs58::decode(&out.sig)
+            .into_vec()
+            .ok()
+            .and_then(|b| b.try_into().ok())
+            .unwrap_or_else(|| env::panic_str("customs: malformed signature"));
+        let raw: [u8; 32] = key.as_bytes()[1..].try_into().unwrap_or_else(|_| env::panic_str("customs: malformed public key"));
+        require!(
+            env::ed25519_verify(&sig, &pin_message(&out.token.to_string(), &out.public_key), &raw),
+            "customs: the key answer is not signed by the key it reports"
+        );
+        self.verdict_key = Some(key.clone());
+        self.event("verdict_key_pinned", json!({"public_key": out.public_key}));
+        true
     }
 
     /// Callback of the OutLayer run. Only this contract can call it; the verdict it carries still has to
@@ -341,7 +385,7 @@ impl Customs {
             "customs: unknown verdict value"
         );
         let head = env::block_height();
-        require!(v.block >= ch.created_block, "customs: verdict predates the challenge");
+        require!(v.block == ch.created_block, "customs: verdict names another block than the challenge");
         require!(v.block <= head, "customs: verdict names a future block");
         require!(head - v.block <= p.max_age_blocks, "customs: verdict is stale");
 
@@ -351,7 +395,11 @@ impl Customs {
             .ok()
             .and_then(|b| b.try_into().ok())
             .unwrap_or_else(|| env::panic_str("customs: malformed signature"));
-        let key: [u8; 32] = p.verdict_key.as_bytes()[1..]
+        let key: [u8; 32] = self
+            .verdict_key
+            .as_ref()
+            .unwrap_or_else(|| env::panic_str("customs: no pinned verdict key"))
+            .as_bytes()[1..]
             .try_into()
             .unwrap_or_else(|_| env::panic_str("customs: malformed pinned key"));
         require!(env::ed25519_verify(&sig, &msg, &key), "customs: verdict signature does not verify against the pinned key");
@@ -412,6 +460,10 @@ impl Customs {
         self.params.clone()
     }
 
+    pub fn verdict_key(&self) -> Option<PublicKey> {
+        self.verdict_key.clone()
+    }
+
     pub fn opening_of(&self, account_id: AccountId) -> Option<BagView> {
         let start = self.window_start_s?;
         let now = now_s();
@@ -447,6 +499,31 @@ impl Customs {
 }
 
 impl Customs {
+    /// The one place this contract talks to OutLayer: the checker module, by URL and sha256, with the
+    /// request as `input_data`, answered as JSON. The unused part of the attached fee refunds to `payer`.
+    fn request_checker(&self, input: String, payer: AccountId) -> near_sdk::Promise {
+        let p = &self.params;
+        let args = json!({
+            "source": { "WasmUrl": {
+                "url": p.module_url, "hash": p.module_sha256, "build_target": "wasm32-wasip2"
+            }},
+            "resource_limits": {
+                "max_instructions": 2_000_000_000u64, "max_memory_mb": 256, "max_execution_seconds": 60
+            },
+            "input_data": input,
+            "response_format": "Json",
+            "payer_account_id": payer,
+        })
+        .to_string()
+        .into_bytes();
+        near_sdk::Promise::new(p.outlayer_id.clone()).function_call(
+            "request_execution".to_string(),
+            args,
+            NearToken::from_yoctonear(p.exec_fee.0),
+            REQUEST_GAS,
+        )
+    }
+
     fn event(&self, name: &str, data: near_sdk::serde_json::Value) {
         log!("EVENT_JSON:{}", json!({"standard":"customs","version":"1.0.0","event":name,"data":data}));
     }
