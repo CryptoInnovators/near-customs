@@ -1,6 +1,6 @@
 //! Replays a real launch: who bought in the opening window, how much of it moved within the vest
 //! period, and how much was paid for with money that leads back to the creator under the path rule.
-use crate::chain::{cost_into, ft_moves, Client, FtMove};
+use crate::chain::{cost_into, edges_all, ft_moves, Client, FtMove};
 use crate::pathrule::{trace, Buy, Edge, Rule, Trace};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
@@ -12,6 +12,8 @@ pub struct Config {
     pub window_s: u64,
     pub vest_s: u64,
     pub max_buyers: usize,
+    /// An account unrelated to this launch, standing in for the creator. The same walk must find nothing.
+    pub placebo_creator: Option<String>,
 }
 
 fn edge_json(e: &Edge) -> Value {
@@ -59,6 +61,9 @@ pub fn run(c: &mut Client, cfg: &Config) -> Value {
     let mut rows = Vec::new();
     let (mut direct, mut linked, mut unlinked, mut unpriced) = (0u128, 0u128, 0u128, 0u128);
     let (mut sold_all, mut sold_creator_side, mut sold_unlinked) = (0u128, 0u128, 0u128);
+    // creator-traceable tokens by the length of the shortest printed path: index 0 is one hop
+    let mut by_hops = [0u128; 8];
+    let (mut placebo_tested, mut placebo_linked) = (0u64, 0u128);
     let mut ordered: Vec<(&String, &B)> = buyers.iter().collect();
     ordered.sort_by(|a, b| b.1.tokens.cmp(&a.1.tokens));
     for (i, (wallet, b)) in ordered.iter().enumerate() {
@@ -80,12 +85,19 @@ pub fn run(c: &mut Client, cfg: &Config) -> Value {
             let buy = Buy { wallet: (*wallet).clone(), cost_yocto: cost, ts_ns: b.first.ts_ns };
             match trace(c, &buy, b.first.height, &rule) {
                 Trace::Linked(p) => {
+                    by_hops[(p.len() - 1).min(7)] += b.tokens;
                     linked += b.tokens;
                     sold_creator_side += sold;
                     ("linked", p)
                 }
                 Trace::Direct => unreachable!(),
                 Trace::Unlinked => {
+                    if let Some(fake) = &cfg.placebo_creator {
+                        placebo_tested += 1;
+                        if matches!(trace(c, &buy, b.first.height, &Rule::new(fake)), Trace::Linked(_) | Trace::Direct) {
+                            placebo_linked += b.tokens;
+                        }
+                    }
                     unlinked += b.tokens;
                     sold_unlinked += sold;
                     ("unlinked", vec![])
@@ -99,7 +111,38 @@ pub fn run(c: &mut Client, cfg: &Config) -> Value {
             "path": path.iter().map(edge_json).collect::<Vec<_>>(),
         }));
     }
+    // Visible creator funding of opening buyers: how many arrived before the wallet's first opening buy, how many after.
+    let floor_of = |w: &str| -> u128 {
+        let b = &buyers[w];
+        let cost: u128 = b.txs.iter().filter_map(|h| txs.iter().find(|t| &t.hash == h)).map(|t| cost_into(t, &cfg.market)).sum();
+        rule.min_hop(cost)
+    };
+    let ctx = c.account_txs_until(&cfg.creator, created.height, vest_end);
+    let chashes: Vec<String> = ctx.iter().map(|t| t.hash.clone()).collect();
+    let (mut fund_before, mut fund_after) = (std::collections::BTreeSet::new(), std::collections::BTreeSet::new());
+    for t in c.txs(&chashes) {
+        for e in edges_all(&t).into_iter().filter(|e| e.from == cfg.creator && buyers.contains_key(&e.to) && e.to != cfg.creator) {
+            if e.yocto == 0 || e.yocto < floor_of(&e.to) {
+                continue;
+            }
+            if e.ts_ns < buyers[&e.to].first.ts_ns {
+                fund_before.insert(e.to.clone());
+            } else {
+                fund_after.insert(e.to.clone());
+            }
+        }
+    }
     json!({
+        "creator_funding_of_buyers": {
+            "wallets_funded_before_first_buy": fund_before.len(), "wallets_funded_only_after": fund_after.difference(&fund_before).count(),
+            "before": fund_before, "after": fund_after,
+        },
+        "placebo": {"creator": cfg.placebo_creator, "buyers_tested": placebo_tested, "linked_tokens": placebo_linked.to_string(),
+                    "linked_bps": bps(placebo_linked, total)},
+        "creator_linked_bps_by_hops": {
+            "1": bps(by_hops[0], total), "2": bps(by_hops[0] + by_hops[1], total),
+            "3": bps(by_hops[0] + by_hops[1] + by_hops[2], total),
+        },
         "token": cfg.token, "creator": cfg.creator, "market": cfg.market,
         "window_s": cfg.window_s, "vest_s": cfg.vest_s,
         "opening_starts_ns": t0, "first_block_scanned": created.height, "txs_scanned": hashes.len(),

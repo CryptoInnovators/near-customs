@@ -156,6 +156,24 @@ async fn upheld_challenge_pays_exactly_twenty_percent_of_the_unvested_bag() -> a
 }
 
 #[tokio::test]
+async fn seized_tokens_vest_with_the_hunter_so_a_self_challenge_unlocks_nothing() -> anyhow::Result<()> {
+    let w = World::with(Knobs { window_s: 60, vest_s: 300, ..Knobs::default() }).await?;
+    w.market_pays(&w.insider, BUY).await?.into_result()?;
+    let path = w.honest_path(&w.insider).await?;
+    // the hunter is the insider's own second wallet
+    let r = w.challenge(&w.hunter, &w.insider, path).await?;
+    let seized: u128 = event_data(&r, "wallet_seized").expect("seized")["seized"].as_str().unwrap().parse()?;
+    assert_eq!(w.balance(&w.hunter).await?, seized);
+    assert_eq!(w.bag(&w.hunter).await?["locked"], seized.to_string(), "the hold travels with the tokens");
+    let r = w.transfer(&w.hunter, &w.outsider, seized).await?;
+    assert!(r.is_failure() && failure_text(&r).contains("locked until"), "{}", failure_text(&r));
+    w.advance_s(310).await?;
+    assert_eq!(w.bag(&w.hunter).await?["state"], "vested");
+    w.transfer(&w.hunter, &w.outsider, seized).await?.into_result()?;
+    Ok(())
+}
+
+#[tokio::test]
 async fn request_to_outlayer_names_the_module_the_wallet_and_the_receipts() -> anyhow::Result<()> {
     let w = opened().await?;
     let path = w.honest_path(&w.insider).await?;

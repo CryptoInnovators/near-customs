@@ -37,6 +37,7 @@ fn main() {
                 window_s: arg(&args, "--window-s").and_then(|v| v.parse().ok()).unwrap_or(600),
                 vest_s: arg(&args, "--vest-s").and_then(|v| v.parse().ok()).unwrap_or(86_400),
                 max_buyers: arg(&args, "--max-buyers").and_then(|v| v.parse().ok()).unwrap_or(60),
+                placebo_creator: arg(&args, "--placebo-creator"),
             };
             let mut report = run(&mut c, &cfg);
             report["head"] = head_block();

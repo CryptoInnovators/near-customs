@@ -78,6 +78,9 @@ pub struct Bag {
     pub seized: bool,
     pub frozen_amount: U128,
     pub frozen_until_s: u64,
+    /// Tokens received as a seizure payout. They stay locked until the vest ends, like the bag they came from,
+    /// so a creator who challenges their own insider wallet from a second account unlocks nothing.
+    pub bounty: U128,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -166,7 +169,17 @@ fn mul_div(a: u128, b: u128, c: u128) -> u128 {
 }
 
 impl Bag {
+    fn empty() -> Bag {
+        Bag { bought: U128(0), seized: false, frozen_amount: U128(0), frozen_until_s: 0, bounty: U128(0) }
+    }
+
     fn locked(&self, p: &Params, window_start_s: u64, now: u64) -> u128 {
+        let bounty = if now < window_start_s + p.vest_s { self.bounty.0 } else { 0 };
+        self.base_locked(p, window_start_s, now) + bounty
+    }
+
+    /// The part of the lock that opening buys created, which is all a challenge can seize.
+    fn base_locked(&self, p: &Params, window_start_s: u64, now: u64) -> u128 {
         if self.seized {
             return if now < self.frozen_until_s { self.frozen_amount.0 } else { 0 };
         }
@@ -265,7 +278,7 @@ impl Customs {
         let start = self.window_start_s.unwrap_or_else(|| env::panic_str("customs: trading has not opened"));
         let bag = self.bags.get(&wallet).unwrap_or_else(|| env::panic_str("customs: wallet has no opening bag"));
         require!(!bag.seized, "customs: wallet was already seized");
-        require!(bag.locked(&p, start, now_s()) > 0, "customs: wallet has nothing unvested");
+        require!(bag.base_locked(&p, start, now_s()) > 0, "customs: wallet has nothing unvested");
         require!(!self.open_by_wallet.contains_key(&wallet), "customs: a challenge on this wallet is already open");
 
         let id = self.next_challenge;
@@ -415,13 +428,17 @@ impl Customs {
 
         let start = self.window_start_s.unwrap();
         let now = now_s();
-        let mut bag = self.bags.get(&ch.wallet).cloned().unwrap_or_else(|| env::panic_str("customs: bag vanished"));
+        let bag = self.bags.get(&ch.wallet).cloned().unwrap_or_else(|| env::panic_str("customs: bag vanished"));
         let balance = self.token.ft_balance_of(ch.wallet.clone()).0;
-        let at_risk = bag.locked(&p, start, now).min(balance);
+        let at_risk = bag.base_locked(&p, start, now).min(balance);
         let seized = mul_div(at_risk, p.seize_bps as u128, 10_000);
         if seized > 0 {
             self.token.internal_transfer(&ch.wallet, &ch.challenger, seized, Some("customs seizure".to_string()));
+            let mut prize = self.bags.get(&ch.challenger).cloned().unwrap_or(Bag::empty());
+            prize.bounty = U128(prize.bounty.0 + seized);
+            self.bags.insert(ch.challenger.clone(), prize);
         }
+        let mut bag = self.bags.get(&ch.wallet).cloned().unwrap_or_else(|| env::panic_str("customs: bag vanished"));
         bag.seized = true;
         bag.frozen_amount = U128(at_risk - seized);
         bag.frozen_until_s = now + p.lock_s;
@@ -536,12 +553,7 @@ impl Customs {
             if now < start + self.params.window_s {
                 require!(!is_call, "customs: the market pays opening buyers with ft_transfer");
                 if *receiver != self.params.market_id {
-                    let mut bag = self.bags.get(receiver).cloned().unwrap_or(Bag {
-                        bought: U128(0),
-                        seized: false,
-                        frozen_amount: U128(0),
-                        frozen_until_s: 0,
-                    });
+                    let mut bag = self.bags.get(receiver).cloned().unwrap_or(Bag::empty());
                     bag.bought = U128(bag.bought.0 + amount);
                     self.bags.insert(receiver.clone(), bag);
                 }
