@@ -177,7 +177,7 @@ async fn request_to_outlayer_names_the_module_the_wallet_and_the_receipts() -> a
     assert_eq!(input["market"], w.market.id().to_string());
     assert_eq!(input["token"], w.token.id().to_string());
     assert_eq!(input["path"], json!(path));
-    assert_eq!(input["max_hops"], 4);
+    assert_eq!(input["max_hops"], 3);
     let win: Value = w.token.view("window").await?.json()?;
     assert_eq!(input["window_end_ns"].as_u64().unwrap(), win["opening_ends_s"].as_u64().unwrap() * 1_000_000_000);
     w.answer_held(tx, &Mode::Honest).await?.into_result()?;
@@ -223,6 +223,18 @@ async fn a_two_hop_creator_path_through_a_relay_is_upheld() -> anyhow::Result<()
     assert_eq!(path.len(), 3);
     let r = w.challenge(&w.hunter, &w.insider, path).await?;
     assert!(event_data(&r, "wallet_seized").is_some(), "{}", failure_text(&r));
+    Ok(())
+}
+
+#[tokio::test]
+async fn a_path_through_an_unlisted_busy_wallet_convicts_nothing() -> anyhow::Result<()> {
+    let w = opened().await?;
+    // the relay is on no hub list; the chain says it has touched 40,000 transactions, like an exchange hot wallet
+    w.chain.set_tx_count(w.outsider.id().as_str(), 40_000);
+    let path = w.plant_path(&w.insider, &[&w.outsider], 10 * NEAR_Y, true, 1).await?;
+    let r = w.challenge(&w.hunter, &w.insider, path).await?;
+    assert!(event_data(&r, "challenge_rejected").is_some(), "{}", failure_text(&r));
+    assert_eq!(w.balance(&w.insider).await?, BUY, "nothing seized");
     Ok(())
 }
 

@@ -2,17 +2,35 @@
 //! It never decides who owns a wallet. Pure functions over receipt facts, so the same code runs in
 //! the offline walker and in the enclave module that signs verdicts.
 
-pub const HUBS: &[&str] = &[
-    "system",
-    "near",
-    "wrap.near",
-    "intents.near",
-    "dclv2.ref-labs.near",
-    "v2.ref-finance.near",
-    "nearlytrade.near",
-    "token.sweat",
-    "aurora",
-];
+/// An account that has touched more transactions than this is treated as a hub.
+pub const BUSY_TXS: u64 = 3000;
+
+/// The published hub list, embedded so the offline walker and the enclave module read the same bytes.
+const HUBS_JSON: &str = include_str!("../hubs.json");
+
+pub struct HubList {
+    pub version: u64,
+    pub sha256: String,
+    pub hubs: Vec<String>,
+}
+
+pub fn hub_list() -> &'static HubList {
+    static L: std::sync::OnceLock<HubList> = std::sync::OnceLock::new();
+    L.get_or_init(|| {
+        use sha2::{Digest, Sha256};
+        let v: serde_json::Value = serde_json::from_str(HUBS_JSON).expect("hubs.json is valid json");
+        HubList {
+            version: v["version"].as_u64().expect("hubs.json has a version"),
+            sha256: customs_common::hex_lower(&Sha256::digest(HUBS_JSON.as_bytes())),
+            hubs: v["hubs"]
+                .as_array()
+                .expect("hubs.json has a hubs array")
+                .iter()
+                .map(|h| h["account"].as_str().expect("every hub names an account").to_string())
+                .collect(),
+        }
+    })
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum EdgeKind {
@@ -43,13 +61,16 @@ pub struct Buy {
 pub struct Rule {
     pub creator: String,
     pub max_hops: usize,
+    /// Accounts the caller measured as too busy to be a person (an unlisted exchange hot wallet, a relayer).
+    /// They count as hubs for this check only.
+    pub busy: Vec<String>,
     /// Minimum share of the buy cost every hop must move, in basis points.
     pub min_share_bps: u128,
 }
 
 impl Rule {
     pub fn new(creator: &str) -> Rule {
-        Rule { creator: creator.to_string(), max_hops: 4, min_share_bps: 5000 }
+        Rule { creator: creator.to_string(), max_hops: 3, busy: vec![], min_share_bps: 5000 }
     }
     pub fn min_hop(&self, cost: u128) -> u128 {
         cost / 10_000 * self.min_share_bps + (cost % 10_000) * self.min_share_bps / 10_000
@@ -67,11 +88,12 @@ pub enum Reject {
     NotBeforeBuy,
     EndsElsewhere,
     Hub { at: usize, who: String },
+    Busy { at: usize, who: String },
     NoCost,
 }
 
 pub fn is_hub(who: &str) -> bool {
-    HUBS.contains(&who)
+    hub_list().hubs.iter().any(|h| h == who)
 }
 
 /// Check a printed path, creator first. `Ok` means the creator's money reached the wallet before the buy.
@@ -98,6 +120,9 @@ pub fn check(path: &[Edge], buy: &Buy, rule: &Rule) -> Result<(), Reject> {
         }
         if is_hub(&e.to) {
             return Err(Reject::Hub { at: i, who: e.to.clone() });
+        }
+        if i + 1 < path.len() && rule.busy.contains(&e.to) {
+            return Err(Reject::Busy { at: i, who: e.to.clone() });
         }
         if e.yocto < floor {
             return Err(Reject::HopTooSmall { at: i });
@@ -274,6 +299,37 @@ mod tests {
         let ends = vec![edge("a", "c.near", "x.near", 100, 100)];
         assert_eq!(check(&ends, &buy("w.near"), &r), Err(Reject::EndsElsewhere));
         assert_eq!(check(&[], &buy("w.near"), &r), Err(Reject::Empty));
+    }
+
+    #[test]
+    fn default_hop_limit_is_three() {
+        let r = Rule::new("c.near");
+        assert_eq!(r.max_hops, 3);
+        let name = |i: i32| if i < 0 { "c.near".to_string() } else if i == 3 { "w.near".to_string() } else { format!("n{i}") };
+        let four: Vec<Edge> = (0..4).map(|i| edge("t", &name(i - 1), &name(i), 100, 100 + i as u64)).collect();
+        assert_eq!(check(&four, &buy("w.near"), &r), Err(Reject::TooLong));
+    }
+
+    #[test]
+    fn the_hub_list_is_a_versioned_file_the_rule_reads() {
+        let l = hub_list();
+        assert!(l.version >= 1);
+        assert!(l.hubs.iter().any(|h| h == "intents.near"));
+        assert!(is_hub("wrap.near") && !is_hub("alice.near"));
+        assert_eq!(l.sha256.len(), 64);
+    }
+
+    #[test]
+    fn a_path_through_an_unlisted_busy_wallet_convicts_nothing() {
+        // `cex-hot.near` is on no list. The caller measured it busy, so it is treated like a hub.
+        let p = vec![
+            edge("a", "creator.near", "cex-hot.near", 100, 100),
+            edge("b", "cex-hot.near", "w.near", 100, 200),
+        ];
+        let mut r = Rule::new("creator.near");
+        assert_eq!(check(&p, &buy("w.near"), &r), Ok(()), "unmeasured, the path looks clean");
+        r.busy.push("cex-hot.near".to_string());
+        assert_eq!(check(&p, &buy("w.near"), &r), Err(Reject::Busy { at: 0, who: "cex-hot.near".into() }));
     }
 
     #[test]

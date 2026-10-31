@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 pub const TX_API: &str = "https://tx.main.fastnear.com";
-const BUSY_TXS: u64 = 3000;
+use crate::pathrule::BUSY_TXS;
 
 #[derive(Clone, Debug)]
 pub struct AccountTx {

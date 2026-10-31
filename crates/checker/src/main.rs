@@ -22,6 +22,7 @@ mod wasm {
 
     const KEY_PATH: &str = "verdict";
     const TX_API: &str = "https://tx.main.fastnear.com/v0/transactions";
+    const ACCOUNT_API: &str = "https://tx.main.fastnear.com/v0/account";
 
     struct HostSigner;
     impl Signer for HostSigner {
@@ -50,6 +51,23 @@ mod wasm {
             let v: serde_json::Value = serde_json::from_slice(&resp.body().map_err(|e| format!("tx api body: {e}"))?)
                 .map_err(|e| format!("tx api json: {e}"))?;
             Ok(v["transactions"].as_array().map(|a| a.iter().map(parse_tx).collect()).unwrap_or_default())
+        }
+
+        fn tx_count(&self, account: &str) -> Result<u64, String> {
+            let body = json!({ "account_id": account, "limit": 1 }).to_string();
+            let resp = wasi_http_client::Client::new()
+                .post(ACCOUNT_API)
+                .header("Content-Type", "application/json")
+                .connect_timeout(Duration::from_secs(15))
+                .body(body.as_bytes())
+                .send()
+                .map_err(|e| format!("account api: {e}"))?;
+            if resp.status() != 200 {
+                return Err(format!("account api status {}", resp.status()));
+            }
+            let v: serde_json::Value = serde_json::from_slice(&resp.body().map_err(|e| format!("account api body: {e}"))?)
+                .map_err(|e| format!("account api json: {e}"))?;
+            v["txs_count"].as_u64().ok_or_else(|| "account api returned no txs_count".to_string())
         }
     }
 

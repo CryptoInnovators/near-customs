@@ -4,7 +4,7 @@
 //! the offline walker and the tests run the same code.
 
 use customs_common::{hex_lower, path_hash_input, pin_message, verdict_message, VERDICT_REJECTED, VERDICT_UPHELD};
-use customs_walker::pathrule::{check, Buy, Rule};
+use customs_walker::pathrule::{check, hub_list, Buy, Rule, BUSY_TXS};
 use customs_walker::receipts::{cost_into, ft_moves, path_edges, Tx};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -19,6 +19,8 @@ pub trait TxSource {
     /// The transactions with these hashes, in any order. A hash the source cannot find is an error:
     /// the checker never judges a path it could not read.
     fn txs(&self, hashes: &[String]) -> Result<Vec<Tx>, String>;
+    /// How many transactions have touched `account`. An account that cannot be measured is an error, never "quiet".
+    fn tx_count(&self, account: &str) -> Result<u64, String>;
 }
 
 #[derive(Debug, Deserialize)]
@@ -67,6 +69,7 @@ pub fn decide(
     path: &[String],
     max_hops: u8,
     window_ns: (u64, u64),
+    busy: &[String],
     txs: &[Tx],
 ) -> Decision {
     let find = |h: &String| txs.iter().find(|t| &t.hash == h).expect("caller supplies every named transaction");
@@ -95,6 +98,7 @@ pub fn decide(
     let edges = path_edges(creator, &hops);
     let mut rule = Rule::new(creator);
     rule.max_hops = max_hops as usize;
+    rule.busy = busy.to_vec();
     let buy = Buy { wallet: wallet.to_string(), cost_yocto: cost, ts_ns: first.ts_ns };
     match check(&edges, &buy, &rule) {
         Ok(()) => Decision {
@@ -131,7 +135,19 @@ pub fn run(input: &str, src: &dyn TxSource, signer: &dyn Signer) -> Result<Value
                     return Err(format!("transaction {h} not found"));
                 }
             }
-            let d = decide(&token, &creator, &market, &wallet, &path, max_hops, (window_start_ns, window_end_ns), &found);
+            // every account the money rested in on the way, not the creator and not the wallet
+            let hop_txs: Vec<Tx> = path[..path.len() - 1]
+                .iter()
+                .map(|h| found.iter().find(|t| &t.hash == h).cloned().expect("checked above"))
+                .collect();
+            let edges = path_edges(&creator, &hop_txs);
+            let mut busy = Vec::new();
+            for e in edges.iter().take(edges.len().saturating_sub(1)) {
+                if !busy.contains(&e.to) && src.tx_count(&e.to)? > BUSY_TXS {
+                    busy.push(e.to.clone());
+                }
+            }
+            let d = decide(&token, &creator, &market, &wallet, &path, max_hops, (window_start_ns, window_end_ns), &busy, &found);
             let msg = verdict_message(&token, &wallet, challenge_id, &path_hash, d.verdict, block);
             let sig = signer.sign(&msg)?;
             Ok(json!({
@@ -139,6 +155,7 @@ pub fn run(input: &str, src: &dyn TxSource, signer: &dyn Signer) -> Result<Value
                 "path_hash": path_hash, "verdict": d.verdict, "block": block,
                 "sig": bs58::encode(sig).into_string(),
                 "reason": d.reason, "buy_tx": d.buy_tx,
+                "hub_list": {"version": hub_list().version, "sha256": hub_list().sha256},
                 "buy_tokens": d.buy_tokens.to_string(), "buy_cost_yocto": d.buy_cost_yocto.to_string(),
             }))
         }

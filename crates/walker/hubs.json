@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "note": "Accounts a funding path may not pass through. A hub carries money for many unrelated users, so a path through one links nothing. Bump version on every change; the checker reports the version and sha256 it ran with.",
+  "hubs": [
+    { "account": "system", "kind": "protocol" },
+    { "account": "near", "kind": "protocol" },
+    { "account": "wrap.near", "kind": "wrapper" },
+    { "account": "intents.near", "kind": "bridge", "exception": "native_withdraw and ft_withdraw events name the owner account; the walker follows the owner" },
+    { "account": "dclv2.ref-labs.near", "kind": "dex" },
+    { "account": "v2.ref-finance.near", "kind": "dex" },
+    { "account": "nearlytrade.near", "kind": "launchpad" },
+    { "account": "token.sweat", "kind": "token" },
+    { "account": "aurora", "kind": "bridge" }
+  ]
+}

@@ -158,7 +158,7 @@ impl Default for Knobs {
             exec_fee: near(0.1),
             reclaim_blocks: 220,
             max_age_blocks: 50,
-            max_hops: 4,
+            max_hops: 3,
         }
     }
 }
@@ -183,24 +183,36 @@ impl Signer for Enclave {
 
 /// FastNEAR-shaped transactions the checker can read. The test writes what the chain would hold.
 #[derive(Default)]
-pub struct Chain(Mutex<Vec<Value>>);
+pub struct Chain {
+    txs: Mutex<Vec<Value>>,
+    counts: Mutex<std::collections::HashMap<String, u64>>,
+}
 
 impl Chain {
     pub fn put(&self, raw: Value) {
-        self.0.lock().unwrap().push(raw);
+        self.txs.lock().unwrap().push(raw);
+    }
+
+    /// How many transactions the chain says `account` has touched. Unset accounts have touched 3.
+    pub fn set_tx_count(&self, account: &str, n: u64) {
+        self.counts.lock().unwrap().insert(account.to_string(), n);
     }
 }
 
 impl TxSource for Chain {
     fn txs(&self, hashes: &[String]) -> Result<Vec<Tx>, String> {
         Ok(self
-            .0
+            .txs
             .lock()
             .unwrap()
             .iter()
             .filter(|r| hashes.iter().any(|h| r["transaction"]["hash"] == json!(h)))
             .map(parse_tx)
             .collect())
+    }
+
+    fn tx_count(&self, account: &str) -> Result<u64, String> {
+        Ok(self.counts.lock().unwrap().get(account).copied().unwrap_or(3))
     }
 }
 
