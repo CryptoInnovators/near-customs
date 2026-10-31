@@ -49,9 +49,10 @@ These steps sign mainnet transactions and spend NEAR, so they need the user's si
 8. Register `$HUNTER` with `storage_deposit` on `$TOKEN`.
 9. Check both paths offline before filing:
    ```sh
-   cargo run --release -p customs-walker -- check-path --token $TOKEN --creator $CREATOR \
+   cargo install --path crates/walker --locked
+   customs-walker check-path --token $TOKEN --creator $CREATOR \
      --wallet $INSIDER_INTENTS --buy-tx $BUY_TX --path $WITHDRAW_TX
-   cargo run --release -p customs-walker -- check-path --token $TOKEN --creator $CREATOR \
+   customs-walker check-path --token $TOKEN --creator $CREATOR \
      --wallet $OUTSIDER --buy-tx $OUTSIDER_BUY_TX --path $DUST_TX
    ```
    The first must pass and the second must fail. If not, fix the setup before recording.
@@ -150,7 +151,8 @@ scripts/check.sh
 RUST_TEST_NOCAPTURE=1 cargo test -p customs-tests --test token upheld_challenge_pays_exactly_twenty_percent_of_the_unvested_bag
 RUST_TEST_NOCAPTURE=1 cargo test -p customs-tests --test token funding_planted_after_the_buy_is_rejected
 RUST_TEST_NOCAPTURE=1 cargo test -p customs-tests --test token verdict_signed_by_another_key_changes_nothing
-cargo run --release -p customs-walker -- replay --token phire.nearlytrade.near --creator provenhire.near --placebo-creator justai.near
+cargo install --path crates/walker --locked
+customs-walker replay --token phire.nearlytrade.near --creator provenhire.near --placebo-creator justai.near
 ```
 
 Prerequisites: cargo-near, the `wasm32-unknown-unknown` and `wasm32-wasip2` targets, `jq`, `curl`, `shasum`, and network access to `archival-rpc.mainnet.fastnear.com` and `tx.main.fastnear.com`. `scripts/check.sh` checks each one and names any that is missing.
