@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customs: who got the opening, and whose money paid for it</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>Customs: see which early holders of a NEAR memecoin were funded by its creator</h1>
+  <p class="lede">Pick a NEP-141 token account. The page reads the chain live from FastNEAR, lists the first accounts that received the token, and flags any account whose NEAR funding traces back to the creator within 3 hops. Nothing on this page is stored or pre-computed.</p>
+
+  <form id="form" autocomplete="off">
+    <label>Token account <input id="token" name="token" spellcheck="false" placeholder="token.example.near"></label>
+    <label>Creator account (optional, default: signer of the token's first transaction) <input id="creator" name="creator" spellcheck="false" placeholder="creator.near"></label>
+    <button type="submit">Read chain</button>
+  </form>
+
+  <section id="p-chain">
+    <h2>1. Chain connection</h2>
+    <p class="what">What you are seeing: the latest block the RPC node reports. Every balance below is read at this block.</p>
+    <div class="panel" id="chain">Loading</div>
+  </section>
+
+  <section id="p-token">
+    <h2>2. Token and creator</h2>
+    <p class="what">What you are seeing: the token's metadata and the first transaction that touched the token account, whose signer is taken as the creator.</p>
+    <div class="panel" id="token-panel">Waiting</div>
+  </section>
+
+  <section id="p-holders">
+    <h2>3. Early holders</h2>
+    <p class="what">What you are seeing: the first accounts that received the token, in order, found in the token account's first transactions. Balance is what each holds now, read at the block above.</p>
+    <div class="panel" id="holders">Waiting</div>
+  </section>
+
+  <section id="p-flags">
+    <h2>4. Funded by the creator within 3 hops</h2>
+    <p class="what">What you are seeing: for each early holder, a search backward through plain NEAR transfers received before its first token receipt. A flag means a printed chain of transfers from the creator, each linked to its transaction.</p>
+    <div class="panel" id="flags">Waiting</div>
+  </section>
+
+  <footer>Limits, stated plainly: only direct NEAR transfers are followed (not transfers sent by contracts, not Intents routing), accounts with over 3000 transactions are not expanded, and the search window is bounded. No flag does not prove a holder is unrelated to the creator. The full funding rule is in the repository README.</footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
