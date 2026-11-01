@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+[features]
+testnet = ["customs-walker/testnet"]
+
 [lib]
 name = "customs_checker"
 path = "src/lib.rs"

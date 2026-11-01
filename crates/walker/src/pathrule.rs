@@ -6,7 +6,10 @@
 pub const BUSY_TXS: u64 = 3000;
 
 /// The published hub list, embedded so the offline walker and the enclave module read the same bytes.
+#[cfg(not(feature = "testnet"))]
 const HUBS_JSON: &str = include_str!("../hubs.json");
+#[cfg(feature = "testnet")]
+const HUBS_JSON: &str = include_str!("../hubs.testnet.json");
 
 pub struct HubList {
     pub version: u64,

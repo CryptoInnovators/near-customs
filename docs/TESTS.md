@@ -22,6 +22,7 @@ Test fixtures live under `tests/` and `crates/walker/tests/fixtures/`: the sandb
 `scripts/mutate.sh` copies the source file, breaks one guard with an exact-pattern replacement (the script fails the run if the pattern is not found), runs the test that guards it and requires red, restores the file, runs the test again and requires green, then verifies the working tree is byte-identical. Full run on 2026-11-01 after the fix pass (the first 12 lines at commit 8620d67, the other 63 at commit a882097; CARGO_BUILD_JOBS=2):
 
 ```
+
 RED->GREEN hold_balance_level | contracts/token/src/lib.rs | guarded by opening_buyer_cannot_sell_or_move_unvested
 RED->GREEN hold_runs_on_ft_transfer | contracts/token/src/lib.rs | guarded by opening_buyer_cannot_sell_or_move_unvested
 RED->GREEN hold_runs_on_ft_transfer_call | contracts/token/src/lib.rs | guarded by opening_buyer_cannot_sell_or_move_unvested
@@ -143,3 +144,17 @@ mutation: spikes/serial.py  `len(ls) >= k` -> `len(ls) > k`
 restored
   GREEN OK   Ran 3 tests
 ```
+
+## Testnet network selection
+
+Baseline: `cargo test -p customs-walker --features testnet --lib wnear_edge_testnet` failed because the `testnet` feature did not exist. After C1, the testnet wNEAR fixture and the mainnet `real_wnear_ft_transfer_is_an_edge` fixture each passed.
+
+Targeted mutations ran with `CARGO_BUILD_JOBS=2` in `/tmp/customs-c1-target`:
+
+```
+RED->GREEN testnet_judge | contracts/token/src/lib.rs | guarded by testnet_judge_is_pinned
+RED->GREEN testnet_wrap | crates/walker/src/net.rs | guarded by wnear_edge_testnet
+failures: 0
+```
+
+The target directory was isolated because another build held the shared Cargo target lock. CI is responsible for the release WASI artifacts and full workspace suite.

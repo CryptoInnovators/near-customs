@@ -8,6 +8,7 @@ publish = false
 # Test builds only: skips the published-judge check in `new` so the sandbox can deploy OutLayer beside the token
 # and run its own checker build. The wasm that ships is built without it.
 sandbox = []
+testnet = []
 
 [lib]
 crate-type = ["cdylib", "rlib"]

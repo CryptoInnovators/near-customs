@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-pub const TX_API: &str = "https://tx.main.fastnear.com";
+pub const TX_API: &str = crate::net::TX_HOST;
 use crate::pathrule::BUSY_TXS;
 
 #[derive(Clone, Debug)]
@@ -186,4 +186,3 @@ impl Inflows for Client {
         b
     }
 }
-

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "hubs": [
+    { "account": "system", "kind": "system" },
+    { "account": "testnet", "kind": "system" },
+    { "account": "wrap.testnet", "kind": "wrapper" },
+    { "account": "dclv2.ref-dev.testnet", "kind": "dex" },
+    { "account": "ref-finance-101.testnet", "kind": "dex" }
+  ]
+}

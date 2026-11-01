@@ -6,10 +6,15 @@ mod host {
 }
 
 /// Embedded as the `outlayer.manifest` custom section, so the declared key is covered by the module's sha256.
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(target_arch = "wasm32", not(feature = "testnet")))]
 #[used]
 #[link_section = "outlayer.manifest"]
 static OUTLAYER_MANIFEST: [u8; include_bytes!("../manifest.json").len()] = *include_bytes!("../manifest.json");
+
+#[cfg(all(target_arch = "wasm32", feature = "testnet"))]
+#[used]
+#[link_section = "outlayer.manifest"]
+static OUTLAYER_MANIFEST_TESTNET: [u8; include_bytes!("../manifest.testnet.json").len()] = *include_bytes!("../manifest.testnet.json");
 
 #[cfg(target_arch = "wasm32")]
 mod wasm {
@@ -21,8 +26,8 @@ mod wasm {
     use std::time::Duration;
 
     const KEY_PATH: &str = "verdict";
-    const TX_API: &str = "https://tx.main.fastnear.com/v0/transactions";
-    const ACCOUNT_API: &str = "https://tx.main.fastnear.com/v0/account";
+    const TX_API: &str = customs_walker::net::TX_TRANSACTIONS;
+    const ACCOUNT_API: &str = customs_walker::net::TX_ACCOUNT;
 
     struct HostSigner;
     impl Signer for HostSigner {

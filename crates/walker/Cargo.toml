@@ -17,6 +17,7 @@ required-features = ["net"]
 default = ["net"]
 # The on-disk cached FastNEAR client and the CLI. Off for the WASI checker, which reads chain facts through the host's HTTP.
 net = ["dep:ureq"]
+testnet = []
 
 [dependencies]
 customs-common = { path = "../common" }

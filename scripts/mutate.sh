@@ -23,6 +23,8 @@ CHK=crates/checker/src/lib.rs
 sandbox() { cargo test -p customs-tests --test token "$1" 2>&1; }
 walker() { cargo test -p customs-walker --lib "$1" 2>&1; }
 unit() { cargo test -p customs-token --lib "$1" 2>&1; }
+unit_testnet() { cargo test -p customs-token --features testnet --lib "$1" 2>&1; }
+walker_testnet() { cargo test -p customs-walker --features testnet --lib "$1" 2>&1; }
 
 # mut NAME FILE PATTERN REPLACEMENT RUNNER TEST
 mut() {
@@ -101,6 +103,7 @@ mut market_waits_for_start $TOK 'require!(now >= start, "customs: trading has no
 mut creator_only_funds_market $TOK '*receiver == self.params.market_id || self.window_start_s.is_some_and(|s| now >= s + self.params.window_s),' 'true,' sandbox until_the_window_closes_the_creator_can_only_fund_the_market
 # ---- the judge is fixed by the code, not chosen by the deployer ---------------------------------
 mut judge_outlayer $TOK 'require!(p.outlayer_id.as_str() == OUTLAYER_ID, "customs: outlayer_id must be the published OutLayer contract");' 'let _ = 0;' unit a_foreign_outlayer_cannot_be_the_judge
+mut testnet_judge $TOK 'pub const OUTLAYER_ID: &str = "outlayer.testnet";' 'pub const OUTLAYER_ID: &str = "outlayer.near";' unit_testnet testnet_judge_is_pinned
 mut judge_checker $TOK 'require!(p.module_sha256 == CHECKER_SHA256, "customs: module_sha256 must be the published checker module");' 'let _ = 0;' unit a_foreign_checker_cannot_be_the_judge
 mut judge_https $TOK 'require!(p.module_url.starts_with("https://"), "customs: module_url must be an https url");' 'let _ = 0;' unit the_checker_is_fetched_over_https
 mut creator_is_owner $TOK 'require!(params.creator_id == owner_id, "customs: the creator whose money a challenge traces is the owner who holds the supply");' 'let _ = 0;' unit a_decoy_creator_is_refused
@@ -127,6 +130,7 @@ mut checker_path_hash $CHK 'if hex_lower(&Sha256::digest(path_hash_input(&path))
 # ---- funding routes beyond native transfers ---------------------------------------------------
 RCV=crates/walker/src/receipts.rs
 mut wnear_edge $RCV 'out.push(Edge { tx: tx.hash.clone(), from, to, yocto: y, ts_ns: r.ts_ns, height: r.height, kind: EdgeKind::WrapTransfer });' 'let _ = (from, to, y, r);' walker real_wnear_ft_transfer_is_an_edge
+mut testnet_wrap crates/walker/src/net.rs 'pub const WRAP: &str = "wrap.testnet";' 'pub const WRAP: &str = "wrap.near";' walker_testnet wnear_edge_testnet
 mut intents_transfer_edge $RCV 'if y > 0 {' 'if false {' walker real_intents_internal_transfer_is_an_edge
 mut function_call_deposit_edge $RCV 'if d > 0 {' 'if false {' walker a_function_call_deposit_to_the_wallet_is_an_edge
 mut failed_receipt_moves_nothing $RCV 'r.recv == "wrap.near" && r.ok' 'r.recv == "wrap.near"' walker a_failed_receipt_moves_no_wnear

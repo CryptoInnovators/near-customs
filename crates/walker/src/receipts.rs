@@ -113,7 +113,7 @@ pub fn ft_moves(tx: &Tx, token: &str) -> Vec<FtMove> {
 fn wrap_moves(tx: &Tx) -> Vec<(usize, String, String, u128)> {
     let mut out = Vec::new();
     let mut refunds: Vec<(String, String, u128)> = Vec::new();
-    for (i, r) in tx.receipts.iter().enumerate().filter(|(_, r)| r.recv == "wrap.near" && r.ok) {
+    for (i, r) in tx.receipts.iter().enumerate().filter(|(_, r)| r.recv == crate::net::WRAP && r.ok) {
         for l in &r.logs {
             // "Transfer 333333333333333333333334 from <a> to dclv2.ref-labs.near"
             let (is_refund, rest) = match (l.strip_prefix("Transfer "), l.strip_prefix("Refund ")) {
@@ -154,7 +154,7 @@ pub fn cost_into(tx: &Tx, market: &str) -> u128 {
 /// Log lines are evidence only from the contract that owns them: `wrap.near` for wNEAR, `intents.near` for Intents.
 pub fn edges_all(tx: &Tx) -> Vec<Edge> {
     let mut withdraws: Vec<Edge> = Vec::new();
-    for r in tx.receipts.iter().filter(|r| r.recv == "intents.near" && r.ok) {
+    for r in tx.receipts.iter().filter(|r| r.recv == crate::net::INTENTS && r.ok) {
         for l in &r.logs {
             let Some(e) = events(l) else { continue };
             if e["standard"] != "dip4" || e["event"] != "native_withdraw" {
@@ -174,7 +174,7 @@ pub fn edges_all(tx: &Tx) -> Vec<Edge> {
         }
     }
     let mut out = withdraws.clone();
-    for r in tx.receipts.iter().filter(|r| r.recv == "intents.near" && r.ok) {
+    for r in tx.receipts.iter().filter(|r| r.recv == crate::net::INTENTS && r.ok) {
         for l in &r.logs {
             let Some(e) = events(l) else { continue };
             if e["standard"] != "dip4" || e["event"] != "transfer" {
@@ -182,7 +182,7 @@ pub fn edges_all(tx: &Tx) -> Vec<Edge> {
             }
             for d in e["data"].as_array().cloned().unwrap_or_default() {
                 // only wNEAR is NEAR value: other Intents tokens have no price in this rule
-                let y = u(&d["tokens"]["nep141:wrap.near"]);
+                let y = u(&d["tokens"][&format!("nep141:{}", crate::net::WRAP)]);
                 if y > 0 {
                     out.push(Edge {
                         tx: tx.hash.clone(),
@@ -199,7 +199,7 @@ pub fn edges_all(tx: &Tx) -> Vec<Edge> {
     }
     for (i, from, to, y) in wrap_moves(tx) {
         // Intents' own wNEAR movements are already edges through its dip4 events
-        if from == "intents.near" {
+        if from == crate::net::INTENTS {
             continue;
         }
         let r = &tx.receipts[i];
@@ -208,7 +208,7 @@ pub fn edges_all(tx: &Tx) -> Vec<Edge> {
     for r in tx.receipts.iter().filter(|r| r.pred != "system") {
         for &y in &r.transfers {
             // the last hop of an Intents withdrawal is intents.near paying out; the event already names the owner
-            if r.pred == "intents.near" && withdraws.iter().any(|w| w.to == r.recv) {
+            if r.pred == crate::net::INTENTS && withdraws.iter().any(|w| w.to == r.recv) {
                 continue;
             }
             out.push(Edge {
@@ -295,6 +295,19 @@ mod tests {
         let e = edges_into(&tx, "b.near");
         assert_eq!(e.len(), 1);
         assert_eq!((e[0].from.as_str(), e[0].yocto), ("a.near", 5000));
+    }
+
+    #[cfg(feature = "testnet")]
+    #[test]
+    fn wnear_edge_testnet() {
+        assert_eq!(crate::net::WRAP, "wrap.testnet");
+        let line = "Transfer 15 from creator.testnet to buyer.testnet";
+        let tx = tx_from(json!({"transaction": {"hash": "H", "signer_id": "creator.testnet"},
+            "receipts": [receipt("creator.testnet", "wrap.testnet", 100, vec![], vec![line.into()])]}));
+        let edges = edges_into(&tx, "buyer.testnet");
+        assert_eq!(edges.len(), 1, "network={} edges={edges:?}", crate::net::WRAP);
+        assert_eq!((edges[0].from.as_str(), edges[0].yocto, edges[0].kind.clone()),
+            ("creator.testnet", 15, EdgeKind::WrapTransfer));
     }
 
     #[test]

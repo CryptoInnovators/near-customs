@@ -24,10 +24,18 @@ use near_sdk::{
 };
 
 /// The OutLayer contract every Customs token asks, fixed in the code so the token's code hash attests to it.
+#[cfg(not(feature = "testnet"))]
 pub const OUTLAYER_ID: &str = "outlayer.near";
+#[cfg(feature = "testnet")]
+pub const OUTLAYER_ID: &str = "outlayer.testnet";
 /// sha256 of the checker module every Customs token asks OutLayer to run: `scripts/build-checker.sh` on
 /// x86_64 Linux with the pinned toolchain (cargo mixes the host triple into symbol hashes, so the bytes are per host).
+#[cfg(not(feature = "testnet"))]
 pub const CHECKER_SHA256: &str = "b7068024b29c0e2c93c4d49ac6c90fcee21ce17052351f9037122fcd4e069059";
+#[cfg(feature = "testnet")]
+pub const CHECKER_SHA256_TESTNET: &str = "0000000000000000000000000000000000000000000000000000000000000000";
+#[cfg(feature = "testnet")]
+pub const CHECKER_SHA256: &str = CHECKER_SHA256_TESTNET;
 
 const REQUEST_GAS: Gas = Gas::from_tgas(100);
 const VERDICT_GAS: Gas = Gas::from_tgas(60);
@@ -847,6 +855,13 @@ mod tests {
     #[test]
     fn the_published_judge_deploys() {
         deploy(params());
+    }
+
+    #[cfg(feature = "testnet")]
+    #[test]
+    fn testnet_judge_is_pinned() {
+        assert_eq!(OUTLAYER_ID, "outlayer.testnet");
+        assert_eq!(CHECKER_SHA256, CHECKER_SHA256_TESTNET);
     }
 
     #[test]
