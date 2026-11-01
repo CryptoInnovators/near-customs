@@ -3,7 +3,7 @@
 //! verifies on chain. All decisions live here and take their inputs as arguments, so the WASI binary,
 //! the offline walker and the tests run the same code.
 
-use customs_common::{hex_lower, path_hash_input, pin_message, verdict_message, VERDICT_REJECTED, VERDICT_UPHELD};
+use customs_common::{hex_lower, max_path_len, path_hash_input, pin_message, verdict_message, VERDICT_REJECTED, VERDICT_UPHELD};
 use customs_walker::pathrule::{check, hub_list, Buy, Rule, BUSY_TXS};
 use customs_walker::receipts::{cost_into, ft_moves, path_edges, Tx};
 use serde::Deserialize;
@@ -126,8 +126,8 @@ pub fn run(input: &str, src: &dyn TxSource, signer: &dyn Signer) -> Result<Value
             if hex_lower(&Sha256::digest(path_hash_input(&path))) != path_hash {
                 return Err("path_hash does not match path".into());
             }
-            if path.len() < 2 || path.len() > max_hops as usize + 1 {
-                return Err("path must hold 1..=max_hops hop transactions and then the buy".into());
+            if path.len() < 2 || path.len() > max_path_len(max_hops) {
+                return Err("path must hold at least one hop transaction and then the buy, split no wider than the allowance".into());
             }
             let found = src.txs(&path)?;
             for h in &path {

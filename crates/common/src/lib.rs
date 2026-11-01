@@ -5,6 +5,15 @@ pub const MESSAGE_DOMAIN: &str = "customs/v1";
 pub const VERDICT_UPHELD: &str = "upheld";
 pub const VERDICT_REJECTED: &str = "rejected";
 
+/// Transactions one hop of a funding path may be split across. The creator can pay a wallet in several
+/// transfers; the rule adds them up, and this bounds how many the contract and the enclave will read.
+pub const MAX_TXS_PER_HOP: usize = 4;
+
+/// Most transactions a path may name: every hop split to the limit, then the opening buy.
+pub fn max_path_len(max_hops: u8) -> usize {
+    max_hops as usize * MAX_TXS_PER_HOP + 1
+}
+
 /// Bytes hashed (sha256, lowercase hex) to bind a verdict to the exact receipts a challenger named.
 pub fn path_hash_input(path: &[String]) -> Vec<u8> {
     path.join("\n").into_bytes()

@@ -238,6 +238,12 @@ pub fn transfer_tx(hash: &str, from: &str, to: &str, yocto: u128, ts_ns: u64) ->
     json!({"transaction": {"hash": hash, "signer_id": from}, "receipts": [receipt(from, to, ts_ns, &[yocto], vec![])]})
 }
 
+/// wNEAR moved `from` to `to` with `wrap.near`'s `ft_transfer`, as its own log line records it.
+pub fn wnear_transfer_tx(hash: &str, from: &str, to: &str, amount: u128, ts_ns: u64) -> Value {
+    json!({"transaction": {"hash": hash, "signer_id": from},
+        "receipts": [receipt(from, "wrap.near", ts_ns, &[], vec![format!("Transfer {amount} from {from} to {to}")])]})
+}
+
 /// A buy on the DEX: `wallet` pays `cost` wNEAR into `market`, and the market pays `tokens` to `wallet`.
 pub fn buy_tx(hash: &str, token: &str, market: &str, wallet: &str, tokens: u128, cost: u128, ts_ns: u64) -> Value {
     let pay = format!("Transfer {cost} from {wallet} to {market}");

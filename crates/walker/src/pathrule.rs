@@ -34,8 +34,13 @@ pub fn hub_list() -> &'static HubList {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum EdgeKind {
+    /// Native NEAR: a `Transfer` action or a `FunctionCall` deposit.
     Transfer,
     IntentsWithdraw,
+    /// wNEAR moved by `wrap.near`'s `ft_transfer`, read from its own `Transfer a from x to y` log line.
+    WrapTransfer,
+    /// wNEAR moved between two accounts inside `intents.near`, read from its `dip4 transfer` event.
+    IntentsTransfer,
 }
 
 /// One movement of NEAR into `to`, read from a receipt or from an Intents `native_withdraw` event.

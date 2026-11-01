@@ -99,6 +99,17 @@ mut checker_window $CHK 'if first.ts_ns < window_ns.0 || first.ts_ns >= window_n
 mut checker_buy_is_market_sale $CHK 'm.from == market && m.to == wallet' 'm.to == wallet' sandbox a_transaction_that_is_not_a_market_sale_is_rejected_by_the_enclave
 mut checker_path_hash $CHK 'if hex_lower(&Sha256::digest(path_hash_input(&path))) != path_hash {' 'if false {' sandbox the_enclave_refuses_a_path_hash_that_does_not_match_the_path
 
+# ---- funding routes beyond native transfers ---------------------------------------------------
+RCV=crates/walker/src/receipts.rs
+mut wnear_edge $RCV 'out.push(Edge { tx: tx.hash.clone(), from, to, yocto: y, ts_ns: r.ts_ns, height: r.height, kind: EdgeKind::WrapTransfer });' 'let _ = (from, to, y, r);' walker real_wnear_ft_transfer_is_an_edge
+mut intents_transfer_edge $RCV 'if y > 0 {' 'if false {' walker real_intents_internal_transfer_is_an_edge
+mut function_call_deposit_edge $RCV 'if d > 0 {' 'if false {' walker a_function_call_deposit_to_the_wallet_is_an_edge
+mut failed_receipt_moves_nothing $RCV 'r.recv == "wrap.near" && r.ok' 'r.recv == "wrap.near"' walker a_failed_receipt_moves_no_wnear
+mut split_pieces_add_up $RCV 'prev.yocto += piece.yocto;' '' walker split_funding_is_one_hop_with_the_summed_amount
+mut split_ends_at_a_stray_transaction $RCV 'None => break,' 'None => continue,' walker a_transaction_that_moves_nothing_from_the_hop_ends_the_walk
+mut same_receiver_moves_add_up $RCV 'mine().filter(|x| x.to == e.to).map(|x| x.yocto).sum::<u128>()' 'e.yocto' walker several_moves_in_one_transaction_to_the_same_receiver_add_up
+mut checker_split_allowance $CHK 'path.len() > max_path_len(max_hops)' 'false' sandbox a_path_with_more_transactions_than_the_split_allowance_gives_no_verdict
+
 after=$(git diff -- contracts crates | md5)
 [ "$before" = "$after" ] || { echo "WORKING TREE CHANGED BY THE RUN"; fails=$((fails+1)); }
 echo "failures: $fails"

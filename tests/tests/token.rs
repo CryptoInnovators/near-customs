@@ -602,4 +602,45 @@ mod enclave {
         let err = verdict(&c, &input(&[fake_tx(1), fake_tx(4), fake_tx(2)], (150, 300), None)).unwrap_err();
         assert!(err.contains("cannot count"), "{err}");
     }
+
+    #[test]
+    fn a_wnear_funded_buy_is_upheld_and_a_dust_wnear_transfer_is_not() {
+        let c = Chain::default();
+        c.put(wnear_transfer_tx(&fake_tx(1), "creator.near", "w.near", 10 * NEAR_Y, 100 * NS));
+        c.put(buy_tx(&fake_tx(2), "t.near", "market.near", "w.near", 1000 * UNIT, 10 * NEAR_Y, 200 * NS));
+        let p = vec![fake_tx(1), fake_tx(2)];
+        assert_eq!(verdict(&c, &input(&p, (150, 300), None)).unwrap(), "upheld");
+        let d = Chain::default();
+        d.put(wnear_transfer_tx(&fake_tx(1), "creator.near", "w.near", NEAR_Y, 100 * NS));
+        d.put(buy_tx(&fake_tx(2), "t.near", "market.near", "w.near", 1000 * UNIT, 10 * NEAR_Y, 200 * NS));
+        assert_eq!(verdict(&d, &input(&p, (150, 300), None)).unwrap(), "rejected");
+    }
+
+    #[test]
+    fn funding_split_across_transactions_is_upheld_when_the_pieces_add_up() {
+        let c = Chain::default();
+        let mut p = Vec::new();
+        for i in 0..4u8 {
+            c.put(wnear_transfer_tx(&fake_tx(10 + i), "creator.near", "w.near", 3 * NEAR_Y, (100 + i as u64) * NS));
+            p.push(fake_tx(10 + i));
+        }
+        c.put(buy_tx(&fake_tx(2), "t.near", "market.near", "w.near", 1000 * UNIT, 10 * NEAR_Y, 200 * NS));
+        p.push(fake_tx(2));
+        assert_eq!(verdict(&c, &input(&p, (150, 300), None)).unwrap(), "upheld", "four pieces of 3 NEAR for a 10 NEAR buy");
+        // the same four pieces at 1 NEAR sum to 4 NEAR, under the half-cost floor of 5 NEAR
+        let d = Chain::default();
+        for i in 0..4u8 {
+            d.put(wnear_transfer_tx(&fake_tx(10 + i), "creator.near", "w.near", NEAR_Y, (100 + i as u64) * NS));
+        }
+        d.put(buy_tx(&fake_tx(2), "t.near", "market.near", "w.near", 1000 * UNIT, 10 * NEAR_Y, 200 * NS));
+        assert_eq!(verdict(&d, &input(&p, (150, 300), None)).unwrap(), "rejected");
+    }
+
+    #[test]
+    fn a_path_with_more_transactions_than_the_split_allowance_gives_no_verdict() {
+        let (c, _) = chain();
+        let p: Vec<String> = (0..14).map(fake_tx).collect();
+        let err = verdict(&c, &input(&p, (150, 300), None)).unwrap_err();
+        assert!(err.contains("path must hold"), "{err}");
+    }
 }
