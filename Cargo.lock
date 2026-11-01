@@ -667,6 +667,7 @@ name = "customs-token"
 version = "0.1.0"
 dependencies = [
  "customs-common",
+ "ed25519-dalek",
  "near-contract-standards",
  "near-sdk",
 ]

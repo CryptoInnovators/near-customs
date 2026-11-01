@@ -49,6 +49,8 @@ fn fresh(wasm: &std::path::Path, sources: &[&str]) -> bool {
     built.map(|b| b >= src).unwrap_or(false)
 }
 
+/// The token is built with the `sandbox` feature, which only lifts the published-judge check in `new` (the
+/// sandbox deploys OutLayer beside the token and runs its own checker build). Every other line is the shipped code.
 /// Rebuilds only when a source file is newer than the wasm, so a mutated guard is always the code under test.
 fn build_token() -> Result<Vec<u8>> {
     let out = target_dir().join("sandbox-wasm");
@@ -58,7 +60,7 @@ fn build_token() -> Result<Vec<u8>> {
         return std::fs::read(&wasm_path).context("read token wasm");
     }
     let status = std::process::Command::new("cargo")
-        .args(["near", "build", "non-reproducible-wasm", "--no-abi", "--env", "RUSTFLAGS=--cfg near -C link-arg=-s", "--out-dir"])
+        .args(["near", "build", "non-reproducible-wasm", "--no-abi", "--features", "sandbox", "--env", "RUSTFLAGS=--cfg near -C link-arg=-s", "--out-dir"])
         .arg(&out)
         .current_dir(root_dir().join("contracts/token"))
         .status()
@@ -136,6 +138,10 @@ pub fn fake_tx(n: u8) -> String {
 }
 
 pub struct Knobs {
+    /// Seconds of notice `open_trading` must give.
+    pub notice_s: u64,
+    /// Whether `World::with` announces trading and waits for it to open.
+    pub open: bool,
     pub window_s: u64,
     pub vest_s: u64,
     pub seize_bps: u16,
@@ -150,6 +156,8 @@ pub struct Knobs {
 impl Default for Knobs {
     fn default() -> Self {
         Knobs {
+            notice_s: 20,
+            open: true,
             window_s: 600,
             vest_s: 86_400,
             seize_bps: 2000,
@@ -300,7 +308,20 @@ impl World {
     pub async fn with(knobs: Knobs) -> Result<World> {
         let w = Self::unpinned(knobs).await?;
         w.pin(&Mode::Honest).await?.into_result()?;
+        if w.knobs.open {
+            w.open_trading().await?;
+        }
         Ok(w)
+    }
+
+    /// The creator announces trading `notice_s` plus a margin ahead, and the chain clock is moved to that moment.
+    /// Returns the announced start.
+    pub async fn open_trading(&self) -> Result<u64> {
+        let now = self.worker.view_block().await?.timestamp() / 1_000_000_000;
+        let start = now + self.knobs.notice_s + 10;
+        self.creator.call(self.token.id(), "open_trading").args_json(json!({"start_s": start})).transact().await?.into_result()?;
+        self.advance_to(start).await?;
+        Ok(start)
     }
 
     pub async fn unpinned(knobs: Knobs) -> Result<World> {
@@ -313,9 +334,10 @@ impl World {
                 Ok::<_, anyhow::Error>(root.create_subaccount(n).initial_balance(near(bal)).transact().await?.into_result()?)
             }
         };
+        // the creator whose money a challenge traces is the owner who holds the supply
         let owner = mk("owner", 20.0).await?;
+        let creator = owner.clone();
         let market = mk("market", 20.0).await?;
-        let creator = mk("creator", 20.0).await?;
         let insider = mk("insider", 20.0).await?;
         let outsider = mk("outsider", 20.0).await?;
         let hunter = mk("hunter", 50.0).await?;
@@ -341,7 +363,8 @@ impl World {
                              "reference":null,"reference_hash":null,"decimals":24},
                 "params": {
                     "market_id": market.id(),
-                    "creator_id": creator.id(),
+                    "creator_id": owner.id(),
+                    "notice_s": knobs.notice_s,
                     "outlayer_id": outlayer.id(),
                     "module_url": "https://example.invalid/customs-checker.wasm",
                     "module_sha256": wasm.checker_sha,
@@ -365,7 +388,7 @@ impl World {
             enclave: Enclave(SEED), chain: Chain::default(), checker_sha: wasm.checker_sha.clone(),
         };
         // everyone who will hold tokens registers, then the owner funds the market (the LP)
-        for a in [&world.market, &world.creator, &world.insider, &world.outsider, &world.hunter] {
+        for a in [&world.market, &world.insider, &world.outsider, &world.hunter] {
             world.register(a).await?;
         }
         world
@@ -499,7 +522,9 @@ impl World {
         Ok(match mode {
             Mode::Silent => None,
             Mode::Fail => None,
-            Mode::Honest => Some(honest(&self.enclave)?),
+            // the real module exits 1 when the checker errors (an unknown transaction, an unreadable account), and OutLayer
+            // then resumes the token with no result
+            Mode::Honest => honest(&self.enclave).ok(),
             Mode::OtherKey => Some(honest(&Enclave(OTHER_SEED))?),
             Mode::Force(v) => Some(sign_facts(&self.enclave, &s("token"), &s("wallet"), &s("path_hash"), v, req["block"].as_u64().unwrap())),
             Mode::BlockDelta(d) => {
@@ -547,6 +572,17 @@ impl World {
                 let out = self.answer(&input, mode)?;
                 self.resolve(id, out).await
             }
+        }
+    }
+
+    /// Moves the chain clock to `ts` (unix seconds), in steps small enough not to overshoot by more than a block or two.
+    pub async fn advance_to(&self, ts: u64) -> Result<()> {
+        loop {
+            let now = self.worker.view_block().await?.timestamp() / 1_000_000_000;
+            if now >= ts {
+                return Ok(());
+            }
+            self.worker.fast_forward((ts - now).clamp(1, 50)).await?;
         }
     }
 

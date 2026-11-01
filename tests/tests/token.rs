@@ -121,6 +121,63 @@ async fn market_cannot_pay_opening_buyers_through_a_call() -> anyhow::Result<()>
 }
 
 #[tokio::test]
+async fn a_market_transfer_before_trading_is_announced_fails() -> anyhow::Result<()> {
+    let w = World::with(Knobs { open: false, ..Knobs::default() }).await?;
+    // a tiny early sale is how the window used to be started without anyone noticing
+    let r = w.market_pays(&w.insider, UNIT).await?;
+    assert!(r.is_failure() && failure_text(&r).contains("has not been announced"), "{}", failure_text(&r));
+    let win: Value = w.token.view("window").await?.json()?;
+    assert!(win["start_s"].is_null(), "nothing started the window: {win}");
+    assert!(w.bag(&w.insider).await?.is_null());
+    Ok(())
+}
+
+#[tokio::test]
+async fn trading_is_announced_once_by_the_creator_with_notice_and_nothing_sells_before_it() -> anyhow::Result<()> {
+    let w = World::with(Knobs { open: false, ..Knobs::default() }).await?;
+    let now = w.worker.view_block().await?.timestamp() / 1_000_000_000;
+    let start = now + 40;
+    let open = |by: &near_workspaces::Account, at: u64| by.call(w.token.id(), "open_trading").args_json(json!({"start_s": at})).transact();
+    let r = open(&w.outsider, start).await?;
+    assert!(r.is_failure() && failure_text(&r).contains("only the creator opens trading"), "{}", failure_text(&r));
+    let r = open(&w.creator, now + 1).await?;
+    assert!(r.is_failure() && failure_text(&r).contains("at least notice_s ahead"), "{}", failure_text(&r));
+    open(&w.creator, start).await?.into_result()?;
+    let win: Value = w.token.view("window").await?.json()?;
+    assert_eq!(win["start_s"], json!(start));
+    let r = open(&w.creator, start + 100).await?;
+    assert!(r.is_failure() && failure_text(&r).contains("already scheduled"), "{}", failure_text(&r));
+    // announced but not yet open: still no sale
+    let r = w.market_pays(&w.insider, UNIT).await?;
+    assert!(r.is_failure() && failure_text(&r).contains("has not opened yet"), "{}", failure_text(&r));
+    w.advance_to(start).await?;
+    w.market_pays(&w.insider, BUY).await?.into_result()?;
+    assert_eq!(w.bag(&w.insider).await?["bought"], BUY.to_string());
+    Ok(())
+}
+
+#[tokio::test]
+async fn until_the_window_closes_the_creator_can_only_fund_the_market() -> anyhow::Result<()> {
+    let w = World::with(Knobs { window_s: 60, vest_s: 300, ..Knobs::default() }).await?;
+    // handing the supply to insiders around the market, before and during the window, is refused
+    let r = w.transfer(&w.creator, &w.insider, UNIT).await?;
+    assert!(r.is_failure() && failure_text(&r).contains("can only fund the market"), "{}", failure_text(&r));
+    let r = w
+        .creator
+        .call(w.token.id(), "ft_transfer_call")
+        .args_json(json!({"receiver_id": w.outsider.id(), "amount": UNIT.to_string(), "msg": ""}))
+        .deposit(NearToken::from_yoctonear(1))
+        .transact()
+        .await?;
+    assert!(r.is_failure() && failure_text(&r).contains("can only fund the market"), "{}", failure_text(&r));
+    w.transfer(&w.creator, &w.market, UNIT).await?.into_result()?;
+    w.advance_s(70).await?;
+    w.transfer(&w.creator, &w.insider, UNIT).await?.into_result()?;
+    assert_eq!(w.balance(&w.insider).await?, UNIT);
+    Ok(())
+}
+
+#[tokio::test]
 async fn upheld_challenge_pays_exactly_twenty_percent_of_the_unvested_bag() -> anyhow::Result<()> {
     let w = opened().await?;
     let path = w.honest_path(&w.insider).await?;
@@ -261,10 +318,10 @@ async fn verdict_signed_by_another_key_changes_nothing() -> anyhow::Result<()> {
     let w = opened().await?;
     let path = w.honest_path(&w.insider).await?;
     let r = w.challenge_with(&w.hunter, &w.insider, path, &Mode::OtherKey).await?;
-    assert!(failure_text(&r).contains("does not verify against the pinned key"), "{}", failure_text(&r));
+    assert!(unanswered_reason(&r).contains("does not verify against the pinned key"), "{:?}", r.logs());
     assert_eq!(w.balance(&w.hunter).await?, 0);
     assert_eq!(w.balance(&w.insider).await?, BUY);
-    assert_eq!(w.challenge_state(0).await?, "Pending");
+    assert_eq!(w.challenge_state(0).await?, "Unanswered");
     Ok(())
 }
 
@@ -275,7 +332,7 @@ async fn stale_verdict_is_refused() -> anyhow::Result<()> {
     w.market_pays(&w.insider, BUY).await?.into_result()?;
     let path = w.honest_path(&w.insider).await?;
     let r = w.challenge(&w.hunter, &w.insider, path).await?;
-    assert!(failure_text(&r).contains("stale"), "{}", failure_text(&r));
+    assert!(unanswered_reason(&r).contains("stale"), "{:?}", r.logs());
     assert_eq!(w.balance(&w.hunter).await?, 0, "nothing paid on a stale verdict");
     Ok(())
 }
@@ -286,9 +343,9 @@ async fn verdict_for_another_block_is_refused() -> anyhow::Result<()> {
         let w = opened().await?;
         let path = w.honest_path(&w.insider).await?;
         let r = w.challenge_with(&w.hunter, &w.insider, path, &Mode::BlockDelta(delta)).await?;
-        assert!(failure_text(&r).contains("another block"), "{delta}: {}", failure_text(&r));
+        assert!(unanswered_reason(&r).contains("another block"), "{delta}: {:?}", r.logs());
         assert_eq!(w.balance(&w.hunter).await?, 0);
-        assert_eq!(w.challenge_state(0).await?, "Pending");
+        assert_eq!(w.challenge_state(0).await?, "Unanswered");
     }
     Ok(())
 }
@@ -299,7 +356,7 @@ async fn verdict_for_other_facts_is_refused() -> anyhow::Result<()> {
         let w = opened().await?;
         let path = w.honest_path(&w.insider).await?;
         let r = w.challenge_with(&w.hunter, &w.insider, path, &Mode::OtherFacts(which)).await?;
-        let t = failure_text(&r);
+        let t = unanswered_reason(&r);
         assert!(t.contains("verdict names another") || t.contains("different receipts"), "{which}: {t}");
         assert_eq!(w.balance(&w.hunter).await?, 0);
         assert_eq!(w.balance(&w.insider).await?, BUY);
@@ -312,32 +369,125 @@ async fn an_unknown_verdict_value_is_refused() -> anyhow::Result<()> {
     let w = opened().await?;
     let path = w.honest_path(&w.insider).await?;
     let r = w.challenge_with(&w.hunter, &w.insider, path, &Mode::Force("maybe")).await?;
-    assert!(failure_text(&r).contains("unknown verdict value"), "{}", failure_text(&r));
+    assert!(unanswered_reason(&r).contains("unknown verdict value"), "{:?}", r.logs());
     assert_eq!(w.balance(&w.insider).await?, BUY);
     Ok(())
 }
 
+
+/// The reason the token logged when it closed a challenge without applying a verdict.
+fn unanswered_reason(r: &near_workspaces::result::ExecutionFinalResult) -> String {
+    event_data(r, "challenge_unanswered").map(|d| d["reason"].as_str().unwrap_or_default().to_string()).unwrap_or_default()
+}
+
 #[tokio::test]
-async fn silent_enclave_leaves_the_vest_and_the_bond_reclaimable_after_the_wait() -> anyhow::Result<()> {
+async fn a_junk_challenge_that_is_never_reclaimed_cannot_pin_the_wallet() -> anyhow::Result<()> {
+    let w = opened().await?;
+    // an ally of the creator files two random hashes against the insider and walks away: the checker cannot find
+    // them, so the enclave run fails and the token hears nothing
+    let griefer = &w.outsider;
+    let r = w.challenge_with(griefer, &w.insider, junk_path(), &Mode::Honest).await?;
+    assert!(r.is_success(), "the junk challenge is accepted: {}", failure_text(&r));
+    assert_eq!(w.challenge_state(0).await?, "Unanswered");
+    assert!(unanswered_reason(&r).contains("no verdict"), "{:?}", r.logs());
+    assert!(
+        w.token.view("open_challenge_of").args_json(json!({"wallet": w.insider.id()})).await?.json::<Value>()?.is_null(),
+        "the wallet is free again without the griefer doing anything"
+    );
+    // an honest hunter is not locked out
+    let path = w.honest_path(&w.insider).await?;
+    let r = w.challenge(&w.hunter, &w.insider, path).await?;
+    assert!(event_data(&r, "wallet_seized").is_some(), "{}", failure_text(&r));
+    // and the griefer's bond is still theirs to take back
+    let before = w.native(griefer).await?;
+    griefer.call(w.token.id(), "reclaim_bond").args_json(json!({"challenge_id": 0})).transact().await?.into_result()?;
+    assert!(w.native(griefer).await? + near(0.05).as_yoctonear() > before + w.knobs.min_bond.as_yoctonear(), "bond returned");
+    Ok(())
+}
+
+#[tokio::test]
+async fn an_answer_that_cannot_be_applied_never_pins_the_wallet() -> anyhow::Result<()> {
+    for (label, mode) in [("another key", Mode::OtherKey), ("another block", Mode::BlockDelta(1)), ("unknown value", Mode::Force("maybe"))] {
+        let w = opened().await?;
+        let path = w.honest_path(&w.insider).await?;
+        let r = w.challenge_with(&w.outsider, &w.insider, path.clone(), &mode).await?;
+        assert!(r.is_success(), "{label}: the callback must not panic: {}", failure_text(&r));
+        assert_eq!(w.challenge_state(0).await?, "Unanswered", "{label}");
+        assert!(w.token.view("open_challenge_of").args_json(json!({"wallet": w.insider.id()})).await?.json::<Value>()?.is_null(), "{label}");
+        let r = w.challenge(&w.hunter, &w.insider, path).await?;
+        assert!(event_data(&r, "wallet_seized").is_some(), "{label}: {}", failure_text(&r));
+    }
+    Ok(())
+}
+
+#[tokio::test]
+async fn a_challenger_who_leaves_the_token_cannot_pin_the_wallet_by_breaking_the_payout() -> anyhow::Result<()> {
+    let w = opened().await?;
+    let path = w.honest_path(&w.insider).await?;
+    let tx = w.challenge_held(&w.hunter, &w.insider, path.clone()).await?;
+    w.held_request().await?;
+    // the challenger holds no tokens yet, so it can unregister; the seizure then has nowhere to go
+    w.hunter
+        .call(w.token.id(), "storage_unregister")
+        .args_json(json!({"force": null}))
+        .deposit(NearToken::from_yoctonear(1))
+        .transact()
+        .await?
+        .into_result()?;
+    let r = w.answer_held(tx, &Mode::Honest).await?;
+    assert!(r.is_success(), "the callback must not panic: {}", failure_text(&r));
+    assert_eq!(w.challenge_state(0).await?, "Unanswered");
+    assert!(unanswered_reason(&r).contains("not registered"), "{:?}", r.logs());
+    assert_eq!(w.balance(&w.insider).await?, BUY, "nothing moved");
+    let r = w.challenge(&w.outsider, &w.insider, path).await?;
+    assert!(event_data(&r, "wallet_seized").is_some(), "{}", failure_text(&r));
+    Ok(())
+}
+
+#[tokio::test]
+async fn a_challenge_still_waiting_for_the_enclave_cannot_be_reclaimed_or_cleared() -> anyhow::Result<()> {
+    let w = opened().await?;
+    let path = w.honest_path(&w.insider).await?;
+    let tx = w.challenge_held(&w.hunter, &w.insider, path).await?;
+    w.held_request().await?;
+    let early = w.hunter.call(w.token.id(), "reclaim_bond").args_json(json!({"challenge_id": 0})).transact().await?;
+    assert!(early.is_failure() && failure_text(&early).contains("may still answer"), "{}", failure_text(&early));
+    let clear = w.outsider.call(w.token.id(), "clear_stale").args_json(json!({"challenge_id": 0})).transact().await?;
+    assert!(clear.is_failure() && failure_text(&clear).contains("not stale"), "{}", failure_text(&clear));
+    assert_eq!(w.challenge_state(0).await?, "Pending");
+    w.answer_held(tx, &Mode::Honest).await?.into_result()?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn reclaiming_an_old_challenge_does_not_free_the_wallet_from_a_newer_one() -> anyhow::Result<()> {
+    let w = opened().await?;
+    // challenge 0 is junk and closes unanswered; challenge 1 is honest and still waiting for the enclave
+    w.challenge_with(&w.outsider, &w.insider, junk_path(), &Mode::Honest).await?.into_result()?;
+    let path = w.honest_path(&w.insider).await?;
+    let tx = w.challenge_held(&w.hunter, &w.insider, path.clone()).await?;
+    w.held_request().await?;
+    w.outsider.call(w.token.id(), "reclaim_bond").args_json(json!({"challenge_id": 0})).transact().await?.into_result()?;
+    let open: Value = w.token.view("open_challenge_of").args_json(json!({"wallet": w.insider.id()})).await?.json()?;
+    assert_eq!(open, json!(1), "the newer challenge still holds the wallet");
+    w.answer_held(tx, &Mode::Honest).await?.into_result()?;
+    assert!(w.challenge_state(1).await?["Upheld"]["seized"].is_string());
+    Ok(())
+}
+
+#[tokio::test]
+async fn silent_enclave_leaves_the_vest_and_the_bond_reclaimable() -> anyhow::Result<()> {
     for mode in [Mode::Silent, Mode::Fail] {
         let w = opened().await?;
         let path = w.honest_path(&w.insider).await?;
         let r = w.challenge_with(&w.hunter, &w.insider, path.clone(), &mode).await?;
         assert!(r.is_success(), "challenge itself is accepted: {}", failure_text(&r));
-        assert_eq!(w.challenge_state(0).await?, "Pending");
+        assert_eq!(w.challenge_state(0).await?, "Unanswered");
         assert_eq!(w.balance(&w.hunter).await?, 0);
         assert_eq!(w.bag(&w.insider).await?["state"], "vesting");
         // a stranger cannot reclaim
         let thief = w.outsider.call(w.token.id(), "reclaim_bond").args_json(json!({"challenge_id": 0})).transact().await?;
         assert!(thief.is_failure() && failure_text(&thief).contains("only the challenger"), "{}", failure_text(&thief));
-        // Silent already waited out the yield (215 blocks); Fail answered at once, so too early for it
-        if matches!(mode, Mode::Fail) {
-            let early = w.hunter.call(w.token.id(), "reclaim_bond").args_json(json!({"challenge_id": 0})).transact().await?;
-            assert!(early.is_failure() && failure_text(&early).contains("may still answer"), "{}", failure_text(&early));
-            w.worker.fast_forward(230).await?;
-        } else {
-            w.worker.fast_forward(10).await?;
-        }
         let before = w.native(&w.hunter).await?;
         w.hunter.call(w.token.id(), "reclaim_bond").args_json(json!({"challenge_id": 0})).transact().await?.into_result()?;
         let after = w.native(&w.hunter).await?;
@@ -361,7 +511,7 @@ async fn an_outlayer_that_refuses_the_run_leaves_the_vest_and_the_bond_alone() -
     let path = w.honest_path(&w.insider).await?;
     let r = w.challenge_held(&w.hunter, &w.insider, path).await?.await?;
     assert!(r.is_success(), "the challenge is filed even though the run was refused: {}", failure_text(&r));
-    assert_eq!(w.challenge_state(0).await?, "Pending");
+    assert_eq!(w.challenge_state(0).await?, "Unanswered");
     assert_eq!(w.bag(&w.insider).await?["state"], "vesting");
     assert_eq!(w.balance(&w.hunter).await?, 0);
     let ids: Vec<u64> = w.outlayer.view("get_pending_request_ids").args_json(json!({"from_index": null, "limit": null})).await?.json()?;
@@ -411,7 +561,7 @@ async fn challenge_guards() -> anyhow::Result<()> {
             call(&ins, junk_path(), bond, bond + fee, &stranger).await?
         }),
         ("followed by the opening buy", call(&ins, vec![fake_tx(1)], bond, bond + fee, &w.hunter).await?),
-        ("followed by the opening buy", call(&ins, (0..6).map(fake_tx).collect(), bond, bond + fee, &w.hunter).await?),
+        ("followed by the opening buy", call(&ins, (0..14).map(fake_tx).collect(), bond, bond + fee, &w.hunter).await?),
         ("base58 transaction hash", call(&ins, vec!["not-a-hash".into(), fake_tx(1)], bond, bond + fee, &w.hunter).await?),
         ("no opening bag", call(w.outsider.id().as_str(), junk_path(), bond, bond + fee, &w.hunter).await?),
     ];
@@ -496,6 +646,7 @@ async fn a_key_the_module_did_not_prove_is_not_pinned() -> anyhow::Result<()> {
 #[tokio::test]
 async fn nothing_can_be_challenged_before_the_key_is_pinned() -> anyhow::Result<()> {
     let w = World::unpinned(Knobs::default()).await?;
+    w.open_trading().await?;
     w.market_pays(&w.insider, BUY).await?.into_result()?;
     let bond = w.knobs.min_bond.as_yoctonear();
     let r = w
