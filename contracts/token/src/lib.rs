@@ -33,7 +33,7 @@ pub const OUTLAYER_ID: &str = "outlayer.testnet";
 #[cfg(not(feature = "testnet"))]
 pub const CHECKER_SHA256: &str = "6c0112e5b3c006bd97cd11b42862d28e3ac86c7732b23af5028aae0a1e5e42bb";
 #[cfg(feature = "testnet")]
-pub const CHECKER_SHA256_TESTNET: &str = "0000000000000000000000000000000000000000000000000000000000000000";
+pub const CHECKER_SHA256_TESTNET: &str = "fc72c7b662fc48ca497c9582a0b1aa8271e051d132283a9645cd5395b485f975";
 #[cfg(feature = "testnet")]
 pub const CHECKER_SHA256: &str = CHECKER_SHA256_TESTNET;
 
