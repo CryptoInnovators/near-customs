@@ -13,6 +13,7 @@ cargo near --version >/dev/null 2>&1 || { echo "missing tool: cargo-near (cargo 
 rustup target list --installed | grep -q '^wasm32-unknown-unknown$' || { echo "missing target: rustup target add wasm32-unknown-unknown" >&2; exit 1; }
 rustup target list --installed | grep -q '^wasm32-wasip2$' || { echo "missing target: rustup target add wasm32-wasip2" >&2; exit 1; }
 echo "tools ok: $(cargo near --version | head -1)"
+scripts/check-web.sh
 scripts/build-token.sh
 cargo test --workspace
 [ "${1:-}" = "--mutate" ] && scripts/mutate.sh

@@ -79,3 +79,21 @@ Intents decoder mutation run on 2026-11-01 (`scripts/mutate.sh intents_owner_dec
 RED->GREEN intents_owner_decode | crates/walker/src/receipts.rs | guarded by real_intents_withdrawal_names_the_owner_not_the_relay
 failures: 0
 ```
+
+## Demo page network layer and serial-buyer analysis
+
+`scripts/check-web.sh` (also the first step of `scripts/check.sh`, so GitHub Actions runs it): `node --check web/app.js`, `node --test web/test/net.test.mjs` (5 tests, `postWithRetry` in `web/net.js` with a scripted fetch), `python3 -m unittest discover -s spikes -p 'test_*.py'` (3 tests, `spikes/serial.py` on synthetic launches and on the real replay files). The retry covers the refused connections and rate limits that a public endpoint returns under load: in a mainnet run on 2026-11-01 the page absorbed 5 failed requests in one trace and finished with 24 of 24 buyers traced.
+
+Mutation checks run on 2026-11-01:
+
+```
+mutation: web/net.js  `res.status === 429 || res.status >= 500` -> `false`
+  RED   ✖ 429 and 5xx are retried, and the last one is returned when all tries fail
+restored
+  GREEN ℹ pass 5, ℹ fail 0
+
+mutation: spikes/serial.py  `len(ls) >= k` -> `len(ls) > k`
+  RED   FAILED (failures=1)   Ran 3 tests
+restored
+  GREEN OK   Ran 3 tests
+```

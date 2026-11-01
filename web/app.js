@@ -24,9 +24,9 @@ const WINDOW_S = 600;
 const VEST_S = 86400;
 const MAX_SCAN_PAGES = 10;
 const SCAN_PAGE = 200;
-const TRACE_WALLETS = 10;
-const TRACE_PAGE_BUDGET = 80;
-const TRACE_TX_BUDGET = 45;
+const TRACE_WALLETS = 32;
+const TRACE_PAGE_BUDGET = 300;
+const TRACE_TX_BUDGET = 150;
 const TX_BATCH = 20;
 const CONCURRENCY = 4;
 const TIMEOUT_MS = 45000;
@@ -186,13 +186,12 @@ async function postJSON(url, body, label) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
-    const res = await fetch(url, {
+    const { res, text } = await postWithRetry(fetch, url, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
       signal: ctrl.signal,
     });
-    const text = await res.text();
     if (!res.ok) {
       throw new Error(label + " returned HTTP " + res.status + ". " + tidy(text));
     }
@@ -243,7 +242,7 @@ async function txBatch(hashes, trace) {
   if (cached) return cached.transactions.map(parseTx);
   if (trace) {
     if (state.batches >= TRACE_TX_BUDGET) {
-      throw new BudgetError("The funding search reached its 45 receipt batches.");
+      throw new BudgetError("The funding search reached its " + TRACE_TX_BUDGET + " receipt batches.");
     }
     state.batches++;
   }
@@ -473,7 +472,7 @@ async function trace(wallet, buy, runId) {
 
   async function inflows(account, beforeTs, beforeHeight) {
     if (state.pages >= TRACE_PAGE_BUDGET) {
-      throw new BudgetError("The funding search reached its 80 account pages.");
+      throw new BudgetError("The funding search reached its " + TRACE_PAGE_BUDGET + " account pages.");
     }
     state.pages++;
     const page = await accountPage(
@@ -772,7 +771,7 @@ async function inspect(token, creator, runId) {
       continue;
     }
     if (traced >= TRACE_WALLETS) {
-      b.trace = { status: "not_traced", path: [], note: "The page traces the ten largest priced buys. This wallet sits outside that limit and was not ruled out." };
+      b.trace = { status: "not_traced", path: [], note: "The page traces the " + TRACE_WALLETS + " largest priced buys. This wallet sits outside that limit and was not ruled out." };
       continue;
     }
     traced++;
@@ -1026,7 +1025,7 @@ function renderMethod(data) {
     notes.push("Some balance calls failed (" + data.balances.errors[0] + "). Those rows say not read rather than showing a number.");
   }
   if (data.list.some((b) => b.trace.status === "not_traced")) {
-    notes.push("Not checked means the receipt budget or the ten wallet limit was reached first. It is not a finding.");
+    notes.push("Not checked means the receipt budget or the " + TRACE_WALLETS + " wallet limit was reached first. It is not a finding.");
   }
   notes.push("The page does not see exchange deposits, off-chain agreements, or money that arrived more than three hops back. A no link row is not proof of innocence.");
   methodNote.textContent = notes.join(" ");

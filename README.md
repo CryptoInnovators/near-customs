@@ -27,16 +27,17 @@ Threat model, from a study of 117 confirmed rug pulls on Solana (https://arxiv.o
 
 ## Do this, see that
 
-Prerequisites for a clean clone: Rust stable via `rustup` (the repo's `rust-toolchain.toml` adds `wasm32-unknown-unknown` and `wasm32-wasip2`), `cargo-near` 0.16.0, `curl`, `jq`, `shasum`, `python3`. No secret is read or needed.
+Prerequisites for a clean clone: Rust stable via `rustup` (the repo's `rust-toolchain.toml` adds `wasm32-unknown-unknown` and `wasm32-wasip2`), `cargo-near` 0.16.0, `curl`, `jq`, `shasum`, `python3`, `node` 18 or newer (page tests). No secret is read or needed.
 
-1. Open the demo page. `python3 -m http.server 8080 --directory web`, then browse to port 8080 on your machine. You see "Who paid for the first buyers?", then within a minute a verdict band reading `8.2%` for `phire.nearlytrade.near`: 1 of 24 opening buyers received creator money (the creator's own wallet, `provenhire.near`), 10 wallets with no creator link, 13 not checked because the page's request budget is spent, and a ledger of the 24 buyers with a balance read at a final block that the page prints. Details in "The demo page" below.
+1. Open the demo page. `python3 -m http.server 8080 --directory web`, then browse to port 8080 on your machine. You see "Who paid for the first buyers?", then within about 30 seconds a verdict band reading `8.2%` for `phire.nearlytrade.near`: 1 of 24 opening buyers received creator money (the creator's own wallet, `provenhire.near`), 23 wallets with no creator link, 0 not checked, and a ledger of the 24 buyers with a balance read at a final block that the page prints. Details in "The demo page" below.
 2. `python3 spikes/table.py`: prints the replay table for all 11 launches. You see a row per launch, for example `phire.nearlytrade.near | 10-29 13:20 | 24 | 100.00% | 8.18% | 0.00% / 0.00% / 0.00% | 0 | 0 of 23 | 222392004`, and `buyers 247, placebo wallets tested 226` at the end.
 3. `scripts/check.sh`: builds the token wasm and prints its sha256, reads the deployed OutLayer contract code from mainnet once (read only) and checks its code hash, then runs `cargo test --workspace`. You see `test result: ok. 35 passed` for the sandbox suite, 17 passed for the rule tests, and `all checks passed`. GitHub Actions runs the same command on every push to `main` (badge above).
 4. `scripts/check.sh --mutate`: breaks each guard in the contract, the path rule and the checker, one at a time. You see `RED->GREEN <guard>` per line and `failures: 0` at the end. `scripts/mutate.sh intents_owner_decode` runs one.
 5. `cargo run --release -p customs-walker -- replay --token phire.nearlytrade.near --creator provenhire.near --placebo-creator justai.near`: replays a real opening from FastNEAR's public transaction API. You see the buyers, their class, the share sold inside 24 hours and the placebo result.
 6. `cargo run --release -p customs-walker -- control --creator justai.near`: walks forward from a creator that paid a wallet. You see the printed path, hop by hop, with transaction hashes.
 7. `cargo run --release -p customs-walker -- check-path --token T --creator C --wallet W --buy-tx H --path h1,h2`: applies the published rule to a path you supply and prints the verdict.
-8. `python3 spikes/payout_method.py spikes/replay/phire.json`: reads the 23 first-buy transactions from FastNEAR and counts the method the market called on the token. You see `phire.nearlytrade.near 23 {'ft_transfer': 23} control 23`; the control counts buys whose own call was `ft_transfer_call`, which proves the parser tells the two apart.
+8. `python3 spikes/serial.py`: lists every wallet that bought 3 or more of the 11 openings. You see `wrapz-z.near`, `tyty.sendler-b.near` and two implicit accounts at `11 of 11`, `alola.near` at `10 of 11`, and `31 of 96 distinct opening buyers bought 3 or more of the 11 openings` at the end.
+9. `python3 spikes/payout_method.py spikes/replay/phire.json`: reads the 23 first-buy transactions from FastNEAR and counts the method the market called on the token. You see `phire.nearlytrade.near 23 {'ft_transfer': 23} control 23`; the control counts buys whose own call was `ft_transfer_call`, which proves the parser tells the two apart.
 
 Test list with the guard and the mutation for each method: `docs/TESTS.md`. Every replayed figure with its RPC and block: `docs/EVIDENCE.md` and `docs/SPIKE.md`. Demo script: `docs/DEMO-SCRIPT.md`.
 
@@ -53,7 +54,7 @@ Open it with `python3 -m http.server 8080 --directory web` and browse to port 80
 | The opening buyers | One row per wallet the market paid inside the first 600 s: tokens received, balance now, wNEAR paid, share sold within 24 hours, first buy block, the funding path with a nearblocks link per hop | `POST https://tx.main.fastnear.com/v0/transactions` for receipts and wrap.near transfer logs, `POST https://rpc.mainnet.fastnear.com` with `query` `call_function` for `ft_metadata` and `ft_balance_of` at the final block it prints |
 | How the check ran | Market, window, first-sale block, receipt count, request budget, the block the balances were read at | the same two hosts |
 
-When a call fails the page prints the endpoint's own error text and the next step; an unknown token says so instead of drawing an empty ledger. Every account and hash links to nearblocks.io.
+The page traces up to 32 priced buyers per launch within 300 account pages and 150 receipt batches, and retries a refused, rate-limited or 5xx call up to three times before it reports the endpoint's error. When a call fails the page prints the endpoint's own error text and the next step; an unknown token says so instead of drawing an empty ledger. Every account and hash links to nearblocks.io.
 
 ## Where NEAR is used
 
