@@ -27,7 +27,7 @@ use near_sdk::{
 pub const OUTLAYER_ID: &str = "outlayer.near";
 /// sha256 of the checker module every Customs token asks OutLayer to run: `scripts/build-checker.sh` on
 /// x86_64 Linux with the pinned toolchain (cargo mixes the host triple into symbol hashes, so the bytes are per host).
-pub const CHECKER_SHA256: &str = "bb4dea93d0da6784a439f46bb9de4572272afbee27cde231cb90661c3e39ce5e";
+pub const CHECKER_SHA256: &str = "b7068024b29c0e2c93c4d49ac6c90fcee21ce17052351f9037122fcd4e069059";
 
 const REQUEST_GAS: Gas = Gas::from_tgas(100);
 const VERDICT_GAS: Gas = Gas::from_tgas(60);
