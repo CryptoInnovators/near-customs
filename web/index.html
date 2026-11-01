@@ -3,46 +3,101 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Customs: who got the opening, and whose money paid for it</title>
+<title>Customs: who paid for the first buyers?</title>
+<meta name="description" content="Reads a NEAR token launch from public endpoints and traces each opening buyer back toward the creator.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main>
-  <h1>Customs: see which early holders of a NEAR memecoin were funded by its creator</h1>
-  <p class="lede">Pick a NEP-141 token account. The page reads the chain live from FastNEAR, lists the first accounts that received the token, and flags any account whose NEAR funding traces back to the creator within 3 hops. Nothing on this page is stored or pre-computed.</p>
+<div class="page">
 
-  <form id="form" autocomplete="off">
-    <label>Token account <input id="token" name="token" spellcheck="false" placeholder="token.example.near"></label>
-    <label>Creator account (optional, default: signer of the token's first transaction) <input id="creator" name="creator" spellcheck="false" placeholder="creator.near"></label>
-    <button type="submit">Read chain</button>
-  </form>
+  <header class="masthead">
+    <div class="topline">
+      <span class="wordmark">Customs</span>
+      <span class="topline-rule" aria-hidden="true"></span>
+      <span class="network">NEAR mainnet / read only</span>
+    </div>
 
-  <section id="p-chain">
-    <h2>1. Chain connection</h2>
-    <p class="what">What you are seeing: the latest block the RPC node reports. Every balance below is read at this block.</p>
-    <div class="panel" id="chain">Loading</div>
+    <h1>Who paid for<br>the first buyers?</h1>
+
+    <p class="standfirst">A token launched on NEAR. These wallets bought in its first ten minutes.
+      The page walks each buy backward through NEAR transfers and marks the wallets the creator's
+      money reached first.</p>
+
+    <form class="declaration" id="inspect-form" novalidate>
+      <div class="field">
+        <label for="token">Token account</label>
+        <input id="token" name="token" type="text" spellcheck="false" autocapitalize="off"
+               value="phire.nearlytrade.near" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="creator">Creator account</label>
+        <input id="creator" name="creator" type="text" spellcheck="false" autocapitalize="off"
+               value="provenhire.near" autocomplete="off">
+      </div>
+      <button type="submit" id="inspect">Inspect launch</button>
+    </form>
+
+    <p class="ruleline">
+      <span>Rule</span> first hop from the creator, at most three hops, each hop at least half the buy
+      cost, every hop before the buy, no listed hub. Market read: <span class="mono">dclv2.ref-labs.near</span>.
+    </p>
+  </header>
+
+  <section class="verdict" id="verdict" aria-live="polite">
+    <p class="verdict-kicker">Verdict</p>
+    <p class="verdict-wait">Reading the token's first day from FastNEAR.</p>
   </section>
 
-  <section id="p-token">
-    <h2>2. Token and creator</h2>
-    <p class="what">What you are seeing: the token's metadata and the first transaction that touched the token account, whose signer is taken as the creator.</p>
-    <div class="panel" id="token-panel">Waiting</div>
+  <section class="panel" id="holders-panel">
+    <div class="panel-head">
+      <h2>The opening buyers</h2>
+      <p class="panel-meta" id="holders-meta">Not read yet.</p>
+    </div>
+    <p class="sees">
+      Each row is a wallet the market paid inside the opening window. Received is what the market
+      sent. Still holds is its balance at the block named above. Paid is wNEAR the buy transaction
+      moved into the market. Sold is the share that left the wallet within 24 hours.
+    </p>
+    <div id="holder-list" class="ledger">
+      <p class="empty">Waiting for a token.</p>
+    </div>
   </section>
 
-  <section id="p-holders">
-    <h2>3. Early holders</h2>
-    <p class="what">What you are seeing: the first accounts that received the token, in order, found in the token account's first transactions. Balance is what each holds now, read at the block above.</p>
-    <div class="panel" id="holders">Waiting</div>
+  <section class="panel" id="method-panel">
+    <div class="panel-head">
+      <h2>How the check ran</h2>
+      <p class="panel-meta" id="method-meta">Not read yet.</p>
+    </div>
+    <dl class="method" id="method">
+      <div><dt>Market</dt><dd class="mono">dclv2.ref-labs.near</dd></div>
+      <div><dt>Opening window</dt><dd class="mono">600 s</dd></div>
+      <div><dt>Vest watched</dt><dd class="mono">86,400 s</dd></div>
+      <div><dt>Path depth</dt><dd class="mono">3 hops</dd></div>
+      <div><dt>Half cost floor</dt><dd class="mono">50.00%</dd></div>
+      <div><dt>Hub list</dt><dd class="mono">v1, 9 accounts</dd></div>
+    </dl>
+    <p class="sees method-note" id="method-note">
+      Every figure on this page is read in the browser at load time. Nothing is stored on a server.
+    </p>
   </section>
 
-  <section id="p-flags">
-    <h2>4. Funded by the creator within 3 hops</h2>
-    <p class="what">What you are seeing: for each early holder, a search backward through plain NEAR transfers received before its first token receipt. A flag means a printed chain of transfers from the creator, each linked to its transaction.</p>
-    <div class="panel" id="flags">Waiting</div>
-  </section>
+  <footer class="sources">
+    <p>
+      Endpoints: <span class="mono">tx.main.fastnear.com</span> for receipts and
+      <span class="mono">rpc.mainnet.fastnear.com</span> for balances, both public.
+      The rule is the same one applied by <span class="mono">crates/walker</span> and the
+      on-chain checker.
+    </p>
+    <p>
+      <a href="https://github.com/kamalbuilds/near-customs">Source</a>
+      <span class="sep">/</span>
+      <a href="https://nearblocks.io">NEAR Blocks</a>
+      <span class="sep">/</span>
+      <a href="https://github.com/kamalbuilds/near-customs#the-demo-page">Panel notes</a>
+    </p>
+  </footer>
 
-  <footer>Limits, stated plainly: only direct NEAR transfers are followed (not transfers sent by contracts, not Intents routing), accounts with over 3000 transactions are not expanded, and the search window is bounded. No flag does not prove a holder is unrelated to the creator. The full funding rule is in the repository README.</footer>
-</main>
-<script src="app.js"></script>
+</div>
+<script src="app.js" defer></script>
 </body>
 </html>
