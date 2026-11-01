@@ -56,6 +56,7 @@ mut hold_runs_on_ft_transfer_call $TOK 'self.on_outbound(&sender, &receiver_id, 
 mut vest_linear $TOK 'mul_div(self.bought.0, (vest_end - now) as u128, p.vest_s as u128)' 'self.bought.0' sandbox bag_vests_linearly_and_is_free_at_the_end
 mut window_end $TOK 'if now < start + self.params.window_s {' 'if true {' sandbox buyer_after_the_window_is_never_held
 mut market_call_guard $TOK 'require!(!is_call, "customs: the market pays opening buyers with ft_transfer");' 'let _ = 0;' sandbox market_cannot_pay_opening_buyers_through_a_call
+mut window_buyer_registered $TOK 'if !self.token.accounts.contains_key(receiver) {' 'if false {' sandbox an_unregistered_window_buyer_still_gets_a_bag
 # ---- challenge entry --------------------------------------------------------------------------
 mut min_bond $TOK 'require!(bond.0 >= p.min_bond.0, "customs: bond is below min_bond");' 'let _ = 0;' sandbox challenge_guards
 mut exact_deposit $TOK 'env::attached_deposit().as_yoctonear() == bond.0 + p.exec_fee.0' 'true' sandbox challenge_guards

@@ -31,6 +31,16 @@ async fn opening_buy_is_recorded_as_a_bag() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+async fn an_unregistered_window_buyer_still_gets_a_bag() -> anyhow::Result<()> {
+    let w = World::new().await?;
+    let buyer = w.root.create_subaccount("unregistered").initial_balance(near(5.0)).transact().await?.into_result()?;
+    let r = w.market_pays(&buyer, BUY).await?;
+    assert!(!r.is_failure(), "{}", failure_text(&r));
+    assert_eq!(w.bag(&buyer).await?["state"], "vesting");
+    Ok(())
+}
+
+#[tokio::test]
 async fn opening_buyer_cannot_sell_or_move_unvested() -> anyhow::Result<()> {
     let w = opened().await?;
     // to the market (a sale), to a fresh wallet, and one token over nothing: all refused

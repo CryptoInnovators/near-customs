@@ -158,3 +158,14 @@ failures: 0
 ```
 
 The target directory was isolated because another build held the shared Cargo target lock. CI is responsible for the release WASI artifacts and full workspace suite.
+
+## Window-buyer registration
+
+`cargo test -p customs-tests --test token an_unregistered_window_buyer_still_gets_a_bag -- --exact` failed before C4 with `The account unregistered.test.near is not registered`. After registering the receiver before recording its opening bag, the same test passed and `opening_of` reports `vesting`.
+
+The targeted `scripts/mutate.sh window_buyer_registered` run removed the registration branch, failed the buyer test, restored the source and passed it:
+
+```
+RED->GREEN window_buyer_registered | contracts/token/src/lib.rs | guarded by an_unregistered_window_buyer_still_gets_a_bag
+failures: 0
+```

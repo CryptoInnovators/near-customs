@@ -665,6 +665,9 @@ impl Customs {
             if now < start + self.params.window_s {
                 require!(!is_call, "customs: the market pays opening buyers with ft_transfer");
                 if *receiver != self.params.market_id {
+                    if !self.token.accounts.contains_key(receiver) {
+                        self.token.internal_register_account(receiver);
+                    }
                     let mut bag = self.bags.get(receiver).cloned().unwrap_or(Bag::empty());
                     bag.bought = U128(bag.bought.0 + amount);
                     self.bags.insert(receiver.clone(), bag);
