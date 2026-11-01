@@ -31,7 +31,7 @@ pub const OUTLAYER_ID: &str = "outlayer.testnet";
 /// sha256 of the checker module every Customs token asks OutLayer to run: `scripts/build-checker.sh` on
 /// x86_64 Linux with the pinned toolchain (cargo mixes the host triple into symbol hashes, so the bytes are per host).
 #[cfg(not(feature = "testnet"))]
-pub const CHECKER_SHA256: &str = "b7068024b29c0e2c93c4d49ac6c90fcee21ce17052351f9037122fcd4e069059";
+pub const CHECKER_SHA256: &str = "6c0112e5b3c006bd97cd11b42862d28e3ac86c7732b23af5028aae0a1e5e42bb";
 #[cfg(feature = "testnet")]
 pub const CHECKER_SHA256_TESTNET: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 #[cfg(feature = "testnet")]
