@@ -31,7 +31,7 @@ These steps sign mainnet transactions and spend NEAR, so they need the user's si
      \"owner_id\":\"$CREATOR\",\"total_supply\":\"1000000000000000000000000000000000\",
      \"metadata\":{\"spec\":\"ft-1.0.0\",\"name\":\"Customs Paper\",\"symbol\":\"PAPERS\",\"icon\":null,\"reference\":null,\"reference_hash\":null,\"decimals\":24},
      \"params\":{\"market_id\":\"dclv2.ref-labs.near\",\"creator_id\":\"$CREATOR\",\"outlayer_id\":\"outlayer.near\",
-       \"module_url\":\"$MODULE_URL\",\"module_sha256\":\"$MODULE_SHA256\",\"notice_s\":3600,\"window_s\":600,\"vest_s\":86400,
+       \"module_url\":\"$MODULE_URL\",\"module_sha256\":\"$MODULE_SHA256\",\"notice_s\":3600,\"min_pool_bps\":1000,\"window_s\":600,\"vest_s\":86400,
        \"seize_bps\":2000,\"lock_s\":2592000,\"min_bond\":\"1000000000000000000000000\",\"exec_fee\":\"$EXEC_FEE\",
        \"reclaim_blocks\":220,\"max_age_blocks\":50,\"max_hops\":3}}" \
      prepaid-gas '100.0 Tgas' attached-deposit '0 NEAR' network-config mainnet sign-with-keychain send
@@ -42,7 +42,7 @@ These steps sign mainnet transactions and spend NEAR, so they need the user's si
      prepaid-gas '300.0 Tgas' attached-deposit "$EXEC_FEE yoctoNEAR" sign-as $HUNTER network-config mainnet sign-with-keychain send
    near account delete-keys $TOKEN public-keys $TOKEN_PK network-config mainnet sign-with-keychain send
    ```
-5. Create the PAPERS/wNEAR pool on Rhea DCL (`dclv2.ref-labs.near`) and add liquidity from `$CREATOR`. Then announce the opening, at least `notice_s` ahead: `near contract call-function as-transaction $TOKEN open_trading json-args '{"start_s": <unix seconds>}' prepaid-gas '30.0 Tgas' attached-deposit '0 NEAR' sign-as $CREATOR network-config mainnet sign-with-keychain send`. The pool pays nobody before that second.
+5. Create the PAPERS/wNEAR pool on Rhea DCL (`dclv2.ref-labs.near`) and add liquidity from `$CREATOR`. Then announce the opening, at least `notice_s` ahead and once the pool holds `min_pool_bps` of the supply: `near contract call-function as-transaction $TOKEN open_trading json-args '{"start_s": <unix seconds>}' prepaid-gas '30.0 Tgas' attached-deposit '0 NEAR' sign-as $CREATOR network-config mainnet sign-with-keychain send`. The pool pays nobody before that second.
 6. Fund the insiders before the opening. Fund `$INSIDER_DIRECT` with a plain transfer from `$CREATOR`. Fund `$INSIDER_INTENTS` by depositing from `$CREATOR` into `intents.near` and withdrawing to that wallet with a `native_withdraw` (https://docs.near-intents.org/). Fund `$OUTSIDER` from nothing the creator owns.
 7. Inside the first 600 s after the announced start, buy from all three wallets. Then send a small transfer from `$CREATOR` to `$OUTSIDER`. That is the planted dust.
 8. Register `$HUNTER` with `storage_deposit` on `$TOKEN`.

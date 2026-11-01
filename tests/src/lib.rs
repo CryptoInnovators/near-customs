@@ -140,6 +140,7 @@ pub fn fake_tx(n: u8) -> String {
 pub struct Knobs {
     /// Seconds of notice `open_trading` must give.
     pub notice_s: u64,
+    pub min_pool_bps: u16,
     /// Whether `World::with` announces trading and waits for it to open.
     pub open: bool,
     pub window_s: u64,
@@ -157,6 +158,7 @@ impl Default for Knobs {
     fn default() -> Self {
         Knobs {
             notice_s: 20,
+            min_pool_bps: 1000,
             open: true,
             window_s: 600,
             vest_s: 86_400,
@@ -365,6 +367,7 @@ impl World {
                     "market_id": market.id(),
                     "creator_id": owner.id(),
                     "notice_s": knobs.notice_s,
+                    "min_pool_bps": knobs.min_pool_bps,
                     "outlayer_id": outlayer.id(),
                     "module_url": "https://example.invalid/customs-checker.wasm",
                     "module_sha256": wasm.checker_sha,

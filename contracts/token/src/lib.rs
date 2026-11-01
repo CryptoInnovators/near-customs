@@ -62,6 +62,8 @@ pub struct Params {
     pub module_sha256: String,
     /// Seconds ahead of its start that the creator must announce trading with `open_trading`.
     pub notice_s: u64,
+    /// Share of the total supply, in basis points, the market must already hold when trading is announced.
+    pub min_pool_bps: u16,
     /// Seconds after the announced start in which a market transfer counts as an opening buy.
     pub window_s: u64,
     /// Seconds, from the announced start, over which every opening bag vests linearly.
@@ -245,6 +247,7 @@ impl Customs {
         require!(params.creator_id == owner_id, "customs: the creator whose money a challenge traces is the owner who holds the supply");
         require_published_judge(&params);
         require!(params.notice_s > 0, "notice_s must be positive");
+        require!(params.min_pool_bps > 0 && params.min_pool_bps <= 10_000, "min_pool_bps must be 1..=10000");
         metadata.assert_valid();
         require!(params.vest_s > 0 && params.window_s > 0, "window_s and vest_s must be positive");
         require!(params.window_s <= params.vest_s, "the opening window cannot outlast the vest");
@@ -354,12 +357,18 @@ impl Customs {
     }
 
     /// Announce when trading opens: the one moment the opening window and the vest are measured from. Creator
-    /// only, once, at least `notice_s` ahead. Until `start_s` the market account cannot pay anyone, so the
+    /// only, once, at least `notice_s` ahead, and only once the market already holds `min_pool_bps` of the supply. Until `start_s` the market account cannot pay anyone, so the
     /// window cannot be started early by a token bought quietly in an empty pool.
     pub fn open_trading(&mut self, start_s: u64) {
         require!(env::predecessor_account_id() == self.params.creator_id, "customs: only the creator opens trading");
         require!(self.window_start_s.is_none(), "customs: trading is already scheduled");
         require!(start_s >= now_s() + self.params.notice_s, "customs: trading must be announced at least notice_s ahead");
+        // a pool seeded with dust, then filled after the window, would sell the real opening outside it
+        let pool = self.token.ft_balance_of(self.params.market_id.clone()).0;
+        require!(
+            pool >= mul_div(self.token.ft_total_supply().0, self.params.min_pool_bps as u128, 10_000),
+            "customs: the market holds less than min_pool_bps of the supply"
+        );
         self.window_start_s = Some(start_s);
         self.event("trading_opens", json!({"start_s": start_s, "window_ends_s": start_s + self.params.window_s, "vest_ends_s": start_s + self.params.vest_s}));
     }
@@ -780,6 +789,7 @@ mod tests {
             module_url: "https://example.com/customs-checker.wasm".into(),
             module_sha256: CHECKER_SHA256.into(),
             notice_s: 60,
+            min_pool_bps: 1000,
             window_s: 600,
             vest_s: 86_400,
             seize_bps: 2000,

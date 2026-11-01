@@ -157,6 +157,21 @@ async fn trading_is_announced_once_by_the_creator_with_notice_and_nothing_sells_
 }
 
 #[tokio::test]
+async fn trading_cannot_be_announced_for_a_pool_that_is_not_funded() -> anyhow::Result<()> {
+    // the pool holds half the supply; the token asks for 51%
+    let w = World::with(Knobs { open: false, min_pool_bps: 5100, ..Knobs::default() }).await?;
+    let now = w.worker.view_block().await?.timestamp() / 1_000_000_000;
+    let r = w.creator.call(w.token.id(), "open_trading").args_json(json!({"start_s": now + 60})).transact().await?;
+    assert!(r.is_failure() && failure_text(&r).contains("less than min_pool_bps"), "{}", failure_text(&r));
+    let win: Value = w.token.view("window").await?.json()?;
+    assert!(win["start_s"].is_null());
+    // the creator funds the market with more of the supply and the same call then goes through
+    w.transfer(&w.creator, &w.market, SUPPLY / 50).await?.into_result()?;
+    w.creator.call(w.token.id(), "open_trading").args_json(json!({"start_s": now + 60})).transact().await?.into_result()?;
+    Ok(())
+}
+
+#[tokio::test]
 async fn until_the_window_closes_the_creator_can_only_fund_the_market() -> anyhow::Result<()> {
     let w = World::with(Knobs { window_s: 60, vest_s: 300, ..Knobs::default() }).await?;
     // handing the supply to insiders around the market, before and during the window, is refused
