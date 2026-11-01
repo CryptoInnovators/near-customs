@@ -91,6 +91,13 @@ mut unanswered_frees_the_wallet $TOK $'        self.challenges.insert(challenge_
 mut release_only_the_own_entry $TOK 'if self.open_by_wallet.get(wallet) == Some(&challenge_id) {' 'if true {' sandbox reclaiming_an_old_challenge_does_not_free_the_wallet_from_a_newer_one
 mut payout_needs_a_registered_challenger $TOK 'check(self.token.accounts.contains_key(&ch.challenger), "customs: the challenger is not registered with the token")?;' 'let _ = 0;' sandbox a_challenger_who_leaves_the_token_cannot_pin_the_wallet_by_breaking_the_payout
 mut clear_stale_deadline $TOK 'ch.state == ChallengeState::Pending && env::block_height() >= ch.created_block + self.params.reclaim_blocks,' 'true,' sandbox a_challenge_still_waiting_for_the_enclave_cannot_be_reclaimed_or_cleared
+# ---- the opening is announced by the creator, not started by a quiet first sale ------------------
+mut open_only_creator $TOK 'require!(env::predecessor_account_id() == self.params.creator_id, "customs: only the creator opens trading");' 'let _ = 0;' sandbox trading_is_announced_once_by_the_creator_with_notice_and_nothing_sells_before_it
+mut open_notice $TOK 'require!(start_s >= now_s() + self.params.notice_s, "customs: trading must be announced at least notice_s ahead");' 'let _ = 0;' sandbox trading_is_announced_once_by_the_creator_with_notice_and_nothing_sells_before_it
+mut open_once $TOK 'require!(self.window_start_s.is_none(), "customs: trading is already scheduled");' 'let _ = 0;' sandbox trading_is_announced_once_by_the_creator_with_notice_and_nothing_sells_before_it
+mut market_needs_announcement $TOK 'let start = self.window_start_s.unwrap_or_else(|| env::panic_str("customs: trading has not been announced; the creator calls open_trading first"));' 'let start = self.window_start_s.unwrap_or(now);' sandbox a_market_transfer_before_trading_is_announced_fails
+mut market_waits_for_start $TOK 'require!(now >= start, "customs: trading has not opened yet");' 'let _ = 0;' sandbox trading_is_announced_once_by_the_creator_with_notice_and_nothing_sells_before_it
+mut creator_only_funds_market $TOK '*receiver == self.params.market_id || self.window_start_s.is_some_and(|s| now >= s + self.params.window_s),' 'true,' sandbox until_the_window_closes_the_creator_can_only_fund_the_market
 # ---- the judge is fixed by the code, not chosen by the deployer ---------------------------------
 mut judge_outlayer $TOK 'require!(p.outlayer_id.as_str() == OUTLAYER_ID, "customs: outlayer_id must be the published OutLayer contract");' 'let _ = 0;' unit a_foreign_outlayer_cannot_be_the_judge
 mut judge_checker $TOK 'require!(p.module_sha256 == CHECKER_SHA256, "customs: module_sha256 must be the published checker module");' 'let _ = 0;' unit a_foreign_checker_cannot_be_the_judge
