@@ -14,11 +14,16 @@ rustup target list --installed | grep -q '^wasm32-unknown-unknown$' || { echo "m
 rustup target list --installed | grep -q '^wasm32-wasip2$' || { echo "missing target: rustup target add wasm32-wasip2" >&2; exit 1; }
 echo "tools ok: $(cargo near --version | head -1)"
 scripts/check-web.sh
-# the checker bytes the token pins are the bytes this source builds, on any machine
+# the checker bytes the token pins are the bytes this source builds; cargo mixes the host triple into symbol
+# hashes, so the pinned build is the x86_64 Linux one that CI produces and uploads
 want=$(grep -o 'CHECKER_SHA256: &str = "[0-9a-f]*"' contracts/token/src/lib.rs | grep -o '[0-9a-f]\{64\}')
-got=$(scripts/build-checker.sh | tail -1)
-echo "checker sha256 built: $got pinned in the contract: $want"
-[ "$want" = "$got" ] || { echo "the built checker differs from CHECKER_SHA256 in contracts/token/src/lib.rs" >&2; exit 1; }
+if [ "$(rustc -vV | sed -n 's/^host: //p')" = "x86_64-unknown-linux-gnu" ]; then
+  got=$(scripts/build-checker.sh | tail -1)
+  echo "checker sha256 built: $got pinned in the contract: $want"
+  [ "$want" = "$got" ] || { echo "the built checker differs from CHECKER_SHA256 in contracts/token/src/lib.rs" >&2; exit 1; }
+else
+  echo "checker sha256 pinned in the contract: $want (compared on x86_64 Linux hosts and in CI)"
+fi
 scripts/build-token.sh
 cargo test --workspace
 [ "${1:-}" = "--mutate" ] && scripts/mutate.sh

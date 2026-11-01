@@ -23,7 +23,7 @@ These steps sign mainnet transactions and spend NEAR, so they need the user's si
    ```sh
    scripts/build-checker.sh
    ```
-   It prints the wasm path and its sha256, which is the `CHECKER_SHA256` compiled into the token. Attach the wasm to a GitHub release. Its download URL becomes `module_url`, and the sha256 is `module_sha256` (`new` accepts no other).
+   On x86_64 Linux it prints the wasm path and its sha256, which is the `CHECKER_SHA256` compiled into the token; from any other host take the `customs-checker-wasm` artifact of the CI run on the commit being deployed, which is that same build. Attach the wasm to a GitHub release. Its download URL becomes `module_url`, and the sha256 is `module_sha256` (`new` accepts no other).
 2. Build the token: `scripts/build-token.sh` (prints its sha256).
 3. Deploy and init. Values match the sandbox defaults in tests/src/lib.rs:156, except `exec_fee`, which is set from the per-run cost OutLayer quotes:
    ```sh
