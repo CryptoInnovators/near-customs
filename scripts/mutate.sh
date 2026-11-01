@@ -132,6 +132,9 @@ mut failed_receipt_moves_nothing $RCV 'r.recv == "wrap.near" && r.ok' 'r.recv ==
 mut split_pieces_add_up $RCV 'prev.yocto += piece.yocto;' '' walker split_funding_is_one_hop_with_the_summed_amount
 mut split_ends_at_a_stray_transaction $RCV 'None => break,' 'None => continue,' walker a_transaction_that_moves_nothing_from_the_hop_ends_the_walk
 mut same_receiver_moves_add_up $RCV 'mine().filter(|x| x.to == e.to).map(|x| x.yocto).sum::<u128>()' 'e.yocto' walker several_moves_in_one_transaction_to_the_same_receiver_add_up
+mut intents_withdraw_emitter $RCV 'for r in tx.receipts.iter().filter(|r| r.recv == "intents.near" && r.ok) {' 'for r in tx.receipts.iter().filter(|r| r.ok) {' walker an_intents_event_logged_by_any_other_contract_is_not_evidence
+mut intents_transfer_emitter $RCV $'let mut out = withdraws.clone();\n    for r in tx.receipts.iter().filter(|r| r.recv == "intents.near" && r.ok) {' $'let mut out = withdraws.clone();\n    for r in tx.receipts.iter().filter(|r| r.ok) {' walker an_intents_event_logged_by_any_other_contract_is_not_evidence
+mut wnear_refund_netting $RCV 'm.3 -= take;' '' walker a_wnear_transfer_the_receiver_gave_back_is_netted
 mut checker_split_allowance $CHK 'path.len() > max_path_len(max_hops)' 'false' sandbox a_path_with_more_transactions_than_the_split_allowance_gives_no_verdict
 
 after=$(git diff -- contracts crates | md5)

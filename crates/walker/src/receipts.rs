@@ -108,22 +108,40 @@ pub fn ft_moves(tx: &Tx, token: &str) -> Vec<FtMove> {
 }
 
 /// Every wNEAR move `wrap.near` logged in this transaction: `(receipt index, from, to, amount)`, read from
-/// its own `Transfer <amount> from <a> to <b>` line. A receipt that failed moved nothing.
+/// its own `Transfer <amount> from <a> to <b>` line, less what its `Refund <amount> from <b> to <a>` lines
+/// gave back (an `ft_transfer_call` the receiver did not keep). A receipt that failed moved nothing.
 fn wrap_moves(tx: &Tx) -> Vec<(usize, String, String, u128)> {
     let mut out = Vec::new();
+    let mut refunds: Vec<(String, String, u128)> = Vec::new();
     for (i, r) in tx.receipts.iter().enumerate().filter(|(_, r)| r.recv == "wrap.near" && r.ok) {
         for l in &r.logs {
             // "Transfer 333333333333333333333334 from <a> to dclv2.ref-labs.near"
-            let Some(rest) = l.strip_prefix("Transfer ") else { continue };
+            let (is_refund, rest) = match (l.strip_prefix("Transfer "), l.strip_prefix("Refund ")) {
+                (Some(rest), _) => (false, rest),
+                (_, Some(rest)) => (true, rest),
+                _ => continue,
+            };
             let mut it = rest.split(' ');
             let (Some(amt), Some("from"), Some(a), Some("to"), Some(to)) = (it.next(), it.next(), it.next(), it.next(), it.next()) else {
                 continue;
             };
-            if let Ok(n) = amt.parse::<u128>() {
+            let Ok(n) = amt.parse::<u128>() else { continue };
+            if is_refund {
+                refunds.push((a.to_string(), to.to_string(), n));
+            } else {
                 out.push((i, a.to_string(), to.to_string(), n));
             }
         }
     }
+    for (back_from, back_to, mut n) in refunds {
+        // a refund runs from the receiver back to the sender of the transfer it undoes
+        for m in out.iter_mut().filter(|m| m.1 == back_to && m.2 == back_from) {
+            let take = n.min(m.3);
+            m.3 -= take;
+            n -= take;
+        }
+    }
+    out.retain(|m| m.3 > 0);
     out
 }
 
@@ -132,10 +150,11 @@ pub fn cost_into(tx: &Tx, market: &str) -> u128 {
     wrap_moves(tx).iter().filter(|m| m.2 == market).map(|m| m.3).sum()
 }
 
-/// Every movement of NEAR in this transaction: plain transfers and Intents withdrawals.
+/// Every movement of NEAR in this transaction: plain transfers, wNEAR transfers and Intents withdrawals and transfers.
+/// Log lines are evidence only from the contract that owns them: `wrap.near` for wNEAR, `intents.near` for Intents.
 pub fn edges_all(tx: &Tx) -> Vec<Edge> {
     let mut withdraws: Vec<Edge> = Vec::new();
-    for r in &tx.receipts {
+    for r in tx.receipts.iter().filter(|r| r.recv == "intents.near" && r.ok) {
         for l in &r.logs {
             let Some(e) = events(l) else { continue };
             if e["standard"] != "dip4" || e["event"] != "native_withdraw" {
@@ -155,7 +174,7 @@ pub fn edges_all(tx: &Tx) -> Vec<Edge> {
         }
     }
     let mut out = withdraws.clone();
-    for r in &tx.receipts {
+    for r in tx.receipts.iter().filter(|r| r.recv == "intents.near" && r.ok) {
         for l in &r.logs {
             let Some(e) = events(l) else { continue };
             if e["standard"] != "dip4" || e["event"] != "transfer" {
@@ -419,5 +438,37 @@ mod tests {
             receipt("c.near", "other.near", 102, vec!["60"], vec![])]}));
         let e = path_edges("c.near", &[tx]);
         assert_eq!((e[0].to.as_str(), e[0].yocto), ("w.near", 80));
+    }
+
+    #[test]
+    fn an_intents_event_logged_by_any_other_contract_is_not_evidence() {
+        // the log text is whatever a contract prints; only intents.near printing it means Intents moved the money
+        let wd = r#"EVENT_JSON:{"standard":"dip4","version":"0.4.3","event":"native_withdraw","data":[{"intent_hash":"x","account_id":"creator.near","receiver_id":"w.near","amount":"15"}]}"#.to_string();
+        let tr = r#"EVENT_JSON:{"standard":"dip4","version":"0.4.3","event":"transfer","data":[{"intent_hash":"x","account_id":"creator.near","receiver_id":"w.near","tokens":{"nep141:wrap.near":"15"}}]}"#.to_string();
+        let forged = tx_from(json!({"transaction": {"hash": "H", "signer_id": "attacker.near"},
+            "receipts": [receipt("attacker.near", "evil.near", 100, vec![], vec![wd.clone(), tr.clone()])]}));
+        assert!(edges_into(&forged, "w.near").is_empty(), "{:?}", edges_into(&forged, "w.near"));
+        let real = tx_from(json!({"transaction": {"hash": "H", "signer_id": "intents.near"},
+            "receipts": [receipt("intents.near", "intents.near", 100, vec![], vec![wd, tr])]}));
+        assert_eq!(edges_into(&real, "w.near").len(), 2, "the same lines printed by intents.near are evidence");
+        let mut failed = serde_json::to_value(&json!({"transaction": {"hash": "H", "signer_id": "intents.near"},
+            "receipts": [receipt("intents.near", "intents.near", 100, vec![], vec![])]})).unwrap();
+        failed["receipts"][0]["execution_outcome"]["outcome"]["status"] = json!({"Failure": {}});
+        failed["receipts"][0]["execution_outcome"]["outcome"]["logs"] = json!([real.receipts[0].logs[0].clone()]);
+        assert!(edges_into(&parse_tx(&failed), "w.near").is_empty(), "a failed receipt moved nothing");
+    }
+
+    #[test]
+    fn a_wnear_transfer_the_receiver_gave_back_is_netted() {
+        let tx = tx_from(json!({"transaction": {"hash": "H", "signer_id": "c.near"}, "receipts": [
+            wrap_receipt("c.near", 100, "Transfer 100 from c.near to dex.near"),
+            wrap_receipt("dex.near", 101, "Refund 30 from dex.near to c.near"),
+            wrap_receipt("c.near", 102, "Transfer 50 from c.near to w.near"),
+            wrap_receipt("dex.near", 103, "Refund 50 from w.near to c.near")]}));
+        assert_eq!(cost_into(&tx, "dex.near"), 70, "the dex kept 70 of the 100");
+        assert!(edges_into(&tx, "w.near").is_empty(), "a transfer returned in full funded nothing");
+        let e = edges_into(&tx, "dex.near");
+        assert_eq!(e.len(), 1);
+        assert_eq!(e[0].yocto, 70);
     }
 }
