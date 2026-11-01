@@ -219,6 +219,24 @@ mod tests {
         assert!(edges_into(&tx, "someone-else.near").is_empty());
     }
 
+    /// Mainnet transaction Hx23FZyuBYeL7C2YuuSisSPBMdKkXdFu3BkhHZhNDUX6 (block 219230633), fetched unedited from
+    /// tx.main.fastnear.com: an Intents `native_withdraw` of 15 NEAR from an owner account to a sniper wallet.
+    const OWNER: &str = "d9eade234d867aa002539c484ed0dc808bdc5a0ccea6756a1ebfec0c0df9325a";
+    const SNIPER: &str = "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899";
+
+    #[test]
+    fn real_intents_withdrawal_names_the_owner_not_the_relay() {
+        let raw: Value = serde_json::from_str(include_str!("../tests/fixtures/intents-withdraw-hx23fz.json")).expect("fixture parses");
+        let tx = parse_tx(&raw);
+        assert_eq!(tx.hash, "Hx23FZyuBYeL7C2YuuSisSPBMdKkXdFu3BkhHZhNDUX6");
+        let e = edges_into(&tx, SNIPER);
+        assert_eq!(e.len(), 1, "{e:?}");
+        assert_eq!((e[0].from.as_str(), e[0].yocto, e[0].kind.clone()), (OWNER, 15_000_000_000_000_000_000_000_000, EdgeKind::IntentsWithdraw));
+        assert!(e.iter().all(|x| x.from != "intents.near"), "the relay must never be named as the funder");
+        assert_eq!(e[0].height, 219_230_633);
+        assert!(edges_into(&tx, OWNER).is_empty(), "the owner is the source here, never the receiver");
+    }
+
     #[test]
     fn cost_reads_wrap_near_transfer_lines_to_the_market_only() {
         let logs = vec!["Transfer 300 from a.near to dclv2.ref-labs.near".to_string(), "Transfer 7 from a.near to other.near".to_string()];

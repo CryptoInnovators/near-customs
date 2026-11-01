@@ -2,7 +2,7 @@
 
 ## Suite
 
-`cargo test --workspace`: 55 tests. 35 sandbox tests in `tests/tests/token.rs` (near-workspaces, the token wasm built with `cargo near` and the deployed OutLayer contract code read from mainnet at block 222386104, sha256 `4969ffe8a1d09f55183f94ca5e02c956e3374476699dbca251645dfa2aff403f`), 16 rule tests in `crates/walker`, 4 wire-format tests in `crates/common`. The sandbox tests that name an enclave run the checker module itself against a fake chain source, so the contract, the OutLayer yield/resume code and the checker are exercised together.
+`cargo test --workspace`: 57 tests. 35 sandbox tests in `tests/tests/token.rs` (near-workspaces, the token wasm built with `cargo near` and the deployed OutLayer contract code read from mainnet at block 222386104, sha256 `4969ffe8a1d09f55183f94ca5e02c956e3374476699dbca251645dfa2aff403f`), 17 rule tests in `crates/walker`, 4 wire-format tests in `crates/common`, 1 in `crates/checker`. The sandbox tests that name an enclave run the checker module itself against a fake chain source, so the contract, the OutLayer yield/resume code and the checker are exercised together. Test fixtures live under `tests/` and `crates/walker/tests/fixtures/`: the sandbox plays only the enclave worker (a fixed ed25519 seed in `tests/src/lib.rs`) against the real `outlayer.near` contract code, and `intents-withdraw-hx23fz.json` is mainnet transaction Hx23FZyuBYeL7C2YuuSisSPBMdKkXdFu3BkhHZhNDUX6 fetched unedited from `tx.main.fastnear.com`.
 
 ## Mutation check
 
@@ -49,6 +49,7 @@ RED->GREEN rule_before_buy | crates/walker/src/pathrule.rs | guarded by dust_pla
 RED->GREEN rule_half_cost_floor | crates/walker/src/pathrule.rs | guarded by dust_before_the_buy_is_rejected_by_the_half_cost_floor
 RED->GREEN rule_first_hop_creator | crates/walker/src/pathrule.rs | guarded by broken_chain_and_wrong_start_and_wrong_end
 RED->GREEN rule_hop_order | crates/walker/src/pathrule.rs | guarded by five_hops_is_too_long_and_hop_order_matters
+RED->GREEN intents_owner_decode | crates/walker/src/receipts.rs | guarded by real_intents_withdrawal_names_the_owner_not_the_relay
 RED->GREEN checker_busy_measured | crates/checker/src/lib.rs | guarded by a_path_through_an_unlisted_busy_wallet_convicts_nothing
 RED->GREEN checker_window | crates/checker/src/lib.rs | guarded by a_buy_outside_the_opening_window_is_rejected_by_the_enclave
 RED->GREEN checker_buy_is_market_sale | crates/checker/src/lib.rs | guarded by a_transaction_that_is_not_a_market_sale_is_rejected_by_the_enclave
@@ -66,7 +67,15 @@ Every method that moves or gates value, and the mutation that guards it:
 | `on_verdict` | signature, freshness, block, receipts, wallet, token, verdict value, caller | verdict_signature, verdict_fresh, verdict_block, verdict_receipts, verdict_wallet, verdict_token, verdict_value, on_verdict_private |
 | payout | exactly 20% of the unvested bag, remainder frozen, bounty keeps vesting, bond returned or forfeited | payout_share, frozen_remainder, bond_returned_on_upheld, bounty_vests, bond_forfeit |
 | `reclaim_bond` | silence leaves the vest alone, only the challenger reclaims, only after the wait | reclaim_deadline, reclaim_only_challenger |
+| Intents decoder | a withdrawal through `intents.near` is attributed to the owner account named in the `dip4 native_withdraw` event, never to the relay | intents_owner_decode |
 | path rule | 3 hops, hub list, busy wallet, funding before the buy, half-cost floor, first hop from the creator, hop order | rule_hop_limit_3, rule_hub_list, rule_busy_wallet, rule_before_buy, rule_half_cost_floor, rule_first_hop_creator, rule_hop_order |
 | checker | busy wallet measured on chain, buy inside the opening window, buy is a market sale, path hash matches the path | checker_busy_measured, checker_window, checker_buy_is_market_sale, checker_path_hash |
 
 Hold-margin fix recorded during the run: `hold_is_balance_level_so_later_buys_stay_free` asserted a refusal one token past the free amount, and vesting between two sandbox blocks is larger than that, so it failed under load. The refused amount is now a tenth of the bag, which vesting cannot reach in a block.
+
+Intents decoder mutation run on 2026-11-01 (`scripts/mutate.sh intents_owner_decode`, CARGO_BUILD_JOBS=2): the guard `e["standard"] != "dip4" || e["event"] != "native_withdraw"` replaced by `true` turns `real_intents_withdrawal_names_the_owner_not_the_relay` red, the restored file turns it green:
+
+```
+RED->GREEN intents_owner_decode | crates/walker/src/receipts.rs | guarded by real_intents_withdrawal_names_the_owner_not_the_relay
+failures: 0
+```

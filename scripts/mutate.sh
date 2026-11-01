@@ -93,6 +93,7 @@ mut rule_before_buy $RULE 'if last.ts_ns >= buy.ts_ns {' 'if false {' walker dus
 mut rule_half_cost_floor $RULE 'if e.yocto < floor {' 'if false {' walker dust_before_the_buy_is_rejected_by_the_half_cost_floor
 mut rule_first_hop_creator $RULE 'if path[0].from != rule.creator {' 'if false {' walker broken_chain_and_wrong_start_and_wrong_end
 mut rule_hop_order $RULE 'if path[i - 1].ts_ns >= e.ts_ns {' 'if false {' walker five_hops_is_too_long_and_hop_order_matters
+mut intents_owner_decode crates/walker/src/receipts.rs 'e["standard"] != "dip4" || e["event"] != "native_withdraw"' 'true' walker real_intents_withdrawal_names_the_owner_not_the_relay
 mut checker_busy_measured $CHK 'src.tx_count(&e.to)? > BUSY_TXS' 'false' sandbox a_path_through_an_unlisted_busy_wallet_convicts_nothing
 mut checker_window $CHK 'if first.ts_ns < window_ns.0 || first.ts_ns >= window_ns.1 {' 'if false {' sandbox a_buy_outside_the_opening_window_is_rejected_by_the_enclave
 mut checker_buy_is_market_sale $CHK 'm.from == market && m.to == wallet' 'm.to == wallet' sandbox a_transaction_that_is_not_a_market_sale_is_rejected_by_the_enclave
