@@ -8,11 +8,11 @@ Every account on screen belongs to the team. The story is a dare: we bundle our 
 
 | NEAR piece | What it does in Customs | Where |
 |---|---|---|
-| NEP-141 contract | Holds the rule. `on_outbound` runs before every `ft_transfer` and `ft_transfer_call` and refuses any move into an opening buyer's unvested amount. Parameters are fixed at `new`, and no method changes them. | contracts/token/src/lib.rs:549 |
+| NEP-141 contract | Holds the rule. `on_outbound` runs before every `ft_transfer` and `ft_transfer_call` and refuses any move into an opening buyer's unvested amount. Parameters are fixed at `new`, which accepts only the published OutLayer contract and checker module, and no method changes them. | contracts/token/src/lib.rs:642 |
 | Access keys | Once deployed, the token account has its full-access key deleted. With no key left, nobody can redeploy the code or swap the rule, and `view_access_key_list` on the token returns an empty list. | deploy step 4 below |
-| OutLayer on NEAR, with yield/resume | `challenge` calls `request_execution` on `outlayer.near` with the checker wasm URL and sha256 fixed in params. The challenge waits in yield until the enclave answers, and a silent enclave leaves the vest as it was. | lib.rs:256, lib.rs:537 |
-| `env::ed25519_verify` | `pin_verdict_key` pins only a key the module proved it signs with. After that, `on_verdict` accepts a verdict only under that key and only for the same token, wallet, challenge id, path hash and a recent block. | lib.rs:329, lib.rs:418 |
-| NEAR Intents | Read as evidence. The `dip4 native_withdraw` event names the owner account behind an Intents payout, so a wallet that looks funded by `intents.near` traces back to the creator. Customs settles nothing through Intents. | crates/walker/src/receipts.rs:126 |
+| OutLayer on NEAR, with yield/resume | `challenge` calls `request_execution` on `outlayer.near` with the checker wasm URL and sha256 fixed in params. The challenge waits in yield until the enclave answers, and a silent enclave leaves the vest as it was. | lib.rs:285, lib.rs:553 |
+| `env::ed25519_verify` | `pin_verdict_key` pins only a key the module proved it signs with. After that, `on_verdict` accepts a verdict only under that key and only for the same token, wallet, challenge id, path hash and a recent block. | lib.rs:401, lib.rs:611 |
+| NEAR Intents | Read as evidence. The `dip4 native_withdraw` event names the owner account behind an Intents payout, so a wallet that looks funded by `intents.near` traces back to the creator. Customs settles nothing through Intents. | crates/walker/src/receipts.rs:141 |
 | Chain Signatures, NEAR AI Cloud, Sputnik DAO | No role in Customs. The voiceover does not name them. | |
 
 ## Before recording
@@ -21,18 +21,17 @@ These steps sign mainnet transactions and spend NEAR, so they need the user's si
 
 1. Build and publish the checker:
    ```sh
-   cargo build -p customs-checker --target wasm32-wasip2 --release
-   shasum -a 256 target/wasm32-wasip2/release/customs-checker.wasm
+   scripts/build-checker.sh
    ```
-   Attach the wasm to a GitHub release. Its download URL becomes `module_url`, and the sha256 becomes `module_sha256`.
+   It prints the wasm path and its sha256, which is the `CHECKER_SHA256` compiled into the token. Attach the wasm to a GitHub release. Its download URL becomes `module_url`, and the sha256 is `module_sha256` (`new` accepts no other).
 2. Build the token: `scripts/build-token.sh` (prints its sha256).
-3. Deploy and init. Values match the sandbox defaults in tests/src/lib.rs:150, except `exec_fee`, which is set from the per-run cost OutLayer quotes:
+3. Deploy and init. Values match the sandbox defaults in tests/src/lib.rs:156, except `exec_fee`, which is set from the per-run cost OutLayer quotes:
    ```sh
    near contract deploy $TOKEN use-file target/wasm/customs_token.wasm with-init-call new json-args "{
      \"owner_id\":\"$CREATOR\",\"total_supply\":\"1000000000000000000000000000000000\",
      \"metadata\":{\"spec\":\"ft-1.0.0\",\"name\":\"Customs Paper\",\"symbol\":\"PAPERS\",\"icon\":null,\"reference\":null,\"reference_hash\":null,\"decimals\":24},
      \"params\":{\"market_id\":\"dclv2.ref-labs.near\",\"creator_id\":\"$CREATOR\",\"outlayer_id\":\"outlayer.near\",
-       \"module_url\":\"$MODULE_URL\",\"module_sha256\":\"$MODULE_SHA256\",\"window_s\":600,\"vest_s\":86400,
+       \"module_url\":\"$MODULE_URL\",\"module_sha256\":\"$MODULE_SHA256\",\"notice_s\":3600,\"window_s\":600,\"vest_s\":86400,
        \"seize_bps\":2000,\"lock_s\":2592000,\"min_bond\":\"1000000000000000000000000\",\"exec_fee\":\"$EXEC_FEE\",
        \"reclaim_blocks\":220,\"max_age_blocks\":50,\"max_hops\":3}}" \
      prepaid-gas '100.0 Tgas' attached-deposit '0 NEAR' network-config mainnet sign-with-keychain send
@@ -43,9 +42,9 @@ These steps sign mainnet transactions and spend NEAR, so they need the user's si
      prepaid-gas '300.0 Tgas' attached-deposit "$EXEC_FEE yoctoNEAR" sign-as $HUNTER network-config mainnet sign-with-keychain send
    near account delete-keys $TOKEN public-keys $TOKEN_PK network-config mainnet sign-with-keychain send
    ```
-5. Create the PAPERS/wNEAR pool on Rhea DCL (`dclv2.ref-labs.near`) and add liquidity from `$CREATOR`.
+5. Create the PAPERS/wNEAR pool on Rhea DCL (`dclv2.ref-labs.near`) and add liquidity from `$CREATOR`. Then announce the opening, at least `notice_s` ahead: `near contract call-function as-transaction $TOKEN open_trading json-args '{"start_s": <unix seconds>}' prepaid-gas '30.0 Tgas' attached-deposit '0 NEAR' sign-as $CREATOR network-config mainnet sign-with-keychain send`. The pool pays nobody before that second.
 6. Fund the insiders before the opening. Fund `$INSIDER_DIRECT` with a plain transfer from `$CREATOR`. Fund `$INSIDER_INTENTS` by depositing from `$CREATOR` into `intents.near` and withdrawing to that wallet with a `native_withdraw` (https://docs.near-intents.org/). Fund `$OUTSIDER` from nothing the creator owns.
-7. Inside the first 600 s, buy from all three wallets. Then send a small transfer from `$CREATOR` to `$OUTSIDER`. That is the planted dust.
+7. Inside the first 600 s after the announced start, buy from all three wallets. Then send a small transfer from `$CREATOR` to `$OUTSIDER`. That is the planted dust.
 8. Register `$HUNTER` with `storage_deposit` on `$TOKEN`.
 9. Check both paths offline before filing:
    ```sh

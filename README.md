@@ -61,11 +61,11 @@ The page traces up to 32 priced buyers per launch within 300 account pages and 1
 
 | NEAR piece | Role | Network | Where |
 |---|---|---|---|
-| NEP-141 contract (near-sdk 5.30, near-contract-standards) | Holds the vest. `on_outbound` runs before every `ft_transfer` and `ft_transfer_call` | sandbox in tests, mainnet reads in replay | `contracts/token/src/lib.rs:549` |
+| NEP-141 contract (near-sdk 5.30, near-contract-standards) | Holds the vest. `on_outbound` runs before every `ft_transfer` and `ft_transfer_call` | sandbox in tests, mainnet reads in replay | `contracts/token/src/lib.rs:642` |
 | OutLayer (`outlayer.near`) with yield/resume | `challenge` calls `request_execution` with the checker wasm URL and sha256; the challenge waits until the enclave answers | contract code read from mainnet at block 222386104 and run in the sandbox | `contracts/token/src/lib.rs:256`, `:537` |
-| `env::ed25519_verify` | `pin_verdict_key` pins a key the module proved it holds; `on_verdict` accepts only that key | sandbox | `lib.rs:329`, `:361`, `:418` |
-| NEAR Intents `dip4 native_withdraw` | Read as evidence: names the owner account behind an Intents payout | mainnet transaction fixture `crates/walker/tests/fixtures/intents-withdraw-hx23fz.json` | `crates/walker/src/receipts.rs:126` |
-| Ref Finance DCL pool (`dclv2.ref-labs.near`) | The market whose payouts open a bag | mainnet reads | `lib.rs:549`, `spikes/replay/payout-method.json` |
+| `env::ed25519_verify` | `pin_verdict_key` pins a key the module proved it holds; `on_verdict` accepts only that key | sandbox | `lib.rs:401`, `:611` |
+| NEAR Intents `dip4 native_withdraw` | Read as evidence: names the owner account behind an Intents payout | mainnet transaction fixture `crates/walker/tests/fixtures/intents-withdraw-hx23fz.json` | `crates/walker/src/receipts.rs:141` |
+| Ref Finance DCL pool (`dclv2.ref-labs.near`) | The market whose payouts open a bag | mainnet reads | `lib.rs:642`, `spikes/replay/payout-method.json` |
 | FastNEAR transaction API and RPC | Receipts, balances and access keys for the walker, the checker and the demo page | mainnet | `crates/walker`, `crates/checker/src/main.rs`, `web/app.js` |
 | WASI checker on OutLayer | Applies the path rule inside the enclave; manifest allows only `tx.main.fastnear.com` | built for `wasm32-wasip2` | `crates/checker`, `crates/checker/manifest.json` |
 

@@ -30,3 +30,10 @@ jobs:
           cargo near --version
       - name: build the token wasm, run the workspace tests
         run: scripts/check.sh
+      - name: keep the checker module this commit builds
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: customs-checker-wasm
+          path: target/checker/wasm32-wasip2/release/customs-checker.wasm
+          if-no-files-found: warn
