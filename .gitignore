@@ -8,3 +8,4 @@ node_modules/
 .progress/
 .walker-cache/
 mitm_mcp_traffic.db
+__pycache__/

@@ -33,4 +33,4 @@ Count: `python3 -c "import sys;print(len(sys.stdin.read().strip()))" < idea.txt`
 The same team also entered Overdraft (https://github.com/kamalbuilds/near-overdraft), a NEAR vault that caps what an AI agent can spend, at NEAR HACKATHON; the two projects are independent and share no code.
 ```
 
-Before submitting, confirm that the final pair is still Customs and Overdraft (WIN-CONDITIONS.md leaves that to the user), put this sentence in both READMEs, and check it with `grep -n -i overdraft README.md`.
+Put this sentence in both READMEs and check it with `grep -n -i overdraft README.md`.

@@ -42,7 +42,7 @@ Positive control (the walker finds a link when one exists): `walker control --cr
 | Placebo creator linked | 0 of 226 wallets | same |
 | Opening tokens still held by opening buyers | 0.00% on 9 of 11 launches, 0.98% on `grlant`, 2.77% on `justai` | block 222392783, `ft_balance_of` over node RPC |
 
-Kill rule from WIN-CONDITIONS.md: kill if the share sold within 24 h is under 20% AND the creator-traceable share is under 2%. The sold share is above 97%, so the vest has a measured target and the product stands. The creator-traceable share is below one in six, the level a Solana measurement reports for visible funding before a first early buy (arXiv 2610.39458), so Customs ships as a vest-first coin: the 24 hour vest carries the mechanism, and `challenge` is the ritual that pays whoever finds the path.
+Kill rule fixed before the replay: kill if the share sold within 24 h is under 20% AND the creator-traceable share is under 2%. The sold share is above 97%, so the vest has a measured target and the product stands. The creator-traceable share is below one in six, the level a Solana measurement reports for visible funding before a first early buy (arXiv 2610.39458), so Customs ships as a vest-first coin: the 24 hour vest carries the mechanism, and `challenge` is the ritual that pays whoever finds the path.
 
 For comparison, MELT reports 36.5% of supply on average held by coordinated accounts on 41,000 Solana launches (arXiv 2602.13480). Customs measures a different thing, supply bought with the creator's own traceable money, so the two figures are shown side by side and are not the same metric.
 

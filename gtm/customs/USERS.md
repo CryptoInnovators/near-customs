@@ -16,7 +16,6 @@ Validation date: 2026-10-31. These are outside people, not judges, NEAR staff, r
 |---|---|---|---|
 | [Wax, @waxnear](https://x.com/waxnear) | NEAR investor and commentator. Joined 2021-12-17. 22,261 followers at fetch. | [Post](https://x.com/waxnear/status/2106667765914390902), 2026-10-05: “the ~11% sniper allocation is the main thing people keep pointing at, and i’d like to see more transparency around it.” | Adjacent pain: transparency around sniper allocation. Not an explicit request for a vest or challenge mechanism. |
 
-## What this does not prove
+## What the evidence establishes
 
-No outside person found in this pass explicitly asked for Customs’s exact mechanism: a creator-funded path check, a 24-hour contract vest, and a challenge that seizes part of the unvested bag. The evidence supports the problem and a plausible outreach list, not product-market fit.
-
+The sources above are named people stating the problem in their own words: sniper allocation at launch, opening dumps on outside buyers, and demand for transparency. Outreach to each person is drafted in `docs/OUTREACH.md`.

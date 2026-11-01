@@ -6,6 +6,7 @@
    "creator_keys": [
     "ed25519:2kb3SBMsxdnzvPkTW66zFKomQd72kFduxjgoqtXWMerR"
    ],
+   "wallets_with_a_full_access_key_shared": 0,
    "buyers_checked": 23,
    "unreadable": 0,
    "sharing_a_key_with_creator": []
@@ -15,6 +16,7 @@
    "creator_keys": [
     "ed25519:BdAbgAnkqxRWcMU2TV5jUkdDdDuqpRZHAqQ4qj1iBxWx"
    ],
+   "wallets_with_a_full_access_key_shared": 0,
    "buyers_checked": 11,
    "unreadable": 0,
    "sharing_a_key_with_creator": []
@@ -24,6 +26,7 @@
    "creator_keys": [
     "ed25519:JE4bXLkd6nzqUD6njvdkDejCbAP8o7VQiuyhL57VmCPY"
    ],
+   "wallets_with_a_full_access_key_shared": 0,
    "buyers_checked": 31,
    "unreadable": 0,
    "sharing_a_key_with_creator": []
@@ -34,6 +37,7 @@
     "ed25519:BS5tkyAHU6dyLHVYBGGxCKzqAa5jB1j1xyAMQ1Cwaqny",
     "ed25519:DuSM8vxKepZVPAYwvgqEeGrCwz91Pb5qqnCiw1KWi3bZ"
    ],
+   "wallets_with_a_full_access_key_shared": 0,
    "buyers_checked": 18,
    "unreadable": 0,
    "sharing_a_key_with_creator": []
@@ -43,6 +47,7 @@
    "creator_keys": [
     "ed25519:FvDQQhZYt367M37HHm6bZWpymGGL5qBqoToeM77MAANP"
    ],
+   "wallets_with_a_full_access_key_shared": 0,
    "buyers_checked": 26,
    "unreadable": 0,
    "sharing_a_key_with_creator": []
@@ -52,17 +57,29 @@
    "creator_keys": [
     "ed25519:BVALb2taamXUaursrfcHPfz4F6vxQjyZQsYCcXVZB8jB"
    ],
+   "wallets_with_a_full_access_key_shared": 0,
    "buyers_checked": 23,
    "unreadable": 0,
    "sharing_a_key_with_creator": []
   },
-  "wmark.nearlytrade.near": {
-   "creator": "wagemark.near",
+  "doljabi.nearlytrade.near": {
+   "creator": "first_birthday_gift.near",
    "creator_keys": [
-    "ed25519:8nqhNQ8DWfwnaRYvjVEVMwK3usuDok2jCz3qAFwZXbN1"
+    "ed25519:5uG2LHbQUH1kdbqxWCz7yzcGn5MENCckDtH5KKHTbru9"
    ],
+   "wallets_with_a_full_access_key_shared": 0,
+   "buyers_checked": 18,
+   "unreadable": 0,
+   "sharing_a_key_with_creator": []
+  },
+  "drita.nearlytrade.near": {
+   "creator": "drifttraceatlas.near",
+   "creator_keys": [
+    "ed25519:Crxyyxy6XXj2wBD7mAtsy9SjLXDNZyBGm75SJJrJV1HV"
+   ],
+   "wallets_with_a_full_access_key_shared": 0,
    "buyers_checked": 30,
-   "unreadable": 1,
+   "unreadable": 0,
    "sharing_a_key_with_creator": []
   },
   "mob.nearlytrade.near": {
@@ -73,42 +90,37 @@
     "ed25519:E4XUeqNpu349Ba3PQWC3mUb8oL4yWZGwM6RrrkJT2rzZ",
     "ed25519:EwVcC8CaL4wtgngPQFuaQXNnEDY2rDLkxsBiYfNp4S5V"
    ],
+   "wallets_with_a_full_access_key_shared": 0,
    "buyers_checked": 15,
    "unreadable": 0,
    "sharing_a_key_with_creator": [
     {
      "wallet": "krhuize.tg",
-     "keys": [
+     "full_access_on_both": [],
+     "function_call_on_either": [
       "ed25519:BS5tkyAHU6dyLHVYBGGxCKzqAa5jB1j1xyAMQ1Cwaqny"
      ]
     }
    ]
-  },
-  "drita.nearlytrade.near": {
-   "creator": "drifttraceatlas.near",
-   "creator_keys": [
-    "ed25519:Crxyyxy6XXj2wBD7mAtsy9SjLXDNZyBGm75SJJrJV1HV"
-   ],
-   "buyers_checked": 30,
-   "unreadable": 0,
-   "sharing_a_key_with_creator": []
-  },
-  "doljabi.nearlytrade.near": {
-   "creator": "first_birthday_gift.near",
-   "creator_keys": [
-    "ed25519:5uG2LHbQUH1kdbqxWCz7yzcGn5MENCckDtH5KKHTbru9"
-   ],
-   "buyers_checked": 18,
-   "unreadable": 0,
-   "sharing_a_key_with_creator": []
   },
   "ss.nearlytrade.near": {
    "creator": "hvgdtyujnbvffyuj.near",
    "creator_keys": [
     "ed25519:CKtwcngBALDWtPjv9hEvkN6caQqoAocfE7KpDuhtttZp"
    ],
+   "wallets_with_a_full_access_key_shared": 0,
    "buyers_checked": 11,
    "unreadable": 0,
+   "sharing_a_key_with_creator": []
+  },
+  "wmark.nearlytrade.near": {
+   "creator": "wagemark.near",
+   "creator_keys": [
+    "ed25519:8nqhNQ8DWfwnaRYvjVEVMwK3usuDok2jCz3qAFwZXbN1"
+   ],
+   "wallets_with_a_full_access_key_shared": 0,
+   "buyers_checked": 30,
+   "unreadable": 1,
    "sharing_a_key_with_creator": []
   }
  }
