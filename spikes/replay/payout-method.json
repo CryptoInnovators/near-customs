@@ -1,0 +1,82 @@
+{
+ "phire.nearlytrade.near": {
+  "buys_read": 23,
+  "market_to_token_methods": {
+   "ft_transfer": 23
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 23
+ },
+ "justai.nearlytrade.near": {
+  "buys_read": 11,
+  "market_to_token_methods": {
+   "ft_transfer": 11
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 11
+ },
+ "celadon.nearlytrade.near": {
+  "buys_read": 31,
+  "market_to_token_methods": {
+   "ft_transfer": 31
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 31
+ },
+ "nearvember.nearlytrade.near": {
+  "buys_read": 19,
+  "market_to_token_methods": {
+   "ft_transfer": 19
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 18
+ },
+ "grlant.nearlytrade.near": {
+  "buys_read": 26,
+  "market_to_token_methods": {
+   "ft_transfer": 26
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 19
+ },
+ "clearline.nearlytrade.near": {
+  "buys_read": 23,
+  "market_to_token_methods": {
+   "ft_transfer": 23
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 23
+ },
+ "doljabi.nearlytrade.near": {
+  "buys_read": 19,
+  "market_to_token_methods": {
+   "ft_transfer": 19
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 18
+ },
+ "drita.nearlytrade.near": {
+  "buys_read": 30,
+  "market_to_token_methods": {
+   "ft_transfer": 30
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 30
+ },
+ "mob.nearlytrade.near": {
+  "buys_read": 15,
+  "market_to_token_methods": {
+   "ft_transfer": 15
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 12
+ },
+ "ss.nearlytrade.near": {
+  "buys_read": 11,
+  "market_to_token_methods": {
+   "ft_transfer": 11
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 11
+ },
+ "wmark.nearlytrade.near": {
+  "buys_read": 30,
+  "market_to_token_methods": {
+   "ft_transfer": 30
+  },
+  "buyer_wrap_calls_seen_with_ft_transfer_call": 29
+ },
+ "_total": {
+  "ft_transfer": 238
+ }
+}
