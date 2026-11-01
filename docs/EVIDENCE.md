@@ -5,7 +5,7 @@ Every figure in the README and `docs/SPIKE.md`, with the command that produces i
 | Figure | Value | Command | Source and block |
 |---|---|---|---|
 | Opening tokens sold within 24 h | 97.06% to 100.00% on each of 11 launches, 8 of 11 at 100.00% | `python3 spikes/table.py` | FastNEAR transaction API (`tx.main.fastnear.com`), replay head blocks 222392004 to 222393667, one per row of the table |
-| Opening buyers replayed | 247 (23 to 32 per launch) | `python3 spikes/table.py` | same |
+| Opening buyers replayed | 247 (12 to 32 per launch) | `python3 spikes/table.py` | same |
 | Creator-linked share at 1, 2 and 3 hops | 0.00% on every launch | `python3 spikes/table.py` | same |
 | Placebo creator linked | 0 of 226 wallets | `python3 spikes/table.py` | same |
 | Opening wallets holding zero tokens | 244 of 247 | `python3 spikes/balances.py 222392783 spikes/replay/*.json` | `archival-rpc.mainnet.fastnear.com` `call_function` `ft_balance_of`, block 222392783 (`spikes/replay/balance-check.json`) |
