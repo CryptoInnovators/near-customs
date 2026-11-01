@@ -16,17 +16,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
+          targets: wasm32-unknown-unknown,wasm32-wasip2
       - uses: Swatinem/rust-cache@v2
-      - name: layout check
+      - name: install cargo-near 0.16.0 (prebuilt release, sha256 checked)
         run: |
-          if [ ! -f Cargo.toml ]; then
-            echo "no root Cargo.toml. Add a workspace manifest so CI can build every contract."
-            exit 1
-          fi
-      - name: build wasm
-        run: |
-          cargo build --workspace --release --target wasm32-unknown-unknown
-      - name: test
-        run: |
-          cargo test --workspace --no-fail-fast
+          base=https://github.com/near/cargo-near/releases/download/cargo-near-v0.16.0
+          curl -sfLO "$base/cargo-near-x86_64-unknown-linux-gnu.tar.gz"
+          curl -sfLO "$base/cargo-near-x86_64-unknown-linux-gnu.tar.gz.sha256"
+          echo "$(cut -d' ' -f1 cargo-near-x86_64-unknown-linux-gnu.tar.gz.sha256)  cargo-near-x86_64-unknown-linux-gnu.tar.gz" | sha256sum -c -
+          tar -xzf cargo-near-x86_64-unknown-linux-gnu.tar.gz
+          install -m 0755 cargo-near-x86_64-unknown-linux-gnu/cargo-near "$HOME/.cargo/bin/cargo-near"
+          cargo near --version
+      - name: build the token wasm, run the workspace tests
+        run: scripts/check.sh
