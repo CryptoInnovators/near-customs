@@ -39,8 +39,22 @@ Prerequisites for a clean clone: Rust stable via `rustup` (the repo's `rust-tool
 7. `cargo run --release -p customs-walker -- check-path --token T --creator C --wallet W --buy-tx H --path h1,h2`: applies the published rule to a path you supply and prints the verdict.
 8. `python3 spikes/serial.py`: lists every wallet that bought 3 or more of the 11 openings. You see `wrapz-z.near`, `tyty.sendler-b.near` and two implicit accounts at `11 of 11`, `alola.near` at `10 of 11`, and `31 of 96 distinct opening buyers bought 3 or more of the 11 openings` at the end.
 9. `python3 spikes/payout_method.py spikes/replay/phire.json`: reads the 23 first-buy transactions from FastNEAR and counts the method the market called on the token. You see `phire.nearlytrade.near 23 {'ft_transfer': 23} control 23`; the control counts buys whose own call was `ft_transfer_call`, which proves the parser tells the two apart.
+10. `scripts/testnet-live.sh`: reads the live testnet token over `https://test.rpc.fastnear.com`. You see five `PASS` lines (code hash equals the built wasm, no access keys, verdict stored, seized amount recomputed to the yoctoNEAR, judge pinned) and `testnet-live: 5 passed, 0 failed`. Any wrong value, for example `SEIZE_BPS=1000 scripts/testnet-live.sh`, prints `FAIL` and exits 1.
 
 Test list with the guard and the mutation for each method: `docs/TESTS.md`. Every replayed figure with its RPC and block: `docs/EVIDENCE.md` and `docs/SPIKE.md`. Demo script: `docs/DEMO-SCRIPT.md`.
+
+## Live on NEAR testnet
+
+`customs26-token.testnet` is the Customs contract running against Rhea's DCL pool and the live OutLayer testnet worker. A stranger checks it with one command, `scripts/testnet-live.sh`, which holds the ids in `scripts/testnet-live.env`.
+
+| Piece | Value |
+|---|---|
+| Token | `customs26-token.testnet`, code hash sha256 `af6b07b5aeab7370c58ee27eff0a9f592944d1a8a4025a09542efd639234e8d3`, no access keys (key deleted in `2ng9Ap3hzzvLFvF2eAP6pUoE47zhmdovehtsWNQCnVeu`), public copy of the wasm on FastFS |
+| Judge | `outlayer.testnet` runs the checker module from FastFS: `https://customs26-creator.testnet.fastfs.io/outlayer.testnet/fc72c7b662fc48ca497c9582a0b1aa8271e051d132283a9645cd5395b485f975.wasm`, the sha256 that CI builds and the contract pins. Verdict key `ed25519:4hHQEcVQRrSHEECe2YJTqj6sCZbT6tCf4UxyuZ4Ye8u1`, pinned in `CjjFRY83Dy1gQNSDzV5VdoaA1EnbrU8iRL9SveTT8aL2` |
+| Market | `dclv2.ref-dev.testnet`, pool `customs26-token.testnet\|wrap.testnet\|2000` seeded by the creator with half the supply (`J5whpdMYhZufbCC6B5C87uVTVLwYEH1UyMT157C4QRZz`, `4SZst6skBFChBb6rRR4se1PfEeiiT3iHAfYrZVHSQUhX`); trading announced with `38xS6MT4mexj9BoUGu8bSVs28mye3z1aiiF3fUhxPSjJ` |
+| Opening | `customs26-buyer1.testnet` (the creator sent it 1 NEAR in `23atwS3gdX11c1r7o3UBZK1w7UAuskk7VofmoaZiP5HU`) and `customs26-buyer2.testnet` (no creator money) each swap 0.5 wNEAR for 4976.04 tokens through the pool: `75sREratSM2pa3iGJBx61hbwPSx3Wfa8bseN3g6CmR2T`, `GuTXDmdNSsSosDHgjHJLLxgQH1VwXR1Z5jSfxy1TThV5` |
+| Challenge 0, upheld | `customs26-hunter.testnet` files `3Nr9SzTP8jBpZxTwV9W9hPfd2KMjfSsYqPBGyru3RuVN` against buyer1. OutLayer yields, the enclave signs, `on_verdict` seizes 994.41 tokens (20% of the 4972.07 unvested) and freezes the other 3977.66 for 30 days. `challenge_of(0)` reads `Upheld`, `opening_of(buyer1)` reads `seized_frozen` |
+| Challenge 1, rejected | `FVbjGgwXwyGAVkqR8JMLXKLyvRuGgZ65QLTBp2vJ1ECq` against buyer2: a path whose creator hop reaches another wallet. `challenge_of(1)` reads `Rejected`, the 0.5 NEAR bond is forfeited |
 
 ## The demo page
 
@@ -67,6 +81,8 @@ The page traces up to 32 priced buyers per launch within 300 account pages and 1
 | NEAR Intents `dip4 native_withdraw` | Read as evidence: names the owner account behind an Intents payout | mainnet transaction fixture `crates/walker/tests/fixtures/intents-withdraw-hx23fz.json` | `crates/walker/src/receipts.rs:141` |
 | Ref Finance DCL pool (`dclv2.ref-labs.near`) | The market whose payouts open a bag | mainnet reads | `lib.rs:642`, `spikes/replay/payout-method.json` |
 | FastNEAR transaction API and RPC | Receipts, balances and access keys for the walker, the checker and the demo page | mainnet | `crates/walker`, `crates/checker/src/main.rs`, `web/app.js` |
+| OutLayer testnet (`outlayer.testnet`) with FastFS | Runs the checker module for the live testnet token; the module is fetched by URL and sha256 from FastFS | testnet, `customs26-token.testnet` challenges 0 and 1 | `scripts/testnet-live.sh`, `scripts/testnet-live.env` |
+| Rhea DCL pool (`dclv2.ref-dev.testnet`) | The market for the testnet token; its swap pays buyers with `ft_transfer` | testnet | `scripts/testnet-live.env` |
 | WASI checker on OutLayer | Applies the path rule inside the enclave; manifest allows only `tx.main.fastnear.com` | built for `wasm32-wasip2` | `crates/checker`, `crates/checker/manifest.json` |
 
 ## Libraries and baseline
