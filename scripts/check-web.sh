@@ -5,5 +5,6 @@ cd "$(dirname "$0")/.."
 command -v node >/dev/null || { echo "missing tool: node (18 or newer)" >&2; exit 1; }
 node --check web/app.js
 node --check web/customs.js
-node --test web/test/net.test.mjs web/test/customs.test.mjs
+node --check web/rule.js
+node --test web/test/net.test.mjs web/test/customs.test.mjs web/test/rule.test.mjs
 python3 -m unittest discover -s spikes -p 'test_*.py'
