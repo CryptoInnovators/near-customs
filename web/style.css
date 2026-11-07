@@ -640,3 +640,61 @@ button:disabled { cursor: wait; background: var(--ink-2); border-color: var(--in
 @media (prefers-reduced-motion: no-preference) {
   a, button, .row summary { transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease; }
 }
+
+/* Customs-coin panel */
+:root { --ok: #2f5d3a; --ok-2: #dfe9dc; }
+
+#coin-panel { margin-top: 40px; }
+
+.checks {
+  list-style: none;
+  margin: 18px 0 22px;
+  padding: 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.check {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: baseline;
+}
+
+.check p { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); overflow-wrap: anywhere; }
+
+.check-mark {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 5px 0 4px;
+  border: 1px solid var(--ink-2);
+  border-radius: 2px;
+}
+
+.check.pass .check-mark { color: var(--ok); border-color: var(--ok); background: var(--ok-2); }
+.check.fail .check-mark { color: var(--paper); border-color: var(--accent); background: var(--accent); }
+.check.fail strong { color: var(--accent); }
+.check.unread .check-mark { border-style: dashed; color: var(--ink-2); }
+
+#coin-panel .method { margin-top: 4px; }
+
+.sub {
+  margin: 30px 0 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.tag.vesting { border-color: var(--ink); color: var(--ink); }
+
+@media (max-width: 640px) {
+  .check { grid-template-columns: 1fr; gap: 6px; }
+  .check-mark { justify-self: start; padding: 5px 10px 4px; }
+}

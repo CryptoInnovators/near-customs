@@ -14,7 +14,7 @@
     <div class="topline">
       <span class="wordmark">Customs</span>
       <span class="topline-rule" aria-hidden="true"></span>
-      <span class="network">NEAR mainnet / read only</span>
+      <span class="network">NEAR testnet coin and mainnet launches / read only</span>
     </div>
 
     <h1>Who paid for<br>the first buyers?</h1>
@@ -42,6 +42,11 @@
       cost, every hop before the buy, no listed hub. Market read: <span class="mono">dclv2.ref-labs.near</span>.
     </p>
   </header>
+
+  <section class="panel" id="coin-panel" aria-live="polite">
+    <div class="panel-head"><h2>Reading a Customs coin</h2><p class="panel-meta">customs26-token.testnet / NEAR testnet</p></div>
+    <p class="sees">Asking the chain for the token's parameters, verdict key, access keys and opening bags.</p>
+  </section>
 
   <section class="verdict" id="verdict" aria-live="polite">
     <p class="verdict-kicker">Verdict</p>
@@ -99,6 +104,7 @@
 
 </div>
 <script src="net.js" defer></script>
+<script src="customs.js" defer></script>
 <script src="app.js" defer></script>
 </body>
 </html>

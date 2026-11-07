@@ -74,8 +74,8 @@ control, which is ink on paper.
 
 ## States
 
-Every read has loading, empty, partial and error copy. Loading says what is being read. Partial
-says which budget was reached. Error quotes the endpoint's own text. Empty states keep the frame.
+Every read has loading, empty and error copy. Loading says what is being read. A read that
+stops early names the limit it reached. Error quotes the endpoint's own text. Empty states keep the frame.
 
 ## Phone
 
