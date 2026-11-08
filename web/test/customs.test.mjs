@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const { PUBLISHED, openingBuyers, challengeTxs, judgeChecks, loadCoin } = require("../customs.js");
+const { PUBLISHED, openingBuyers, challengeTxs, judgeChecks, latestEntry, loadCoin } = require("../customs.js");
 
 const dir = new URL("./fixtures/testnet/", import.meta.url);
 const load = (name) => JSON.parse(readFileSync(new URL(name, dir), "utf8"));
@@ -117,4 +117,27 @@ test("an account without customs_params is not a Customs token", async () => {
   const m = await loadCoin(io, "testnet", "wrap.testnet");
   assert.equal(m.kind, "not_customs");
   assert.match(m.reason, /MethodNotFound/);
+});
+
+test("the latest entry is the newest transaction by block time, whatever order the list came in", () => {
+  const forward = latestEntry(rawTxs);
+  assert.equal(forward.hash, "FVbjGgwXwyGAVkqR8JMLXKLyvRuGgZ65QLTBp2vJ1ECq");
+  assert.equal(latestEntry([...rawTxs].reverse()).hash, forward.hash);
+  assert.ok(forward.height > 276000000 && forward.tsS > 1793777000);
+  assert.equal(latestEntry([]), null);
+});
+
+test("loadCoin reports each read as it resolves: params first, then checks, latest, bags, notices", async () => {
+  const stages = [];
+  const m = await loadCoin(recorded(), "testnet", TOKEN, (stage, payload) => stages.push(stage === "check" ? "check:" + payload.id : stage));
+  assert.equal(stages[0], "params");
+  assert.equal(stages[1], "check:judge");
+  assert.deepEqual([...stages].sort().filter((s) => s.startsWith("check:")), ["check:checker", "check:judge", "check:keys", "check:verdict_key"]);
+  assert.deepEqual(stages.slice(-3), ["latest", "bags", "notices"]);
+  assert.equal(m.latest.hash, "FVbjGgwXwyGAVkqR8JMLXKLyvRuGgZ65QLTBp2vJ1ECq");
+});
+
+test("a transport failure is a failed read, never a Not-a-Customs-token verdict", async () => {
+  const io = recorded({ async view() { throw Object.assign(new Error("The NEAR RPC could not be reached"), { transport: true }); } });
+  await assert.rejects(loadCoin(io, "testnet", TOKEN), /could not be reached/);
 });

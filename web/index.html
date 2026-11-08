@@ -3,109 +3,115 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Customs: who paid for the first buyers?</title>
-<meta name="description" content="Reads a NEAR token launch from public endpoints and traces each opening buyer back toward the creator.">
+<title>Declaration of opening bags | Customs</title>
+<meta name="description" content="A live NEAR Customs coin: the judge it answers to, the checker it runs, the opening bags it holds and the seizures it has made, read from the chain when the page opens.">
+<link rel="preload" href="fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/courier-prime-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
-<div class="page">
+<body data-field="green">
+<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="ink" x="-8%" y="-12%" width="116%" height="124%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="edge"/>
+    <feDisplacementMap in="SourceGraphic" in2="edge" scale="2" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.35 0.5" numOctaves="3" seed="11" result="speck"/>
+    <feColorMatrix in="speck" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 9 -3.2" result="mask"/>
+    <feComposite in="rough" in2="mask" operator="in"/>
+  </filter>
+</svg>
 
-  <header class="masthead">
-    <div class="topline">
-      <span class="wordmark">Customs</span>
-      <span class="topline-rule" aria-hidden="true"></span>
-      <span class="network">NEAR testnet coin and mainnet launches / read only</span>
-    </div>
+<header class="band">
+  <a class="mark" href="index.html"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="1" y="1" width="18" height="18" rx="3" fill="none" stroke="#fff" stroke-width="2"/><path d="M5 10.5l3.2 3L15 6.5" fill="none" stroke="#fff" stroke-width="2"/></svg>Customs</a>
+  <nav class="routes" aria-label="Routes">
+    <a href="index.html" aria-current="page">Declaration</a>
+    <a href="inspect.html">Inspect a launch</a>
+  </nav>
+  <p class="chain"><span data-network>NEAR TESTNET</span><span class="blk"><span class="blk-label">block</span><span data-block aria-live="off">reading</span></span></p>
+</header>
 
-    <h1>Who paid for<br>the first buyers?</h1>
+<div class="field">
+  <div class="red-field" aria-hidden="true"></div>
 
-    <p class="standfirst">A token launched on NEAR. These wallets bought in its first ten minutes.
-      The page walks each buy backward through NEAR transfers and marks the wallets the creator's
-      money reached first.</p>
-
-    <form class="declaration" id="inspect-form" novalidate>
-      <div class="field">
-        <label for="token">Token account</label>
-        <input id="token" name="token" type="text" spellcheck="false" autocapitalize="off"
-               value="phire.nearlytrade.near" autocomplete="off">
+  <main class="sheet" id="sheet" aria-busy="true">
+    <section class="head" aria-labelledby="title">
+      <div class="head-title">
+        <p class="form-code">Form C-24</p>
+        <h1 id="title">Declaration<br>of opening bags</h1>
+        <p class="lede busy" id="lede">Reading the coin.</p>
       </div>
-      <div class="field">
-        <label for="creator">Creator account</label>
-        <input id="creator" name="creator" type="text" spellcheck="false" autocapitalize="off"
-               value="provenhire.near" autocomplete="off">
+      <div class="head-boxes">
+        <div class="box">
+          <p class="cap"><span>Consignee</span></p>
+          <p class="val"><span class="ref"><a class="consignee" id="consignee" data-consignee href="#"></a><button type="button" class="copy" id="consignee-copy" aria-label="Copy the contract account"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M5.5 5.5h7v8h-7zM3.5 10.5v-8h7" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></span></p>
+          <p class="prov" id="consignee-prov">contract account</p>
+        </div>
+        <div class="box" id="latest">
+          <p class="cap"><span>Latest entry</span></p>
+          <p class="val blank" id="latest-val"></p>
+          <p class="prov" id="latest-prov">newest transaction on the account</p>
+        </div>
       </div>
-      <button type="submit" id="inspect">Inspect launch</button>
-    </form>
+    </section>
 
-    <p class="ruleline">
-      <span>Rule</span> first hop from the creator, at most three hops, each hop at least half the buy
-      cost, every hop before the buy, no listed hub. Market read: <span class="mono">dclv2.ref-labs.near</span>.
-    </p>
-  </header>
-
-  <section class="panel" id="coin-panel" aria-live="polite">
-    <div class="panel-head"><h2>Reading a Customs coin</h2><p class="panel-meta">customs26-token.testnet / NEAR testnet</p></div>
-    <p class="sees">Asking the chain for the token's parameters, verdict key, access keys and opening bags.</p>
-  </section>
-
-  <section class="verdict" id="verdict" aria-live="polite">
-    <p class="verdict-kicker">Verdict</p>
-    <p class="verdict-wait">Reading the token's first day from FastNEAR.</p>
-  </section>
-
-  <section class="panel" id="holders-panel">
-    <div class="panel-head">
-      <h2>The opening buyers</h2>
-      <p class="panel-meta" id="holders-meta">Not read yet.</p>
+    <div id="boxes-wrap">
+      <section class="cells boxes" id="boxes" aria-label="Declaration boxes">
+        <div class="box acct" data-box="creator"><p class="cap"><span class="no">1</span><span>Consignor</span></p><p class="val blank"></p><p class="prov">call_function customs_params</p></div>
+        <div class="box acct" data-box="market"><p class="cap"><span class="no">2</span><span>Market</span></p><p class="val blank"></p><p class="prov">call_function customs_params</p></div>
+        <div class="box acct" data-box="judge"><p class="cap"><span class="no">3</span><span>Judge</span></p><p class="val blank"></p><p class="prov">call_function customs_params</p></div>
+        <div class="box" data-box="opens"><p class="cap"><span class="no">4</span><span>Window opens</span></p><p class="val blank"></p><p class="prov">call_function window</p></div>
+        <div class="box" data-box="closes"><p class="cap"><span class="no">5</span><span>Window closes</span></p><p class="val blank"></p><p class="prov">call_function window</p></div>
+        <div class="box" data-box="vest"><p class="cap"><span class="no">6</span><span>Vest ends</span></p><p class="val blank"></p><p class="prov">call_function window</p></div>
+        <div class="box" data-box="seize"><p class="cap"><span class="no">7</span><span>Seizure rate</span></p><p class="val blank"></p><p class="prov">call_function customs_params</p></div>
+        <div class="box" data-box="bond"><p class="cap"><span class="no">8</span><span>Minimum bond</span></p><p class="val blank"></p><p class="prov">call_function customs_params</p></div>
+      </section>
     </div>
-    <p class="sees">
-      Each row is a wallet the market paid inside the opening window. Received is what the market
-      sent. Still holds is its balance at the block named above. Paid is wNEAR the buy transaction
-      moved into the market. Sold is the share that left the wallet within 24 hours.
-    </p>
-    <div id="holder-list" class="ledger">
-      <p class="empty">Waiting for a token.</p>
-    </div>
-  </section>
 
-  <section class="panel" id="method-panel">
-    <div class="panel-head">
-      <h2>How the check ran</h2>
-      <p class="panel-meta" id="method-meta">Not read yet.</p>
-    </div>
-    <dl class="method" id="method">
-      <div><dt>Market</dt><dd class="mono">dclv2.ref-labs.near</dd></div>
-      <div><dt>Opening window</dt><dd class="mono">600 s</dd></div>
-      <div><dt>Vest watched</dt><dd class="mono">86,400 s</dd></div>
-      <div><dt>Path depth</dt><dd class="mono">3 hops</dd></div>
-      <div><dt>Half cost floor</dt><dd class="mono">50.00%</dd></div>
-      <div><dt>Hub list</dt><dd class="mono">v1, 9 accounts</dd></div>
-    </dl>
-    <p class="sees method-note" id="method-note">
-      Every figure on this page is read in the browser at load time. Nothing is stored on a server.
-    </p>
-  </section>
+    <section class="cells inspection" id="inspection" aria-label="Inspection">
+      <div class="check" data-check="judge" data-state="reading"><p class="cap"><span class="no">A</span><span>Judge contract</span></p><div class="stamp-zone"><span class="stamp stamp-empty" data-stamp="empty" aria-hidden="true"><span class="stamp-word">Cleared</span></span></div><p class="val blank"></p><p class="txt">Comparing the token's judge with the one published in the source.</p></div>
+      <div class="check" data-check="checker" data-state="reading"><p class="cap"><span class="no">B</span><span>Checker module</span></p><div class="stamp-zone"><span class="stamp stamp-empty" data-stamp="empty" aria-hidden="true"><span class="stamp-word">Cleared</span></span></div><p class="val blank"></p><p class="txt">Fetching the module and hashing it in this browser.</p></div>
+      <div class="check" data-check="verdict_key" data-state="reading"><p class="cap"><span class="no">C</span><span>Verdict key</span></p><div class="stamp-zone"><span class="stamp stamp-empty" data-stamp="empty" aria-hidden="true"><span class="stamp-word">Cleared</span></span></div><p class="val blank"></p><p class="txt">Reading the key the token pinned from its judge.</p></div>
+      <div class="check" data-check="keys" data-state="reading"><p class="cap"><span class="no">D</span><span>Access keys</span></p><div class="stamp-zone"><span class="stamp stamp-empty" data-stamp="empty" aria-hidden="true"><span class="stamp-word">Cleared</span></span></div><p class="val blank"></p><p class="txt">Listing the keys left on the token account.</p></div>
+    </section>
 
-  <footer class="sources">
-    <p>
-      Endpoints: <span class="mono">tx.main.fastnear.com</span> for receipts and
-      <span class="mono">rpc.mainnet.fastnear.com</span> for balances, both public.
-      The rule is the same one applied by <span class="mono">crates/walker</span> and the
-      on-chain checker.
-    </p>
-    <p>
-      <a href="https://github.com/kamalbuilds/near-customs">Source</a>
-      <span class="sep">/</span>
-      <a href="https://nearblocks.io">NEAR Blocks</a>
-      <span class="sep">/</span>
-      <a href="https://github.com/kamalbuilds/near-customs#the-demo-page">Panel notes</a>
-    </p>
+    <section class="schedule" id="bags" aria-labelledby="bags-h">
+      <div class="perf" aria-hidden="true"></div>
+      <div class="sched-head"><h2 id="bags-h">Schedule 1, Opening bags</h2><p class="sched-meta" id="bags-meta">Reading the opening window.</p></div>
+      <div id="bags-body"><p class="progress busy">Reading the token's transactions.</p></div>
+    </section>
+
+    <section class="schedule slips" id="notices" aria-labelledby="notices-h">
+      <div class="perf" aria-hidden="true"></div>
+      <div class="sched-head"><h2 id="notices-h">Schedule 2, Notices of seizure</h2><p class="sched-meta" id="notices-meta">Reading the challenges.</p></div>
+      <div id="notices-body"></div>
+    </section>
+
+    <section class="schedule foot" id="foot" aria-label="Sources">
+      <div class="cells">
+        <div class="box"><p class="cap"><span>Read from</span></p><dl id="read-from"></dl></div>
+        <div class="box"><p class="cap"><span>Published in the source</span></p><dl id="published"></dl></div>
+        <div class="box">
+          <p class="cap"><span>Examine another account</span></p>
+          <form class="entry-form" id="examine" action="index.html" method="get">
+            <input type="hidden" name="network" value="testnet" id="examine-net">
+            <label class="sr" for="examine-coin">Account to examine</label>
+            <input class="entry" id="examine-coin" name="coin" type="text" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="account.testnet">
+            <button class="btn secondary" type="submit">Examine</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="close">
+    <div class="word" aria-hidden="true">Customs</div>
+    <p id="close-lines"></p>
   </footer>
-
 </div>
+
 <script src="net.js" defer></script>
-<script src="rule.js" defer></script>
+<script src="ui.js" defer></script>
 <script src="customs.js" defer></script>
-<script src="app.js" defer></script>
+<script src="declaration.js" defer></script>
 </body>
 </html>

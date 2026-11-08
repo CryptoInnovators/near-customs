@@ -56,25 +56,6 @@ class BudgetError extends Error {
 
 /* ---------------------------------------------------------------- utilities */
 
-function esc(value) {
-  return String(value).replace(/[&<>"']/g, (c) => (
-    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
-  ));
-}
-
-function shortHash(hash) {
-  if (!hash) return "unknown";
-  return hash.length <= 18 ? hash : hash.slice(0, 8) + "..." + hash.slice(-6);
-}
-
-function accountUrl(id) {
-  return "https://nearblocks.io/address/" + encodeURIComponent(id);
-}
-
-function txUrl(hash) {
-  return "https://nearblocks.io/txns/" + encodeURIComponent(hash);
-}
-
 function timeFormat(tsNs) {
   if (!tsNs) return "time not read";
   try {
@@ -191,7 +172,7 @@ async function postJSON(url, body, label) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
       signal: ctrl.signal,
-    });
+    }, { tries: 5, waitMs: 900 });
     if (!res.ok) {
       throw new Error(label + " returned HTTP " + res.status + ". " + tidy(text));
     }
@@ -695,15 +676,19 @@ async function inspect(token, creator, runId) {
     }
     traced++;
     progress("Tracing " + traced + " of " + Math.min(TRACE_WALLETS, list.length) + ": " + b.wallet);
-    const result = await trace(b.wallet, {
-      wallet: b.wallet,
-      cost: b.cost,
-      ts: b.first,
-      height: b.firstHeight,
-      creator,
-    }, runId);
-    b.trace = result;
-    if (result.status === "not_traced") budgetHit = true;
+    try {
+      const result = await trace(b.wallet, {
+        wallet: b.wallet,
+        cost: b.cost,
+        ts: b.first,
+        height: b.firstHeight,
+        creator,
+      }, runId);
+      b.trace = result;
+      if (result.status === "not_traced") budgetHit = true;
+    } catch (err) {
+      b.trace = { status: "not_traced", path: [], note: "A read for this wallet failed (" + tidy(err.message) + "). It was not ruled out." };
+    }
   }
 
   if (runId !== state.run) return null;
@@ -732,16 +717,18 @@ async function inspect(token, creator, runId) {
 
 /* ---------------------------------------------------------------- rendering */
 
-const holderList = document.getElementById("holder-list");
-const holderMeta = document.getElementById("holders-meta");
-const methodMeta = document.getElementById("method-meta");
-const methodList = document.getElementById("method");
-const methodNote = document.getElementById("method-note");
-const verdict = document.getElementById("verdict");
+const sheet = document.getElementById("sheet");
+const resultEl = document.getElementById("result");
+const buyersBody = document.getElementById("buyers-body");
+const buyersMeta = document.getElementById("buyers-meta");
+const notesBody = document.getElementById("notes-body");
+const notesMeta = document.getElementById("notes-meta");
 const tokenInput = document.getElementById("token");
 const creatorInput = document.getElementById("creator");
 const form = document.getElementById("inspect-form");
 const button = document.getElementById("inspect");
+const NET = "mainnet";
+const ID_RULE = /^(?:[a-f0-9]{64}|(?:[a-z0-9]+[-_])*[a-z0-9]+(?:\.(?:[a-z0-9]+[-_])*[a-z0-9]+)*)$/;
 
 let progressLine = null;
 
@@ -751,40 +738,39 @@ function progress(message) {
 }
 
 function showWorking(message) {
-  verdict.innerHTML =
-    '<p class="verdict-kicker">Verdict</p>' +
-    '<p class="verdict-wait">' + esc(message) + "</p>";
-  holderList.innerHTML = '<p class="working"></p>';
-  progressLine = holderList.querySelector(".working");
-  holderMeta.textContent = "Reading.";
-  methodMeta.textContent = "Reading.";
+  setField("green");
+  resultEl.dataset.state = "reading";
+  resultEl.innerHTML = '<p class="progress busy" data-progress>' + esc(message) + "</p>";
+  progressLine = resultEl.querySelector("[data-progress]");
+  document.getElementById("bar").innerHTML = "";
+  buyersBody.innerHTML = "";
+  buyersMeta.textContent = "Reading.";
+  notesBody.innerHTML = "";
+  notesMeta.textContent = "Reading.";
 }
 
 function showError(message, token) {
-  const action = /no transactions/i.test(message)
-    ? "Check the token account id. It looks like name.near and must be the token contract, not the launch market."
-    : /no sales/i.test(message)
-      ? "Check that this launch sold on " + MARKET + ", and that the creator account is the one named at launch."
-      : "Both endpoints are public and need no key. Run the check again. If the message repeats, open the FastNEAR status page.";
-
-  verdict.innerHTML =
-    '<p class="verdict-kicker">Verdict</p>' +
-    '<div class="notice"><strong>Could not read this launch.</strong>' +
-    "<p><code>" + esc(message) + "</code></p>" +
-    "<p>" + esc(action) + "</p></div>";
-  holderList.innerHTML = '<p class="empty">No rows to show for ' + esc(token) + ".</p>";
-  holderMeta.textContent = "Read failed.";
-  methodMeta.textContent = "Read failed.";
-  methodNote.textContent = "The page stopped at the first failed call and printed the endpoint's own text above. Nothing was filled in.";
+  setField("green");
+  resultEl.dataset.state = "error";
+  resultEl.innerHTML =
+    '<div class="figure" aria-hidden="true">?</div>' +
+    '<div class="verdict-line" data-error><b>Could not read ' + esc(token) + '.</b><br><code class="plain">' + esc(message) + "</code><br>" +
+    "The page stopped at the first failed call. Lodge the declaration again to read it fresh.</div>" +
+    '<div class="stamp-zone">' + stampHtml("unread", "read failed", {}) + "</div>";
+  document.getElementById("bar").innerHTML = "";
+  buyersBody.innerHTML = '<p class="empty-line">No line items for ' + esc(token) + ".</p>";
+  buyersMeta.textContent = "Read failed.";
+  notesBody.innerHTML = "";
+  notesMeta.textContent = "Read failed.";
 }
 
 function statusInfo(b) {
   switch (b.trace.status) {
-    case "creator": return { cls: "creator", label: "creator" };
-    case "linked": return { cls: "funded", label: "funded " + b.trace.path.length + (b.trace.path.length === 1 ? " hop" : " hops") };
-    case "unpriced": return { cls: "muted", label: "not priced" };
-    case "not_traced": return { cls: "muted", label: "not checked" };
-    default: return { cls: "", label: "no link" };
+    case "creator": return { cls: "red", label: "Creator", funded: true };
+    case "linked": return { cls: "red", label: "Creator funded, " + b.trace.path.length + (b.trace.path.length === 1 ? " hop" : " hops"), funded: true };
+    case "unpriced": return { cls: "dash", label: "Not priced" };
+    case "not_traced": return { cls: "dash", label: "Not checked" };
+    default: return { cls: "", label: "No link" };
   }
 }
 
@@ -800,170 +786,157 @@ function renderVerdict(data) {
     else if (b.trace.status === "not_traced") counts.unchecked++;
     else counts.unlinked++;
   }
-
+  const n = data.list.length;
   const share = total ? pct1(fundedTokens, total) : "0.0";
   const direct = data.list.filter((b) => b.trace.status === "creator").length;
   const viaHops = data.list.filter((b) => b.trace.status === "linked").length;
+  const extra = (counts.unchecked ? " " + counts.unchecked + " were not checked." : "") + (counts.unpriced ? " " + counts.unpriced + " buys had no readable wNEAR cost." : "");
 
+  let kind;
   let sentence;
-  if (!data.list.length) {
-    sentence = "No opening buyers were found in the first ten minutes after the first market sale.";
-  } else if (!counts.funded) {
-    sentence = "No opening buy traces back to " + data.creator + " within three hops before the buy. " +
-      counts.unlinked + " of " + data.list.length + " buyers were ruled out" +
-      (counts.unchecked ? ", and " + counts.unchecked + " were not checked." : ".");
+  if (!n) {
+    kind = "empty";
+    sentence = "The market paid no wallets in the first ten minutes after the first sale.";
+  } else if (counts.funded) {
+    kind = "linked";
+    sentence = counts.funded + " of " + n + " opening buyers received creator money from <b>" + esc(data.creator) + "</b>: " + direct + " direct, " + viaHops + " through other wallets." + esc(extra);
+  } else if (counts.unchecked) {
+    kind = "incomplete";
+    sentence = "No opening buy traced back to " + esc(data.creator) + " in the wallets checked. " + counts.unchecked + " of " + n + " buyers were not checked.";
   } else {
-    sentence = "of the opening tokens went to wallets the creator's money reached: " +
-      counts.funded + " of " + data.list.length + " buyers, " + direct + " direct and " +
-      viaHops + " through other wallets.";
-    if (counts.unchecked) sentence += " " + counts.unchecked + " buyers were not checked.";
-    if (counts.unpriced) sentence += " " + counts.unpriced + " buys had no readable wNEAR cost.";
+    kind = "no_link";
+    sentence = "No opening buy traces back to " + esc(data.creator) + " within three hops before the buy. " + counts.unlinked + " of " + n + " buyers were ruled out." + esc(extra);
   }
 
-  const segments = [];
-  if (counts.funded) segments.push('<i class="funded" style="flex:' + counts.funded + ' 1 0" title="creator funded"></i>');
-  if (counts.unlinked) segments.push('<i style="flex:' + counts.unlinked + ' 1 0" title="no creator link"></i>');
-  if (counts.unpriced) segments.push('<i class="unpriced" style="flex:' + counts.unpriced + ' 1 0" title="not priced"></i>');
-  if (counts.unchecked) segments.push('<i class="unchecked" style="flex:' + counts.unchecked + ' 1 0" title="not checked"></i>');
+  const block = data.balances ? data.balances.height : null;
+  const sub = block ? "block " + block.toLocaleString("en-US") : "block not read";
+  const stamp = kind === "empty" ? stampHtml("pass", "nothing to declare", { delay: 400 }) : stampHtml(kind, sub, { delay: 400 });
+  resultEl.dataset.state = "done";
+  resultEl.innerHTML =
+    '<div class="figure" data-share>' + share + "%</div>" +
+    '<p class="verdict-line">' + sentence + "<br><span class=\"prov\">" + esc(data.token) + ", first sale " + esc(dayFormat(data.t0)) + "</span></p>" +
+    '<div class="stamp-zone" data-verdict="' + kind + '">' + stamp + "</div>";
 
-  const sealLabel = counts.funded ? "Customs seal / " + data.creator : "Customs seal / no link";
-  const sealCount = counts.funded ? counts.funded : "0";
-  const sealSub = counts.funded ? "wallets linked" : "wallets linked";
-
-  verdict.innerHTML =
-    '<p class="verdict-kicker">Verdict / ' + esc(data.token) + " / " + esc(dayFormat(data.t0)) + "</p>" +
-    '<p class="verdict-figure">' + share + "%<small>" + esc(sentence) + "</small></p>" +
-    '<div class="seal" aria-label="' + esc(sealLabel) + '"><span>' + esc(sealLabel) + "</span><strong>" +
-      sealCount + "</strong><span>" + sealSub + "</span></div>" +
-    '<div class="bar" aria-hidden="true">' + segments.join("") + "</div>" +
+  const seg = (cls, count, title) => (count ? '<i class="' + cls + '" style="flex:' + count + ' 1 0" title="' + title + '"></i>' : "");
+  document.getElementById("bar").innerHTML =
+    '<div class="barstrip" aria-hidden="true">' + seg("funded", counts.funded, "creator funded") + seg("unlinked", counts.unlinked, "no creator link") + seg("unpriced", counts.unpriced, "not priced") + seg("unchecked", counts.unchecked, "not checked") + "</div>" +
     '<ul class="legend">' +
-      '<li><span class="dot funded"></span>Creator funded <b>' + counts.funded + "</b></li>" +
-      '<li><span class="dot"></span>No creator link <b>' + counts.unlinked + "</b></li>" +
-      '<li><span class="dot unpriced"></span>Not priced <b>' + counts.unpriced + "</b></li>" +
-      '<li><span class="dot unchecked"></span>Not checked <b>' + counts.unchecked + "</b></li>" +
-    "</ul>";
+      '<li><span class="sw funded"></span>Creator funded <b>' + counts.funded + "</b></li>" +
+      '<li><span class="sw"></span>No creator link <b>' + counts.unlinked + "</b></li>" +
+      '<li><span class="sw unpriced"></span>Not priced <b>' + counts.unpriced + "</b></li>" +
+      '<li><span class="sw unchecked"></span>Not checked <b>' + counts.unchecked + "</b></li></ul>";
 
-  holderMeta.textContent = data.list.length + " buyers, read at block " +
-    (data.balances ? data.balances.height.toLocaleString("en-US") : "not read") +
-    " / " + dayFormat(data.t0);
-  methodMeta.textContent = "Read at block " +
-    (data.balances ? data.balances.height.toLocaleString("en-US") : "not read") +
-    " / " + dayFormat(data.t0);
+  if (counts.funded) {
+    document.body.style.setProperty("--field-delay", "400ms");
+    setField("red");
+  } else setField("green");
+
+  buyersMeta.textContent = n + (n === 1 ? " buyer" : " buyers") + ", read at block " + (block ? block.toLocaleString("en-US") : "not read") + ", first sale " + dayFormat(data.t0);
+  notesMeta.textContent = "Read at block " + (block ? block.toLocaleString("en-US") : "not read");
 }
 
-function fact(label, value, sub) {
-  return "<div><dt>" + esc(label) + "</dt><dd>" + value +
-    (sub ? "<span>" + sub + "</span>" : "") + "</dd></div>";
+function chain(txShort, tx) {
+  return refHtml("tx", tx, NET, shorten(txShort));
 }
 
 function renderEvidence(b, data) {
-  const buyLine = "<p>Then the market paid " + esc(b.wallet) + " " +
-    esc(fmtTokens(b.tokens, data.balances ? data.balances.decimals : 24)) + " tokens for " +
-    (b.cost ? esc(fmtNear(b.cost)) + " NEAR" : "a cost this page could not read") +
-    " in <a href=\"" + txUrl(b.firstTx) + "\">" + esc(shortHash(b.firstTx)) + "</a> at " +
-    esc(timeFormat(b.first)) + ", block " + b.firstHeight.toLocaleString("en-US") + ".</p>";
-
+  const decimals = data.balances ? data.balances.decimals : 24;
+  const buyLine = "<p>The market paid " + esc(b.wallet) + " " + esc(fmtTokens(b.tokens, decimals)) + " tokens for " +
+    (b.cost ? esc(fmtNear(b.cost)) + " NEAR" : "a cost this page could not read") + " in " + chain(b.firstTx, b.firstTx) +
+    " at " + esc(timeFormat(b.first)) + ", block " + b.firstHeight.toLocaleString("en-US") + ".</p>";
   if (b.trace.status === "linked") {
-    const hops = b.trace.path.map((e) =>
-      '<li><span class="hop">' + esc(e.from) + '<span class="arrow">&gt;</span>' + esc(e.to) + "</span>" +
-      '<span class="hop-meta"><span class="hop-amount">' + esc(fmtNear(e.yocto)) + " NEAR</span><br>" +
-      esc(timeFormat(e.ts)) + " / " +
-      '<a href="' + txUrl(e.tx) + '">' + esc(shortHash(e.tx)) + "</a></span></li>"
-    ).join("");
-    return '<div class="evidence"><ol class="path">' + hops + "</ol>" + buyLine + "</div>";
+    const hops = b.trace.path.map((e, i) =>
+      '<li><span class="hop-n">' + (i + 1) + "</span>  " + esc(e.from) + '<span class="gt">&gt;</span>' + esc(e.to) + "  " +
+      "<b>" + esc(fmtNear(e.yocto)) + " NEAR</b>  tx " + chain(e.tx, e.tx) + "  " + esc(timeFormat(e.ts)) + "</li>").join("");
+    return '<ol class="path">' + hops + "</ol>" + buyLine;
   }
-
-  if (b.trace.status === "creator") {
-    return '<div class="evidence"><p>The buyer is the creator account. This is the creator\'s own buy.</p>' + buyLine + "</div>";
-  }
-
-  return '<div class="evidence"><p>' + esc(b.trace.note || "No path to the creator was found.") + "</p>" + buyLine + "</div>";
+  if (b.trace.status === "creator") return "<p>The buyer is the creator account: the creator's own buy.</p>" + buyLine;
+  return "<p>" + esc(b.trace.note || "No path to the creator was found.") + "</p>" + buyLine;
 }
 
 function renderRows(data) {
   if (!data.list.length) {
-    holderList.innerHTML = '<p class="empty">The market paid no wallets in the first ten minutes after the first sale.</p>';
+    buyersBody.innerHTML = '<p class="empty-line">No line items. The market paid no opening wallets.</p>';
     return;
   }
-
   const decimals = data.balances ? data.balances.decimals : 24;
-  holderList.innerHTML = data.list.map((b, i) => {
+  const rows = data.list.map((b, i) => {
     const tag = statusInfo(b);
     const balance = data.balances && data.balances.balances.has(b.wallet)
-      ? fmtTokens(data.balances.balances.get(b.wallet), decimals)
-      : "not read";
+      ? fmtTokens(data.balances.balances.get(b.wallet), decimals) : "not read";
     const soldPct = b.tokens ? pct1(b.sold, b.tokens) + "%" : "0.0%";
     const paid = b.cost ? fmtNear(b.cost) + " NEAR" : "not found";
-    return '<article class="row" data-status="' + esc(b.trace.status) + '">' +
-      '<div class="row-top">' +
-        '<span class="row-index">' + String(i + 1).padStart(2, "0") + "</span>" +
-        '<a class="wallet" href="' + accountUrl(b.wallet) + '">' + esc(b.wallet) + "</a>" +
-        '<span class="tag ' + tag.cls + '">' + esc(tag.label) + "</span>" +
-      "</div>" +
-      '<dl class="facts">' +
-        fact("Received", esc(fmtTokens(b.tokens, decimals))) +
-        fact("Still holds", esc(balance)) +
-        fact("Paid", esc(paid)) +
-        fact("Sold in 24h", soldPct, esc(fmtTokens(b.sold, decimals)) + " tokens") +
-        fact("First buy", esc(timeFormat(b.first)), "block " + b.firstHeight.toLocaleString("en-US")) +
-      "</dl>" +
-      "<details><summary>Evidence</summary>" + renderEvidence(b, data) + "</details>" +
-      "</article>";
+    const open = '<button type="button" class="toggle" aria-expanded="false" aria-controls="ev-' + i + '">Evidence</button>';
+    return '<tr class="line print-line' + (tag.funded ? " funded" : "") + '" style="--i:' + Math.min(i, 12) + '" data-row data-status="' + esc(b.trace.status) + '">' +
+      '<td class="n" data-label="No.">' + String(i + 1).padStart(2, "0") + "</td>" +
+      '<td class="wallet-cell" data-label="Wallet" data-wallet>' + refHtml("account", b.wallet, NET) + "</td>" +
+      '<td class="r" data-col="a" data-label="Received"><span class="tok">' + esc(fmtTokens(b.tokens, decimals)) + "</span></td>" +
+      '<td class="r" data-col="b" data-label="Still holds"><span class="tok">' + esc(balance) + "</span></td>" +
+      '<td class="r" data-col="c" data-label="Paid"><span class="tok">' + esc(paid) + "</span></td>" +
+      '<td class="r" data-col="d" data-label="Sold in 24h"><span class="tok">' + soldPct + '</span><span class="raw">' + esc(fmtTokens(b.sold, decimals)) + " tokens</span></td>" +
+      '<td data-col="e" data-label="First buy"><span class="tok">' + esc(timeFormat(b.first)) + '</span><span class="raw">block ' + b.firstHeight.toLocaleString("en-US") + "</span></td>" +
+      '<td class="stateCell" data-label="Link"><span class="tag ' + tag.cls + '">' + esc(tag.label) + "</span> " + open + "</td></tr>" +
+      '<tr class="evidence-row" id="ev-' + i + '"><td colspan="8"><div class="ex"><div><div class="evidence">' + renderEvidence(b, data) + "</div></div></div></td></tr>";
   }).join("");
+  buyersBody.innerHTML = '<table class="ledger insp"><thead><tr><th class="r">No.</th><th>Wallet</th><th class="r">Received</th><th class="r">Still holds</th><th class="r">Paid</th><th class="r">Sold in 24h</th><th>First buy</th><th>Link</th></tr></thead><tbody>' + rows + "</tbody></table>";
 }
 
 function renderMethod(data) {
-  const tokensRead = data.txs.length.toLocaleString("en-US");
+  const block = data.balances ? data.balances.height.toLocaleString("en-US") : "not read";
   const rows = [
     ["Market", MARKET],
-    ["Opening window", WINDOW_S + " s after first sale"],
+    ["Opening window", WINDOW_S + " s after the first sale"],
     ["First sale", timeFormat(data.t0) + ", block " + data.t0Height.toLocaleString("en-US")],
-    ["Token receipts", tokensRead],
+    ["Token receipts", data.txs.length.toLocaleString("en-US")],
     ["Opening buyers", String(data.list.length)],
     ["Tokens sold", fmtTokens(data.openingTokens, data.balances ? data.balances.decimals : 24)],
-    ["Trace budget", state.pages + " pages / " + state.batches + " batches"],
+    ["Trace budget", state.pages + " pages, " + state.batches + " batches"],
     ["Response cache", state.cached + " reused"],
-    ["Read at block", data.balances ? data.balances.height.toLocaleString("en-US") : "not read"],
   ];
-  methodList.innerHTML = rows.map(([k, v]) =>
-    "<div><dt>" + esc(k) + "</dt><dd class=\"mono\">" + esc(v) + "</dd></div>"
-  ).join("");
+  notesBody.innerHTML = '<div class="cells">' + rows.map(([k, v], i) =>
+    '<div class="box"><p class="cap"><span class="no">' + (i + 1) + "</span><span>" + esc(k) + '</span></p><p class="val key">' + esc(v) + "</p></div>").join("") + "</div>";
 
   const notes = [];
-  notes.push("Balances and metadata are read at final block " +
-    (data.balances ? data.balances.height.toLocaleString("en-US") : "not available") +
-    ". Receipts are read once and reused for 30 minutes in this browser, never on a server.");
-  notes.push("Funding paths use plain NEAR transfers and Intents withdrawals, capped at three hops. Each hop must be at least half the wNEAR the buy paid into " + MARKET + ".");
+  notes.push("Balances and metadata are read at final block " + block + ". Receipts are read once and kept for 30 minutes in this browser.");
+  notes.push("Funding paths follow plain NEAR transfers and Intents withdrawals up to three hops. Each hop is at least half the wNEAR the buy paid into " + MARKET + ".");
   if (data.scan.list.length && !data.scan.complete) {
-    notes.push("The token scan stopped at " + MAX_SCAN_PAGES + " pages before the 24 hour mark, so later transfers from these wallets are not counted in Sold.");
+    notes.push("The token scan stopped at " + MAX_SCAN_PAGES + " pages before the 24 hour mark, so Sold counts transfers up to that page.");
   }
-  if (data.balanceError) {
-    notes.push("Balances could not be read: " + data.balanceError + " Amounts are shown with 24 decimals.");
-  }
-  if (data.balances && data.balances.errors.length) {
-    notes.push("Some balance calls failed (" + data.balances.errors[0] + "). Those rows say not read rather than showing a number.");
-  }
+  if (data.balanceError) notes.push("Balances could not be read: " + data.balanceError + " Amounts are shown with 24 decimals.");
+  if (data.balances && data.balances.errors.length) notes.push("Some balance calls failed (" + data.balances.errors[0] + "). Those rows say not read.");
   if (data.list.some((b) => b.trace.status === "not_traced")) {
-    notes.push("Not checked means the receipt budget or the " + TRACE_WALLETS + " wallet limit was reached first. It is not a finding.");
+    notes.push("Not checked marks a wallet where the receipt budget or the " + TRACE_WALLETS + " wallet limit was reached first.");
   }
-  notes.push("The page does not see exchange deposits, off-chain agreements, or money that arrived more than three hops back. A no link row is not proof of innocence.");
-  methodNote.textContent = notes.join(" ");
+  notesBody.insertAdjacentHTML("beforeend", '<p class="notes-text">' + esc(notes.join(" ")) + "</p>");
 }
 
 /* ------------------------------------------------------------------- wiring */
 
 function setBusy(busy) {
   button.disabled = busy;
-  button.textContent = busy ? "Reading" : "Inspect launch";
+  button.classList.toggle("is-busy", busy);
+  button.textContent = busy ? "Lodging" : "Lodge declaration";
+  sheet.setAttribute("aria-busy", busy ? "true" : "false");
+}
+
+function markInvalid(boxId, inputEl, show) {
+  const box = document.getElementById(boxId);
+  box.classList.toggle("invalid", show);
+  const old = box.querySelector(".err-msg");
+  if (old) old.remove();
+  if (show) {
+    box.querySelector(".cap").insertAdjacentHTML("afterend", '<p class="err-msg">Account ids end in .near, .testnet or are 64 hex characters</p>');
+    inputEl.focus();
+  }
 }
 
 async function runInspection() {
-  const token = tokenInput.value.trim();
-  const creator = creatorInput.value.trim();
-  if (!token || !creator) {
-    showError("A token account and a creator account are both required.", token || "this token");
-    return;
-  }
+  const token = tokenInput.value.trim().toLowerCase();
+  const creator = creatorInput.value.trim().toLowerCase();
+  markInvalid("box-token", tokenInput, false);
+  markInvalid("box-creator", creatorInput, false);
+  if (!ID_RULE.test(token) || token.length > 64) { markInvalid("box-token", tokenInput, true); return; }
+  if (!ID_RULE.test(creator) || creator.length > 64) { markInvalid("box-creator", creatorInput, true); return; }
   if (token === creator) {
     showError("The token account and the creator account are the same. Name the token contract and the account that launched it.", token);
     return;
@@ -982,12 +955,15 @@ async function runInspection() {
   try {
     const data = await inspect(token, creator, runId);
     if (!data || runId !== state.run) return;
+    await new Promise((r) => setTimeout(r, 400));
     renderVerdict(data);
     renderRows(data);
     renderMethod(data);
+    watchStamps(document);
   } catch (err) {
     if (runId !== state.run) return;
     showError(err && err.message ? err.message : String(err), token);
+    watchStamps(document);
   } finally {
     if (runId === state.run) {
       setBusy(false);
@@ -996,6 +972,18 @@ async function runInspection() {
   }
 }
 
+buyersBody.addEventListener("click", (event) => {
+  if (event.target.closest("a, button.copy")) return;
+  const tr = event.target.closest("tr.line");
+  if (!tr) return;
+  const ev = tr.nextElementSibling;
+  const open = !tr.classList.contains("is-open");
+  tr.classList.toggle("is-open", open);
+  ev.classList.toggle("is-open", open);
+  ev.querySelector(".ex").classList.toggle("open", open);
+  tr.querySelector(".toggle").setAttribute("aria-expanded", String(open));
+});
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   runInspection();
@@ -1003,9 +991,9 @@ form.addEventListener("submit", (event) => {
 
 (function start() {
   const params = new URLSearchParams(window.location.search);
-  const token = params.get("token") || DEFAULTS.token;
-  const creator = params.get("creator") || DEFAULTS.creator;
-  tokenInput.value = token;
-  creatorInput.value = creator;
+  tokenInput.value = params.get("token") || DEFAULTS.token;
+  creatorInput.value = params.get("creator") || DEFAULTS.creator;
+  chainStrip(NET, [RPC, "https://archival-rpc.mainnet.fastnear.com"]);
+  wireCopy(document);
   runInspection();
 })();

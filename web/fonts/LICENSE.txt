@@ -1,0 +1,3 @@
+Big Shoulders Display, copyright Patric King / Chicago Dept. of Innovation and Technology, SIL Open Font License 1.1 (https://github.com/xotypeco/big_shoulders).
+Courier Prime, copyright Quote-Unquote Apps, SIL Open Font License 1.1 (https://github.com/quoteunquoteapps/CourierPrime).
+Latin subsets as served by Google Fonts, stored here so the page loads them from its own origin.
