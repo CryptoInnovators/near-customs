@@ -1,0 +1,18 @@
+/* Hallmark · macrostructure: customs manifest with three evidence slips · pre-emit critique: P5 H4 E4 S5 R5 V4 */
+html, body { overflow-x: clip; }
+.attack-sheet { width: min(100% - 40px, 760px); margin: 48px auto 80px; padding: 40px; background: var(--slip); }
+.lab-kicker, .lab-source { color: var(--muted); font-size: 12px; }
+.attack-sheet h1 { margin: 12px 0 16px; font: 700 clamp(2.25rem, 8vw, 4rem)/.98 var(--display); text-wrap: balance; }
+.lab-intro { max-width: 64ch; margin-bottom: 24px; }
+.lab-intro code, .lab-source code, .lab-path code { font-variant-numeric: tabular-nums; }
+.lab-rule { padding: 16px 0; border-top: 2px solid var(--channel); border-bottom: 1px solid var(--line-2); }
+.lab-scenarios { margin-top: 16px; }
+.lab-case { padding: 24px 0; border-bottom: 1px solid var(--line); }
+.lab-case h2 { margin-bottom: 8px; font: 700 1.4rem/1.15 var(--display); }
+.lab-verdict { margin: 10px 0; color: var(--ink); font: 700 1rem/1.3 var(--typed); text-transform: uppercase; }
+.lab-verdict [data-verdict="linked"], .lab-verdict [data-verdict="challengeable"] { color: var(--red); }
+.lab-path { margin: 12px 0 0 20px; }
+.lab-path li { padding: 7px 0; }
+.lab-path code { display: block; color: var(--muted); overflow-wrap: anywhere; }
+.lab-source { margin-top: 24px; }
+@media (max-width: 600px) { .attack-sheet { width: calc(100% - 24px); margin: 16px auto 32px; padding: 24px 16px; } }

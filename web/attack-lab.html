@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customs: offline attack lab</title>
+<meta name="description" content="Three deterministic fixture cases for the Customs funding and vesting rules. Runs locally without network or wallet actions.">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="attack-lab.css">
+</head>
+<body>
+<header class="band">
+  <a class="mark" href="index.html">Customs</a>
+  <nav class="routes" aria-label="Routes">
+    <a href="index.html">Declaration</a>
+    <a href="inspect.html">Inspect a launch</a>
+    <a href="attack-lab.html" aria-current="page">Attack lab</a>
+  </nav>
+  <p class="chain">OFFLINE · FIXTURE REPLAY</p>
+</header>
+<main class="attack-sheet">
+  <p class="lab-kicker">Rule exercise / local fixtures</p>
+  <h1>Follow the money.<br>Test the cutoff.</h1>
+  <p class="lab-intro">Each finding is computed by <code>web/rule.js</code> from the checked-in transaction fixtures below. Nothing is fetched, signed, or sent.</p>
+  <p class="lab-rule">A buyer links only when enough creator funds reach them before the opening buy. A transfer after vesting ends is outside the challenge window.</p>
+  <section id="scenarios" class="lab-scenarios" aria-label="Fixture scenarios"></section>
+  <p class="lab-source">Fixture source: <code>web/test/fixtures/attack-lab.js</code>. Purchase cost: <code>100 yocto</code>. Minimum per hop: <code>50 yocto</code>.</p>
+</main>
+<script src="rule.js"></script>
+<script src="test/fixtures/attack-lab.js"></script>
+<script src="attack-lab.js"></script>
+</body>
+</html>

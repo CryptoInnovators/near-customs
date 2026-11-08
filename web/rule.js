@@ -1,5 +1,7 @@
 "use strict";
 
+if (typeof module === "undefined") globalThis.CustomsRule = {};
+
 /* Funding edges read from a parsed FastNEAR transaction . Shared by the page and its tests. */
 
 function events(log) {
@@ -86,4 +88,33 @@ function parseTx(raw) {
   };
 }
 
-if (typeof module !== "undefined") module.exports = { events, edgesAll, edgesInto, parseTx };
+function traceFixture({ txs, creator, wallet, buyTs, buyCost, busy = [] }) {
+  const edges = txs.flatMap((raw) => edgesAll(parseTx(raw)));
+  const floor = BigInt(buyCost) / 2n;
+  let frontier = [{ account: wallet, path: [] }];
+  const seen = new Set([wallet]);
+  for (let depth = 0; depth < 3; depth += 1) {
+    const next = [];
+    for (const node of frontier) {
+      for (const edge of edges) {
+        if (edge.to !== node.account || edge.ts >= BigInt(buyTs) || edge.yocto < floor) continue;
+        if (node.path.length && edge.ts >= node.path[0].ts) continue;
+        const path = [edge, ...node.path];
+        if (edge.from === creator) return { verdict: "linked", path };
+        if (busy.includes(edge.from) || seen.has(edge.from)) continue;
+        seen.add(edge.from);
+        next.push({ account: edge.from, path });
+      }
+    }
+    frontier = next;
+  }
+  return { verdict: "unlinked", path: [] };
+}
+
+function challengeVerdict(transferTs, vestEndTs) {
+  return BigInt(transferTs) < BigInt(vestEndTs) ? "challengeable" : "not-challengeable";
+}
+
+const api = { events, edgesAll, edgesInto, parseTx, traceFixture, challengeVerdict };
+if (typeof module !== "undefined") module.exports = api;
+else Object.assign(globalThis.CustomsRule, api);
