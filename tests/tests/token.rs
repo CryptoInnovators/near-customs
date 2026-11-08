@@ -41,6 +41,14 @@ async fn an_unregistered_window_buyer_still_gets_a_bag() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+async fn creator_refund_inside_window_does_not_create_creator_bag() -> anyhow::Result<()> {
+    let w = World::new().await?;
+    w.market_pays(&w.creator, BUY).await?.into_result()?;
+    assert!(w.bag(&w.creator).await?.is_null(), "a market refund does not create an opening bag");
+    Ok(())
+}
+
+#[tokio::test]
 async fn opening_buyer_cannot_sell_or_move_unvested() -> anyhow::Result<()> {
     let w = opened().await?;
     // to the market (a sale), to a fresh wallet, and one token over nothing: all refused
