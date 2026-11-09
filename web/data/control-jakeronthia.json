@@ -1,0 +1,52 @@
+{
+  "backward_path": [
+    {
+      "block": 221728648,
+      "from": "jakeronthia.near",
+      "kind": "Transfer",
+      "to": "bc62c4c3f5f069fc3ef54adf5990708da963a2acf2444ccbd962c1537c835076",
+      "ts_ns": 1793040843783284574,
+      "tx": "BwUSqBv7Nt13BvDZB3jQRCJ55TmVzBpKRFL2emcDUuUk",
+      "yocto": "8000000000000000000000000"
+    },
+    {
+      "block": 221728661,
+      "from": "bc62c4c3f5f069fc3ef54adf5990708da963a2acf2444ccbd962c1537c835076",
+      "kind": "Transfer",
+      "to": "bridge-mng.near",
+      "ts_ns": 1793040851394723217,
+      "tx": "2CZTnbzS3xvojcaUL3pNb2dpk8tEZ7nnE3pAJWwMWRK1",
+      "yocto": "7999505000000000000000000"
+    }
+  ],
+  "backward_search": "linked",
+  "creator": "jakeronthia.near",
+  "forward": [
+    {
+      "block": 221728648,
+      "from": "jakeronthia.near",
+      "kind": "Transfer",
+      "to": "bc62c4c3f5f069fc3ef54adf5990708da963a2acf2444ccbd962c1537c835076",
+      "ts_ns": 1793040843783284574,
+      "tx": "BwUSqBv7Nt13BvDZB3jQRCJ55TmVzBpKRFL2emcDUuUk",
+      "yocto": "8000000000000000000000000"
+    },
+    {
+      "block": 221728661,
+      "from": "bc62c4c3f5f069fc3ef54adf5990708da963a2acf2444ccbd962c1537c835076",
+      "kind": "Transfer",
+      "to": "bridge-mng.near",
+      "ts_ns": 1793040851394723217,
+      "tx": "2CZTnbzS3xvojcaUL3pNb2dpk8tEZ7nnE3pAJWwMWRK1",
+      "yocto": "7999505000000000000000000"
+    }
+  ],
+  "forward_hops": 2,
+  "head": {
+    "hash": "HHt3twXeFzdZqTPnV1AdHoMwzEeWRXHFXC5oUcXDdp4K",
+    "height": 222392443,
+    "rpc": "archival-rpc.mainnet.fastnear.com block final"
+  },
+  "same_wallet_other_creator_unlinked": true,
+  "wallet": "bridge-mng.near"
+}

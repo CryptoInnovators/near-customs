@@ -14,7 +14,7 @@ const PUBLISHED = {
   testnet: {
     outlayer: "outlayer.testnet",
     checker: "fc72c7b662fc48ca497c9582a0b1aa8271e051d132283a9645cd5395b485f975",
-    rpc: ["https://archival-rpc.testnet.fastnear.com", "https://test.rpc.fastnear.com", "https://rpc.testnet.fastnear.com"],
+    rpc: ["https://rpc.testnet.fastnear.com", "https://rpc.testnet.near.org"],
     txApi: "https://tx.test.fastnear.com",
     explorer: "https://testnet.nearblocks.io",
   },
@@ -107,7 +107,7 @@ function bagState(opening) {
 }
 
 function challengeCard(c, txs) {
-  const base = { id: c.id, wallet: c.wallet, challenger: c.challenger, bond: c.bond, filedTx: txs && txs.filed, verdictTx: txs && txs.verdict, createdBlock: c.created_block };
+  const base = { id: c.id, wallet: c.wallet, challenger: c.challenger, bond: c.bond, path: c.path || [], filedTx: txs && txs.filed, verdictTx: txs && txs.verdict, createdBlock: c.created_block };
   const s = c.state;
   if (s && typeof s === "object" && s.Upheld) return Object.assign(base, { kind: "upheld", title: "Upheld", seized: s.Upheld.seized });
   if (s === "Rejected") return Object.assign(base, { kind: "rejected", title: "Rejected" });
@@ -247,3 +247,4 @@ function browserIo(net) {
 }
 
 if (typeof module !== "undefined") module.exports = { PUBLISHED, LIVE_TESTNET_COIN, openingBuyers, challengeTxs, judgeChecks, bagState, challengeCard, latestEntry, loadCoin };
+if (typeof globalThis !== "undefined") globalThis.CustomsContract = { loadCoin, browserIo, PUBLISHED, LIVE_TESTNET_COIN };

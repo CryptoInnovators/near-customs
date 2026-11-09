@@ -1,0 +1,404 @@
+{
+  "items": [
+    {
+      "token": "nearly-993927.nearlytrade.near",
+      "creator": "nearlytrade.near",
+      "opening_buyers": 1,
+      "funded": 1,
+      "funded_near": 2.121199317636133,
+      "total_near": 2.121199317636133,
+      "head_block": 223689225,
+      "computed_at": "2026-11-09T10:21:47.575Z"
+    },
+    {
+      "token": "batman-4.nearlytrade.near",
+      "creator": "9aa8db17b5d6b4b5e168eb27625c0efd56dc215b1208991a3382587c7c50109d",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 121,
+      "head_block": 223561704,
+      "computed_at": "2026-11-09T10:21:53.055Z"
+    },
+    {
+      "token": "diarhea.nearlytrade.near",
+      "creator": "aaalex.near",
+      "opening_buyers": 4,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 101.00249439090933,
+      "head_block": 223260770,
+      "computed_at": "2026-11-09T10:21:58.260Z"
+    },
+    {
+      "token": "singularty.nearlytrade.near",
+      "creator": "near.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.1767914954310092,
+      "head_block": 222619712,
+      "computed_at": "2026-11-09T10:22:05.854Z"
+    },
+    {
+      "token": "ninu-4.nearlytrade.near",
+      "creator": "9705014be9963a60e473339c42b73aa6fb439cafe056b9717682c564efde5baa",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.22,
+      "head_block": 222689587,
+      "computed_at": "2026-11-09T10:22:09.051Z"
+    },
+    {
+      "token": "qcat-3.nearlytrade.near",
+      "creator": "scorp56.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 22.292033911098322,
+      "head_block": 223338524,
+      "computed_at": "2026-11-09T10:22:12.300Z"
+    },
+    {
+      "token": "dragons-2.nearlytrade.near",
+      "creator": "drygoat3271.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.69993,
+      "head_block": 222071301,
+      "computed_at": "2026-11-09T10:22:14.478Z"
+    },
+    {
+      "token": "ai-8.nearlytrade.near",
+      "creator": "maxgains.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.00297,
+      "head_block": 222971909,
+      "computed_at": "2026-11-09T10:22:18.957Z"
+    },
+    {
+      "token": "imeme-8.nearlytrade.near",
+      "creator": "imemeai.near",
+      "opening_buyers": 4,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 67.88189598980489,
+      "head_block": 223255136,
+      "computed_at": "2026-11-09T10:22:28.993Z"
+    },
+    {
+      "token": "rich.nearlytrade.near",
+      "creator": "nearishh.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 1.8808930379139395,
+      "head_block": 218997833,
+      "computed_at": "2026-11-09T10:22:30.705Z"
+    },
+    {
+      "token": "trade-2.nearlytrade.near",
+      "creator": "tradenear.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.011490069893033696,
+      "head_block": 221974420,
+      "computed_at": "2026-11-09T10:22:38.525Z"
+    },
+    {
+      "token": "pmoney-4.nearlytrade.near",
+      "creator": "cinnabands.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.19999999999999998,
+      "head_block": 223087702,
+      "computed_at": "2026-11-09T10:22:47.032Z"
+    },
+    {
+      "token": "dragon-3.nearlytrade.near",
+      "creator": "littlefrog7181.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.022894,
+      "head_block": 221434689,
+      "computed_at": "2026-11-09T10:22:48.895Z"
+    },
+    {
+      "token": "nearkat-630f25.nearlytrade.near",
+      "creator": "8d4736b0fa6c66969e5498fa4337261d45cd4461f841c03891a9533d958c7e40",
+      "opening_buyers": 2,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 105,
+      "head_block": 220257705,
+      "computed_at": "2026-11-09T10:22:51.273Z"
+    },
+    {
+      "token": "nearlycat.nearlytrade.near",
+      "creator": "575f33e985598f429f49d780b1b654c10baae042551ae00a59a9ee7a21da9953",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 9.897436654737737,
+      "head_block": 217727334,
+      "computed_at": "2026-11-09T10:22:55.788Z"
+    },
+    {
+      "token": "kinu-3.nearlytrade.near",
+      "creator": "kinuonnear.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.9957529804152017,
+      "head_block": 222144050,
+      "computed_at": "2026-11-09T10:22:57.820Z"
+    },
+    {
+      "token": "babynearly-2.nearlytrade.near",
+      "creator": "575f33e985598f429f49d780b1b654c10baae042551ae00a59a9ee7a21da9953",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.9939130209573858,
+      "head_block": 217417684,
+      "computed_at": "2026-11-09T10:23:00.030Z"
+    },
+    {
+      "token": "nrmil.nearlytrade.near",
+      "creator": "kashekee.near",
+      "opening_buyers": 1,
+      "funded": 1,
+      "funded_near": 9.88855628273745,
+      "total_near": 9.88855628273745,
+      "head_block": 216971892,
+      "computed_at": "2026-11-09T10:23:04.223Z"
+    },
+    {
+      "token": "fees.nearlytrade.near",
+      "creator": "vantradotfun.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0,
+      "head_block": 217085133,
+      "computed_at": "2026-11-09T10:23:11.565Z"
+    },
+    {
+      "token": "nearlyguy.nearlytrade.near",
+      "creator": "575f33e985598f429f49d780b1b654c10baae042551ae00a59a9ee7a21da9953",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0,
+      "head_block": 216934501,
+      "computed_at": "2026-11-09T10:23:16.879Z"
+    },
+    {
+      "token": "testv2.nearlytrade.near",
+      "creator": "c0c0689c15edcafab82cc7ff8d210b90052b932fa4391b8b7dae8cbddcb82090",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0,
+      "head_block": 217095714,
+      "computed_at": "2026-11-09T10:23:21.591Z"
+    },
+    {
+      "token": "eclipse.nearlytrade.near",
+      "creator": "129ad8f20d29c77cff3fd5217fd703ee44d24046d52a0d6c47be6b77b9bfb76a",
+      "opening_buyers": 2,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 3.352318214401655,
+      "head_block": 222161886,
+      "computed_at": "2026-11-09T10:23:24.230Z"
+    },
+    {
+      "token": "pcat.nearlytrade.near",
+      "creator": "pearlfather.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.9999456282995391,
+      "head_block": 223049838,
+      "computed_at": "2026-11-09T10:23:30.690Z"
+    },
+    {
+      "token": "veil-5.nearlytrade.near",
+      "creator": "veilsurf.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.09999999999999999,
+      "head_block": 220682700,
+      "computed_at": "2026-11-09T10:23:33.809Z"
+    },
+    {
+      "token": "nomo.nearlytrade.near",
+      "creator": "openflour2217.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.04,
+      "head_block": 221537630,
+      "computed_at": "2026-11-09T10:23:45.107Z"
+    },
+    {
+      "token": "sherifchenko.nearlytrade.near",
+      "creator": "zavodil.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 10.000000000000002,
+      "head_block": 221994210,
+      "computed_at": "2026-11-09T10:23:49.140Z"
+    },
+    {
+      "token": "mpoo.nearlytrade.near",
+      "creator": "meta-poo-shitcoin.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 59.71243264543282,
+      "head_block": 221144250,
+      "computed_at": "2026-11-09T10:23:53.769Z"
+    },
+    {
+      "token": "spud-3.nearlytrade.near",
+      "creator": "blueroom8163.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 9.9,
+      "head_block": 220907477,
+      "computed_at": "2026-11-09T10:23:56.221Z"
+    },
+    {
+      "token": "nstocks.nearlytrade.near",
+      "creator": "swiftharbor4181.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.1,
+      "head_block": 218443410,
+      "computed_at": "2026-11-09T10:23:57.735Z"
+    },
+    {
+      "token": "pl4.nearlytrade.near",
+      "creator": "r3ndaik.tg",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.03874355509718327,
+      "head_block": 219801635,
+      "computed_at": "2026-11-09T10:24:01.628Z"
+    },
+    {
+      "token": "robin-3.nearlytrade.near",
+      "creator": "jakeronthia.near",
+      "opening_buyers": 9,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 238.32300000000004,
+      "head_block": 222122157,
+      "computed_at": "2026-11-09T10:24:30.807Z"
+    },
+    {
+      "token": "illia.nearlytrade.near",
+      "creator": "launchbot.nearlytrade.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 34,
+      "head_block": 219941058,
+      "computed_at": "2026-11-09T10:24:32.366Z"
+    },
+    {
+      "token": "claw-2.nearlytrade.near",
+      "creator": "otherzebra9700.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.498,
+      "head_block": 219355538,
+      "computed_at": "2026-11-09T10:24:36.662Z"
+    },
+    {
+      "token": "nrr-2.nearlytrade.near",
+      "creator": "3848827.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 5.791516345258003,
+      "head_block": 217440428,
+      "computed_at": "2026-11-09T10:24:37.969Z"
+    },
+    {
+      "token": "btc.nearlytrade.near",
+      "creator": "quickviper8793.near",
+      "opening_buyers": 2,
+      "funded": 1,
+      "funded_near": 49.18038564306341,
+      "total_near": 70.85059597328487,
+      "head_block": 217504427,
+      "computed_at": "2026-11-09T10:24:42.668Z"
+    },
+    {
+      "token": "gold.nearlytrade.near",
+      "creator": "weirdviper7373.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 38.838722267461726,
+      "head_block": 217507432,
+      "computed_at": "2026-11-09T10:24:42.997Z"
+    },
+    {
+      "token": "ubi.nearlytrade.near",
+      "creator": "mollyholly.near",
+      "opening_buyers": 3,
+      "funded": 1,
+      "funded_near": 1.9823003669724772,
+      "total_near": 71.46751549986509,
+      "head_block": 218016570,
+      "computed_at": "2026-11-09T10:24:48.510Z"
+    },
+    {
+      "token": "nearly10.nearlytrade.near",
+      "creator": "nearly10.near",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 35,
+      "head_block": 218033337,
+      "computed_at": "2026-11-09T10:24:52.899Z"
+    },
+    {
+      "token": "poor.nearlytrade.near",
+      "creator": "kingtgnik.near",
+      "opening_buyers": 2,
+      "funded": 1,
+      "funded_near": 29.64671452043764,
+      "total_near": 78.99592264901881,
+      "head_block": 217264186,
+      "computed_at": "2026-11-09T10:24:56.403Z"
+    },
+    {
+      "token": "slug.nearlytrade.near",
+      "creator": "7686e3cb8dde94e65e9f2bd0801353ee4bf4c746730026e6d58f8b5123e26f87",
+      "opening_buyers": 1,
+      "funded": 0,
+      "funded_near": 0,
+      "total_near": 0.9907740660738871,
+      "head_block": 217498914,
+      "computed_at": "2026-11-09T10:25:00.522Z"
+    }
+  ]
+}

@@ -77,10 +77,21 @@ class Tab {
 }
 
 async function openTab() {
-  const target = await (await fetch(CDP + "/json/new?about:blank", { method: "PUT" })).json();
+  const version = await (await fetch(CDP + "/json/version")).json();
+  const browser = new WebSocket(version.webSocketDebuggerUrl);
+  await new Promise((resolve, reject) => { browser.addEventListener("open", resolve); browser.addEventListener("error", () => reject(new Error("Browser CDP websocket failed at " + CDP))); });
+  let sequence = 0;
+  const browserSend = (method, params = {}) => new Promise((resolve, reject) => {
+    const id = ++sequence;
+    const receive = (event) => { const msg = JSON.parse(event.data); if (msg.id !== id) return; browser.removeEventListener("message", receive); msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result); };
+    browser.addEventListener("message", receive);
+    browser.send(JSON.stringify({ id, method, params }));
+  });
+  const { targetId } = await browserSend("Target.createTarget", { url: "about:blank", background: true });
+  const target = { id: targetId, webSocketDebuggerUrl: CDP.replace(/^http/, "ws") + "/devtools/page/" + targetId };
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => { ws.addEventListener("open", resolve); ws.addEventListener("error", () => reject(new Error("CDP websocket failed at " + CDP))); });
-  return { tab: new Tab(ws), targetId: target.id };
+  return { tab: new Tab(ws), targetId, browser, browserSend };
 }
 
 const FACTS = `(() => {
@@ -92,32 +103,26 @@ const FACTS = `(() => {
     h1: q("h1") ? q("h1").textContent.trim() : null,
     h1Font: q("h1") ? getComputedStyle(q("h1")).fontFamily : null,
     bodyFont: getComputedStyle(document.body).fontFamily,
+    viewport: innerWidth,
     loaded: [...document.fonts].filter((f) => f.status === "loaded").map((f) => f.family.replace(/"/g, "")),
     overflow: document.documentElement.scrollWidth - innerWidth,
-    consignee: q("[data-consignee]") ? q("[data-consignee]").textContent.trim() : null,
-    consigneeRect: rect("[data-consignee]"),
-    latestTx: q("[data-latest-tx]") ? q("[data-latest-tx]").dataset.full : null,
-    latestTxShown: q("[data-latest-tx]") ? q("[data-latest-tx]").textContent.trim() : null,
-    latestTxRect: rect("[data-latest-tx]"),
-    block: q("[data-block]") ? Number(q("[data-block]").textContent.replace(/[^0-9]/g, "")) : null,
-    network: q("[data-network]") ? q("[data-network]").textContent.trim() : null,
-    checks: all("[data-check]").map((e) => ({ id: e.dataset.check, state: e.dataset.state })),
-    bags: all("[data-bag]").map((e) => e.dataset.bag),
-    notices: all("[data-notice]").map((e) => e.dataset.state),
-    stampsInk: all("[data-stamp]").map((e) => e.dataset.stamp),
-    returned: !!q("[data-returned]"),
-    greenStamps: all('[data-ink="green"]').length,
-    field: document.body.dataset.field,
-    badFonts: (() => { const bad = new Set(); const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); while (w.nextNode()) { const n = w.currentNode; if (!n.textContent.trim() || !n.parentElement) continue; const cs = getComputedStyle(n.parentElement); if (cs.display === "none" || cs.visibility === "hidden") continue; const fam = cs.fontFamily.split(",")[0].replace(/["']/g, "").trim(); if (fam !== "Big Shoulders Display" && fam !== "Courier Prime") bad.add(fam + " in <" + n.parentElement.tagName.toLowerCase() + "> " + n.textContent.trim().slice(0, 30)); } return [...bad].slice(0, 5); })(),
+    launchRows: all("#launch-rows tr[data-token]").length,
+    pinned: q('#launch-rows tr[data-token="customs26-token.testnet"]') !== null,
+    funded: q("#funded-count")?.textContent.trim() || null,
+    buyers: all("#buy-tape .ledger-row").length,
+    tapeState: q("#tape-meta")?.textContent.trim() || null,
+    contractChecks: q("#checks-count")?.textContent.trim() || null,
+    challengeText: q("#challenge-content")?.innerText || "",
+    challengeButtons: all(".row-challenge").length,
+    scenarios: all("#scenarios .lab-case").length,
+    visibleText: document.body.innerText,
+    pageError: q("#page-error") && !q("#page-error").hidden ? q("#page-error").textContent : null,
+    navHrefs: all("nav a").map((a) => a.getAttribute("href")),
+    badDash: /[—–]/.test(document.body.innerText),
+    badFonts: (() => { const bad = new Set(); const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); while (w.nextNode()) { const n = w.currentNode; if (!n.textContent.trim() || !n.parentElement) continue; const cs = getComputedStyle(n.parentElement); if (cs.display === "none" || cs.visibility === "hidden") continue; const fam = cs.fontFamily.split(",")[0].replace(/["']/g, "").trim(); if (fam !== "Schibsted" && fam !== "IBM Plex Mono") bad.add(fam + " in <" + n.parentElement.tagName.toLowerCase() + "> " + n.textContent.trim().slice(0, 30)); } return [...bad].slice(0, 5); })(),
     shadows: all("*").filter((e) => getComputedStyle(e).boxShadow !== "none" || getComputedStyle(e).textShadow !== "none").length,
     gradients: all("*").filter((e) => /gradient/.test(getComputedStyle(e).backgroundImage)).length,
     bodyBg: getComputedStyle(document.body).backgroundColor,
-    share: q("[data-share]") ? q("[data-share]").textContent.trim() : null,
-    verdictStamp: q("[data-verdict]") ? q("[data-verdict]").dataset.verdict : null,
-    rows: all("[data-row]").length,
-    wallets: all("[data-wallet]").length,
-    navHrefs: all("nav a").map((a) => a.getAttribute("href")),
-    errorsOnPage: all("[data-error]").map((e) => e.textContent.trim()),
     text: document.body.innerText.length,
     docH: document.documentElement.scrollHeight,
     contentBottom: Math.round(document.querySelector(".close") ? document.querySelector(".close").getBoundingClientRect().bottom + scrollY : 0),
@@ -151,10 +156,11 @@ async function visit(tab, errors, name, url, width, height, ready, readyMs, asse
   check(tag + ": zero console errors from the page's own code and assets", own.length === 0, own.slice(0, 5));
   console.log("INFO " + tag + ": " + throttled.length + " throttled public-endpoint requests absorbed by retry");
   check(tag + ": no horizontal overflow", facts.overflow !== undefined && facts.overflow <= 0, facts.overflow);
-  check(tag + ": Big Shoulders Display and Courier Prime are loaded", (facts.loaded || []).includes("Big Shoulders Display") && (facts.loaded || []).includes("Courier Prime"), facts.loaded);
-  check(tag + ": headline set in Big Shoulders Display", /Big Shoulders Display/.test(facts.h1Font || ""), facts.h1Font);
-  check(tag + ": every text node is set in Big Shoulders Display or Courier Prime", (facts.badFonts || ["no facts"]).length === 0, facts.badFonts);
-  check(tag + ": no shadows, no gradients, green channel ground", facts.shadows === 0 && facts.gradients === 0 && facts.bodyBg === "rgb(11, 74, 50)", [facts.shadows, facts.gradients, facts.bodyBg]);
+  check(tag + ": Schibsted and IBM Plex Mono are loaded", (facts.loaded || []).includes("Schibsted") && (facts.loaded || []).includes("IBM Plex Mono"), facts.loaded);
+  check(tag + ": headings use Schibsted", !facts.h1 || /Schibsted/.test(facts.h1Font || ""), facts.h1Font);
+  check(tag + ": every visible text node uses the project fonts", (facts.badFonts || ["no facts"]).length === 0, facts.badFonts);
+  check(tag + ": no em dash or en dash in visible copy", !facts.badDash, facts.visibleText);
+  check(tag + ": no shadows, no gradients, near-black canvas", facts.shadows === 0 && facts.gradients === 0 && facts.bodyBg === "rgb(10, 10, 11)", [facts.shadows, facts.gradients, facts.bodyBg]);
   assert(tag, facts, { width, height });
   if (process.env.CUSTOMS_E2E_PROBE) console.log("PROBE " + tag + ": " + JSON.stringify(await tab.eval(process.env.CUSTOMS_E2E_PROBE)));
   /* stamps that land when they scroll into view: walk the page once, as a reader does */
@@ -176,35 +182,35 @@ async function visit(tab, errors, name, url, width, height, ready, readyMs, asse
 
 const hex = (s) => /^[1-9A-HJ-NP-Za-km-z]{43,44}$/.test(s || "");
 
-function declaration(tag, f, vp) {
-  check(tag + ": consignee account is the live coin and is above the fold", f.consignee === COIN && f.consigneeRect && f.consigneeRect.bottom <= vp.height, [f.consignee, f.consigneeRect]);
-  check(tag + ": latest transaction is a full hash, shown as 6 + 4 characters, above the fold", hex(f.latestTx) && f.latestTxShown === f.latestTx.slice(0, 6) + "…" + f.latestTx.slice(-4) && f.latestTxRect && f.latestTxRect.bottom <= vp.height, [f.latestTx, f.latestTxShown, f.latestTxRect]);
-  check(tag + ": the field stays green for a cleared coin", f.field === "green", f.field);
-  check(tag + ": live final block is read", f.block > 100000000 && /testnet/i.test(f.network || ""), [f.block, f.network]);
-  check(tag + ": four inspection stamps resolved to pass", f.checks.length === 4 && f.checks.every((c) => c.state === "pass"), f.checks);
-  check(tag + ": two opening bags, one seized and one vested", f.bags.length === 2 && f.bags.includes("seized_frozen") && f.bags.includes("vested"), f.bags);
-  check(tag + ": two notices, one Upheld and one Rejected", f.notices.length === 2 && f.notices.includes("Upheld") && f.notices.includes("Rejected"), f.notices);
-  check(tag + ": nav reaches the inspection route", (f.navHrefs || []).some((h) => /inspect\.html/.test(h)), f.navHrefs);
+function board(tag, f) {
+  check(tag + ": live launch rows and the pinned Customs token render", f.launchRows > 1 && f.pinned, [f.launchRows, f.pinned]);
+  check(tag + ": board links to token inspections and the method page", (f.navHrefs || []).some((h) => /token\.html/.test(h)) && (f.navHrefs || []).some((h) => /attack-lab\.html/.test(h)), f.navHrefs);
 }
 
-function returned(tag, f) {
-  check(tag + ": a non-Customs account is returned, not stamped, and the field turns red", f.returned && f.greenStamps === 0 && f.checks.length === 4 && f.checks[0].state === "fail" && f.checks.every((c) => c.state !== "pass") && f.field === "red", [f.returned, f.greenStamps, f.checks, f.field]);
+function inspection(tag, f, vp) {
+  check(tag + ": verdict-first headline and buyer ledger render", /Was .* sniped\?/.test(f.h1 || "") && f.buyers >= 10, [f.h1, f.buyers]);
+  check(tag + ": funded count and weighted line resolve", /^\d+$/.test(f.funded || "") && /NEAR in opening buys/.test(f.visibleText), [f.funded, f.visibleText.slice(0, 300)]);
+  check(tag + ": token identity and market data render", /phire/i.test(f.visibleText) && /PRICE/.test(f.visibleText), f.visibleText.slice(0, 500));
+  check(tag + ": mobile or desktop navigation remains on screen", f.overflow <= 0 && f.viewport === vp.width, [f.overflow, f.viewport, vp.width]);
 }
 
-function inspection(tag, f) {
-  check(tag + ": funded share and verdict stamp are present", /^\d+(\.\d)?%$/.test(f.share || "") && ["linked", "no_link", "incomplete", "empty"].includes(f.verdictStamp), [f.share, f.verdictStamp]);
-  check(tag + ": a creator-funded launch raises the red field", f.verdictStamp !== "linked" || f.field === "red", [f.verdictStamp, f.field]);
-  check(tag + ": opening buyers are listed with wallets", f.rows >= 10 && f.wallets >= 10, [f.rows, f.wallets]);
-  check(tag + ": no error panel", (f.errorsOnPage || []).length === 0, f.errorsOnPage);
+function customs(tag, f) {
+  check(tag + ": Customs contract rules and challenge fees are read", f.contractChecks === "4/4" && /0\.50 NEAR/.test(f.challengeText) && /0\.10 NEAR/.test(f.challengeText), [f.contractChecks, f.challengeText]);
+  check(tag + ": no challenge action appears without a funded buyer", f.challengeButtons === 0, f.challengeButtons);
+}
+
+function method(tag, f) {
+  check(tag + ": all three deterministic scenarios render", f.scenarios === 3, f.scenarios);
+  check(tag + ": scenarios show linked, unlinked and outside-window outcomes", /Exchange-funded buyer/.test(f.visibleText) && /Creator-funded opening buyers/.test(f.visibleText) && /Transfer after vesting/.test(f.visibleText), f.visibleText.slice(0, 700));
 }
 
 await mkdir(OUT, { recursive: true });
 const server = await serve();
 /* localhost, not 127.0.0.1: the shared browser keeps an 80% page zoom for 127.0.0.1 */
 const base = "http://localhost:" + server.address().port;
-let targetId;
+let targetId, opened;
 try {
-  const opened = await openTab();
+  opened = await openTab();
   const tab = opened.tab;
   targetId = opened.targetId;
   const errors = [];
@@ -217,21 +223,22 @@ try {
   await tab.send("Log.enable");
   await tab.send("Page.enable");
 
-  const settled = `(() => { const c = document.querySelectorAll("[data-check]"); return c.length === 4 && [...c].every((e) => e.dataset.state && e.dataset.state !== "reading") && document.querySelectorAll("[data-bag]").length >= 1 && document.querySelectorAll("[data-notice]").length >= 1 && !document.querySelector("[aria-busy=true]") && /\\d/.test(document.querySelector("[data-block]").textContent); })()`;
+  const settledBoard = `document.querySelectorAll("#launch-rows tr[data-token]").length > 1`;
   for (const [w, h] of [[1440, 900], [390, 844]]) {
-    await visit(tab, errors, "declaration", base + "/index.html?network=testnet&coin=" + COIN, w, h, settled, 120000, declaration);
+    await visit(tab, errors, "board", base + "/index.html", w, h, settledBoard, 60000, board);
   }
-  const wasReturned = `!!document.querySelector("[data-returned]")`;
+  const inspected = `document.querySelector("#tape-meta") && document.querySelector("#tape-meta").textContent !== "Reading the first-sale window…"`;
   for (const [w, h] of [[1440, 900], [390, 844]]) {
-    await visit(tab, errors, "returned", base + "/index.html?network=testnet&coin=wrap.testnet", w, h, wasReturned, 60000, returned);
+    await visit(tab, errors, "inspection", base + "/token.html?t=phire.nearlytrade.near", w, h, inspected, 240000, inspection);
   }
-  const inspected = `!!document.querySelector("[data-verdict]") && !document.querySelector("[aria-busy=true]")`;
-  for (const [w, h] of [[1440, 900], [390, 844]]) {
-    await visit(tab, errors, "inspection", base + "/inspect.html?token=phire.nearlytrade.near&creator=provenhire.near", w, h, inspected, 240000, inspection);
-  }
+  const contractReady = `document.querySelector("#checks-count")?.textContent === "4/4"`;
+  await visit(tab, errors, "customs", base + "/token.html?t=" + COIN, 1440, 900, contractReady, 120000, customs);
+  const methodReady = `document.querySelectorAll("#scenarios .lab-case").length === 3`;
+  for (const [w, h] of [[1440, 900], [390, 844]]) await visit(tab, errors, "method", base + "/attack-lab.html", w, h, methodReady, 30000, method);
 } finally {
   server.close();
-  if (targetId) await fetch(CDP + "/json/close/" + targetId).catch(() => {});
+  if (targetId && opened) await opened.browserSend("Target.closeTarget", { targetId }).catch(() => {});
+  opened?.browser.close();
 }
 
 const failed = results.filter((r) => !r.ok);

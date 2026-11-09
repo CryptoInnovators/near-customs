@@ -2,9 +2,11 @@
 
 /* Customs: reads a NEAR token launch from public endpoints and traces opening buyers. */
 
-const TX_API = "https://tx.main.fastnear.com";
-const RPC = "https://rpc.mainnet.fastnear.com";
-const MARKET = "dclv2.ref-labs.near";
+let TX_API = "https://tx.main.fastnear.com";
+let RPC = "https://rpc.mainnet.fastnear.com";
+let NET = "mainnet";
+const MAINNET_MARKET = "dclv2.ref-labs.near";
+let MARKET = MAINNET_MARKET;
 const HUBS = new Set([
   "system",
   "near",
@@ -28,7 +30,7 @@ const TRACE_WALLETS = 32;
 const TRACE_PAGE_BUDGET = 300;
 const TRACE_TX_BUDGET = 150;
 const TX_BATCH = 20;
-const CONCURRENCY = 4;
+const CONCURRENCY = 12;
 const TIMEOUT_MS = 45000;
 
 const YOCTO = 10n ** 24n;
@@ -37,6 +39,7 @@ const DEFAULTS = { token: "phire.nearlytrade.near", creator: "provenhire.near" }
 
 const CACHE_PREFIX = "customs.v1.";
 const CACHE_TTL = 30 * 60 * 1000;
+const NEARLY_API = "https://nearly.trade/api";
 
 const state = {
   pages: 0,
@@ -557,50 +560,71 @@ async function scanToken(token, created) {
   return { list, pages, complete };
 }
 
-async function inspect(token, creator, runId) {
+async function inspect(token, creator, runId, hooks = {}) {
+  NET = String(token).endsWith(".testnet") ? "testnet" : "mainnet";
+  TX_API = NET === "testnet" ? "https://tx.test.fastnear.com" : "https://tx.main.fastnear.com";
+  RPC = NET === "testnet" ? "https://rpc.testnet.fastnear.com" : "https://rpc.mainnet.fastnear.com";
   state.pages = 0;
   state.batches = 0;
   state.cached = 0;
   state.txMemo = new Map();
   state.busyMemo = new Map();
 
-  progress("Reading the token's first transaction.");
-  const first = await accountPage(
-    token,
-    { desc: false, limit: 1 },
-    "The FastNEAR first transaction read"
-  );
-  if (!first.list.length) {
-    throw new Error("FastNEAR returned no transactions for " + token + ".");
+  // Nearly's trade tape supplies trader, side, raw amounts, block, timestamp and receipt hash.
+  // Use it for opening buyers; FastNEAR remains the source for funding-path receipts.
+  MARKET = hooks.market || MAINNET_MARKET;
+  let tape = hooks.nearlyTrades;
+  if (!tape && !hooks.skipNearly) {
+    const response = await fetch(NEARLY_API + "/trades/" + encodeURIComponent(token));
+    if (response.ok) tape = await response.json();
   }
-  const created = first.list[0];
-
-  progress("Reading the token's first day.");
-  const scan = await scanToken(token, created);
-  if (!scan.list.length) {
-    throw new Error("FastNEAR returned no usable transactions for " + token + ".");
+  tape = Array.isArray(tape) ? tape.filter((t) => t.side === "buy" && t.trader && t.ts_ms && t.block) : [];
+  let created, scan = { list: [], pages: 0, complete: true }, txs = [], moves = [], sales = [];
+  let t0, t0Height;
+  if (tape.length) {
+    const firstTrade = tape.reduce((a, b) => Number(a.ts_ms) < Number(b.ts_ms) ? a : b);
+    created = { ts: BigInt(firstTrade.ts_ms) * 1000000n, height: Number(firstTrade.block), hash: firstTrade.receipt };
+    t0 = created.ts;
+    t0Height = created.height;
+    const end = Number(firstTrade.ts_ms) + WINDOW_S * 1000;
+    const grouped = new Map();
+    for (const trade of tape) {
+      if (Number(trade.ts_ms) >= end) continue;
+      const wallet = String(trade.trader);
+      const b = grouped.get(wallet) || { wallet, tokens: 0n, cost: 0n, first: BigInt(trade.ts_ms) * 1000000n, firstHeight: Number(trade.block), firstTx: String(trade.receipt || ""), txs: new Set() };
+      b.tokens += BigInt(trade.token_amount || 0);
+      b.cost += BigInt(trade.near_amount || 0);
+      if (BigInt(trade.ts_ms) * 1000000n < b.first) { b.first = BigInt(trade.ts_ms) * 1000000n; b.firstHeight = Number(trade.block); b.firstTx = String(trade.receipt || ""); }
+      if (trade.receipt) b.txs.add(String(trade.receipt));
+      grouped.set(wallet, b);
+    }
+    sales = [...grouped.values()];
+    if (!sales.length) throw new Error("Nearly returned no opening buys for " + token + ".");
+    sales.sort((a,b) => a.first < b.first ? -1 : 1);
+    moves = sales.map((b) => ({ from: MARKET, to: b.wallet, amount: b.tokens, ts: b.first, height: b.firstHeight, tx: b.firstTx }));
+  } else {
+    progress("Reading the token's first transaction.");
+    const first = await accountPage(token, { desc: false, limit: 1 }, "The FastNEAR first transaction read");
+    if (!first.list.length) throw new Error("FastNEAR returned no transactions for " + token + ".");
+    created = first.list[0];
+    progress("Reading the token's first day.");
+    scan = await scanToken(token, created);
+    if (!scan.list.length) throw new Error("FastNEAR returned no usable transactions for " + token + ".");
+    progress("Fetching receipts for " + scan.list.length + " token transactions.");
+    txs = await fetchAllTxs(scan.list.map((t) => t.hash), false);
+    if (runId !== state.run) return null;
+    for (const tx of txs) for (const m of ftMoves(tx, token)) moves.push(m);
+    moves.sort((a, b) => (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0));
+    sales = moves.filter((m) => m.from === MARKET && m.to !== token && m.memo !== "tax");
+    if (!sales.length) throw new Error("No sales from " + MARKET + " appeared in this token's first day.");
+    t0 = sales[0].ts;
+    t0Height = sales[0].height;
   }
-
-  progress("Fetching receipts for " + scan.list.length + " token transactions.");
-  const txs = await fetchAllTxs(scan.list.map((t) => t.hash), false);
-  if (runId !== state.run) return null;
-
-  const moves = [];
-  for (const tx of txs) {
-    for (const m of ftMoves(tx, token)) moves.push(m);
-  }
-  moves.sort((a, b) => (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0));
-
-  const sales = moves.filter((m) => m.from === MARKET && m.to !== token && m.memo !== "tax");
-  if (!sales.length) {
-    throw new Error("No sales from " + MARKET + " appeared in this token's first day.");
-  }
-  const t0 = sales[0].ts;
   const winEnd = t0 + BigInt(WINDOW_S) * NS;
   const vestEnd = t0 + BigInt(VEST_S) * NS;
 
   const buyers = new Map();
-  for (const m of sales) {
+  for (const m of tape.length ? [] : sales) {
     if (m.ts >= winEnd) continue;
     const b = buyers.get(m.to) || {
       wallet: m.to,
@@ -620,17 +644,19 @@ async function inspect(token, creator, runId) {
     buyers.set(m.to, b);
   }
 
-  const list = Array.from(buyers.values()).sort((a, b) => (a.tokens < b.tokens ? 1 : -1));
+  const list = tape.length ? sales.sort((a, b) => (a.tokens < b.tokens ? 1 : -1)) : Array.from(buyers.values()).sort((a, b) => (a.tokens < b.tokens ? 1 : -1));
   const openingTokens = list.reduce((sum, b) => sum + b.tokens, 0n);
 
   progress("Pricing " + list.length + " opening buys from wrap.near logs.");
   for (const b of list) {
-    let cost = 0n;
-    for (const hash of b.txs) {
-      const tx = state.txMemo.get(hash);
-      if (tx) cost += costInto(tx, MARKET);
+    if (!tape.length) {
+      let cost = 0n;
+      for (const hash of b.txs) {
+        const tx = state.txMemo.get(hash);
+        if (tx) cost += costInto(tx, MARKET);
+      }
+      b.cost = cost;
     }
-    b.cost = cost;
 
     let sold = 0n;
     for (const m of moves) {
@@ -644,52 +670,45 @@ async function inspect(token, creator, runId) {
     b.remaining = b.tokens - b.sold;
   }
 
+  if (typeof hooks.onBuyers === "function") hooks.onBuyers({ token, creator, created, scan, txs, moves, sales, t0, t0Height, winEnd, vestEnd, list, openingTokens });
+  globalThis.__buyersAt = typeof performance !== "undefined" ? performance.now() : undefined;
+
   progress("Reading balances at a final block.");
   let balances = null;
   let balanceError = "";
   try {
-    balances = await readBalances(token, list.map((b) => b.wallet));
+    if (!tape.length) balances = await readBalances(token, list.map((b) => b.wallet));
   } catch (err) {
     balanceError = err.message;
   }
 
   progress("Tracing funding for the first " + Math.min(TRACE_WALLETS, list.length) + " priced wallets.");
-  let traced = 0;
+  const eligible = [];
+  let started = 0;
   let budgetHit = false;
   for (const b of list) {
-    if (runId !== state.run) return null;
-    if (b.wallet === creator) {
-      b.trace = { status: "creator", path: [], note: "" };
-      continue;
-    }
-    if (b.cost === 0n) {
-      b.trace = { status: "unpriced", path: [], note: "The buy moved no wNEAR into the market, so the half-cost floor cannot be computed." };
-      continue;
-    }
+    if (b.wallet === creator) b.trace = { status: "creator", path: [], note: "" };
+    else if (b.cost === 0n) b.trace = { status: "unpriced", path: [], note: "The buy moved no wNEAR into the market, so the half-cost floor cannot be computed." };
+    else if (eligible.length < TRACE_WALLETS) eligible.push(b);
+    else b.trace = { status: "not_traced", path: [], note: "The page traces the " + TRACE_WALLETS + " largest priced buys. This wallet sits outside that limit and was not ruled out." };
+    if (typeof hooks.onTrace === "function" && b.trace) hooks.onTrace(b);
+  }
+  await mapLimit(eligible, CONCURRENCY, async (b) => {
+    if (runId !== state.run) return;
     if (budgetHit) {
-      b.trace = { status: "not_traced", path: [], note: "The funding search stopped at its receipt budget earlier. This wallet was not ruled out." };
-      continue;
+      b.trace = { status: "not_traced", path: [], note: "The funding search reached its receipt budget earlier. This wallet was not ruled out." };
+      return;
     }
-    if (traced >= TRACE_WALLETS) {
-      b.trace = { status: "not_traced", path: [], note: "The page traces the " + TRACE_WALLETS + " largest priced buys. This wallet sits outside that limit and was not ruled out." };
-      continue;
-    }
-    traced++;
-    progress("Tracing " + traced + " of " + Math.min(TRACE_WALLETS, list.length) + ": " + b.wallet);
+    started++;
+    progress("Tracing " + started + " of " + eligible.length + ": " + b.wallet);
     try {
-      const result = await trace(b.wallet, {
-        wallet: b.wallet,
-        cost: b.cost,
-        ts: b.first,
-        height: b.firstHeight,
-        creator,
-      }, runId);
-      b.trace = result;
-      if (result.status === "not_traced") budgetHit = true;
+      b.trace = await trace(b.wallet, { wallet: b.wallet, cost: b.cost, ts: b.first, height: b.firstHeight, creator }, runId);
+      if (b.trace.status === "not_traced") budgetHit = true;
     } catch (err) {
       b.trace = { status: "not_traced", path: [], note: "A read for this wallet failed (" + tidy(err.message) + "). It was not ruled out." };
     }
-  }
+    if (typeof hooks.onTrace === "function") hooks.onTrace(b);
+  });
 
   if (runId !== state.run) return null;
 
@@ -702,7 +721,7 @@ async function inspect(token, creator, runId) {
     moves,
     sales,
     t0,
-    t0Height: sales[0].height,
+    t0Height,
     winEnd,
     vestEnd,
     list,
@@ -714,6 +733,8 @@ async function inspect(token, creator, runId) {
     cached: state.cached,
   };
 }
+
+globalThis.CustomsInspector = { inspect: (token, creator, hooks = {}) => inspect(token, creator, ++state.run, hooks), setProgress: (fn) => { progress = fn; } };
 
 /* ---------------------------------------------------------------- rendering */
 
@@ -727,7 +748,6 @@ const tokenInput = document.getElementById("token");
 const creatorInput = document.getElementById("creator");
 const form = document.getElementById("inspect-form");
 const button = document.getElementById("inspect");
-const NET = "mainnet";
 const ID_RULE = /^(?:[a-f0-9]{64}|(?:[a-z0-9]+[-_])*[a-z0-9]+(?:\.(?:[a-z0-9]+[-_])*[a-z0-9]+)*)$/;
 
 let progressLine = null;
@@ -972,6 +992,7 @@ async function runInspection() {
   }
 }
 
+if (form) {
 buyersBody.addEventListener("click", (event) => {
   if (event.target.closest("a, button.copy")) return;
   const tr = event.target.closest("tr.line");
@@ -993,7 +1014,8 @@ form.addEventListener("submit", (event) => {
   const params = new URLSearchParams(window.location.search);
   tokenInput.value = params.get("token") || DEFAULTS.token;
   creatorInput.value = params.get("creator") || DEFAULTS.creator;
-  chainStrip(NET, [RPC, "https://archival-rpc.mainnet.fastnear.com"]);
+  chainStrip(NET, NET === "testnet" ? [RPC, "https://rpc.testnet.near.org"] : [RPC, "https://archival-rpc.mainnet.fastnear.com"]);
   wireCopy(document);
   runInspection();
 })();
+}

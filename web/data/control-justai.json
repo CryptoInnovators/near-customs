@@ -1,0 +1,34 @@
+{
+  "backward_path": [
+    {
+      "block": 222118107,
+      "from": "justai.near",
+      "kind": "Transfer",
+      "to": "8a5e6467dc36416cd47a23f3372bc8220d34ca760e0a6e2be6f045608b3af11e",
+      "ts_ns": 1793272981030986764,
+      "tx": "24s4cWRUS7215q3Zmn12s4BMvUtx8PzY6G3CgKztX16t",
+      "yocto": "11000000000000000000000000"
+    }
+  ],
+  "backward_search": "linked",
+  "creator": "justai.near",
+  "forward": [
+    {
+      "block": 222118107,
+      "from": "justai.near",
+      "kind": "Transfer",
+      "to": "8a5e6467dc36416cd47a23f3372bc8220d34ca760e0a6e2be6f045608b3af11e",
+      "ts_ns": 1793272981030986764,
+      "tx": "24s4cWRUS7215q3Zmn12s4BMvUtx8PzY6G3CgKztX16t",
+      "yocto": "11000000000000000000000000"
+    }
+  ],
+  "forward_hops": 1,
+  "head": {
+    "hash": "5ZmqSVXH6J8z6E23zfzXZoUs2LaxYBVsdg4Nv9R2yEu8",
+    "height": 222392442,
+    "rpc": "archival-rpc.mainnet.fastnear.com block final"
+  },
+  "same_wallet_other_creator_unlinked": true,
+  "wallet": "8a5e6467dc36416cd47a23f3372bc8220d34ca760e0a6e2be6f045608b3af11e"
+}

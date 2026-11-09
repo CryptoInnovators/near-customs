@@ -17,7 +17,7 @@ test("accounts are shown whole to 30 characters and shortened beyond", () => {
 test("amounts keep the raw integer grouped and the token amount to two places", () => {
   const seized = amountParts("994413985995229504683186338", 24);
   assert.equal(seized.raw, "994,413,985,995,229,504,683,186,338");
-  assert.equal(seized.amount, "994,413.98");
+  assert.equal(seized.amount, "994.41");
   assert.equal(amountParts("0", 24).amount, "0.00");
   assert.equal(amountParts("not a number", 24).amount, "?");
 });

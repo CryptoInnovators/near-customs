@@ -1,0 +1,79 @@
+{
+ "title": "Discover | fomo",
+ "h1": null,
+ "h2": null,
+ "h3": null,
+ "body": {
+  "text": "Discover\nPaste\n/\nTrending tokens\nRHEA\nRHEA\nMC\n$37.1M\n$0.0372",
+  "font": "Aeonik, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+  "size": "16px",
+  "weight": "500",
+  "tracking": "normal",
+  "leading": "24px",
+  "color": "rgb(247, 247, 247)",
+  "bg": "rgb(6, 5, 16)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px solid rgb(247, 247, 247)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "p": null,
+ "a": {
+  "text": "Discover",
+  "font": "Aeonik, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+  "size": "16px",
+  "weight": "500",
+  "tracking": "normal",
+  "leading": "24px",
+  "color": "rgb(247, 247, 247)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px solid rgb(247, 247, 247)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "button": {
+  "text": "Paste",
+  "font": "Aeonik, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+  "size": "10px",
+  "weight": "700",
+  "tracking": "normal",
+  "leading": "15px",
+  "color": "rgb(152, 153, 163)",
+  "bg": "rgba(203, 208, 235, 0.1)",
+  "radius": "4px",
+  "padding": "2px 6px",
+  "border": "0px solid rgb(152, 153, 163)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "input": {
+  "text": "",
+  "font": "Aeonik, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+  "size": "14px",
+  "weight": "400",
+  "tracking": "normal",
+  "leading": "14px",
+  "color": "rgb(247, 247, 247)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "radius": "0px",
+  "padding": "0px",
+  "border": "0px solid rgb(247, 247, 247)",
+  "transform": "none",
+  "features": "normal"
+ },
+ "loadedFonts": [
+  "Aeonik"
+ ],
+ "htmlBg": "rgb(6, 5, 16)",
+ "textLen": 9876,
+ "height": 900,
+ "url": "https://fomo.family/discover",
+ "viewport": [
+  1440,
+  900
+ ],
+ "lumaStddev": 31.1
+}
