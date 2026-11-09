@@ -44,3 +44,12 @@ jobs:
           name: customs-checker-wasm-testnet
           path: target/checker-testnet/wasm32-wasip2/release/customs-checker.wasm
           if-no-files-found: warn
+      - name: build the testnet token wasm
+        run: scripts/build-token.sh --testnet
+      - name: keep the testnet token wasm this commit builds
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: customs-token-wasm-testnet
+          path: target/wasm/customs_token.wasm
+          if-no-files-found: warn
