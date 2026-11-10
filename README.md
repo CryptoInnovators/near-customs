@@ -43,6 +43,19 @@ Prerequisites for a clean clone: Rust stable via `rustup` (the repo's `rust-tool
 
 Test list with the guard and the mutation for each method: `docs/TESTS.md`. Every replayed figure with its RPC and block: `docs/EVIDENCE.md` and `docs/SPIKE.md`. Demo script: `docs/DEMO-SCRIPT.md`.
 
+## Add the bot
+
+Install and launch the Telegram bot from the repository root:
+
+```sh
+cd bot
+npm install
+export TELEGRAM_BOT_TOKEN="your-token-from-BotFather"
+npm start
+```
+
+If `TELEGRAM_BOT_TOKEN` is unset or empty, the bot prints `TELEGRAM_BOT_TOKEN is required.` and exits with status 1. Once it is running, send `/start` to the bot for its command guide. Use `/check <token.near>` to inspect a Nearly launch, for example `/check phire.nearlytrade.near`. The live testnet Customs token is `customs26-token.testnet`; it is documented below and can also be queried with `/check customs26-token.testnet`.
+
 ## Live on NEAR testnet
 
 `customs26-token.testnet` is the Customs contract running against Rhea's DCL pool and the live OutLayer testnet worker. A stranger checks it with one command, `scripts/testnet-live.sh`, which holds the ids in `scripts/testnet-live.env`.
