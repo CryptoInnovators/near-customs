@@ -179,8 +179,28 @@ function rpcWorked(key, urls, url) {
   RPC_PREF[key] = Math.max(0, urls.indexOf(url));
 }
 
+/* funded = buyers whose funding path traces to the creator (status "linked"), devBuys = the creator's own buys (status "creator"). Costs are BigInt sums of b.cost; a missing or unreadable cost counts as 0n. */
+function fundedSummary(buyers, traceStatus) {
+  const list = Array.isArray(buyers) ? buyers : [];
+  const costOf = (b) => {
+    const c = b && b.cost;
+    if (c === null || c === undefined) return 0n;
+    try { return typeof c === "bigint" ? c : BigInt(c); } catch { return 0n; }
+  };
+  const funded = [], devBuys = [];
+  let fundedCost = 0n, devBuyCost = 0n, totalCost = 0n;
+  for (const b of list) {
+    const cost = costOf(b);
+    totalCost += cost;
+    const status = traceStatus(b);
+    if (status === "linked") { funded.push(b); fundedCost += cost; }
+    else if (status === "creator") { devBuys.push(b); devBuyCost += cost; }
+  }
+  return { funded, fundedCost, devBuys, devBuyCost, totalCost };
+}
+
 function setField(color) {
   document.body.dataset.field = color;
 }
 
-if (typeof module !== "undefined") module.exports = { esc, shorten, shortAccount, group, amountParts, utc, countdown, stampHtml, STAMPS };
+if (typeof module !== "undefined") module.exports = { esc, shorten, shortAccount, group, amountParts, utc, countdown, stampHtml, STAMPS, fundedSummary };
