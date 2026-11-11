@@ -38,12 +38,19 @@ hash_file() { shasum -a 256 "$1" | awk '{print tolower($1)}'; }
 hash_url() { curl -fsSL --max-time 60 "$1" | shasum -a 256 | awk '{print tolower($1)}'; }
 code_hash_check() {
   [ -f "$TOKEN_WASM" ] || scripts/build-token.sh --testnet >/dev/null 2>&1 || { echo 'token wasm build failed'; return 1; }
-  local rpcout onchain localhash remote
+  local rpcout onchain localhash remote tmp
   rpcout=$(account_view "$TOKEN" view_account) || { echo 'view_account failed'; return 1; }
   onchain=$(jq -r '.result.code_hash' <<<"$rpcout" | python3 -c 'import sys; s=sys.stdin.read().strip(); a="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"; n=0
 for c in s: n=n*58+a.index(c)
 b=n.to_bytes((n.bit_length()+7)//8,"big"); print((b"\0"*(32-len(b))+b).hex())' 2>/dev/null) || return 1
   localhash=$(hash_file "$TOKEN_WASM") || return 1; remote=$(hash_url "$TOKEN_WASM_URL") || { echo 'TOKEN_WASM_URL fetch/hash failed'; return 1; }
+  if [ "$TOKEN_WASM" = target/wasm/customs_token.wasm ] && [ "$localhash" != "$remote" ]; then
+    tmp=$(mktemp "${TOKEN_WASM}.XXXXXX") || return 1
+    curl -fsSL --max-time 60 "$TOKEN_WASM_URL" -o "$tmp" || { rm -f "$tmp"; echo 'TOKEN_WASM_URL fetch failed'; return 1; }
+    [ "$(hash_file "$tmp")" = "$remote" ] || { rm -f "$tmp"; echo 'downloaded token wasm hash differs from URL'; return 1; }
+    mv "$tmp" "$TOKEN_WASM" || { rm -f "$tmp"; return 1; }
+    localhash=$(hash_file "$TOKEN_WASM") || return 1
+  fi
   [ "$onchain" = "$localhash" ] && [ "$onchain" = "$remote" ] || { echo "expected equal hashes, on-chain=$onchain local=$localhash url=$remote"; return 1; }
   echo "on-chain=${onchain:0:12} local=${localhash:0:12} url=${remote:0:12}"
 }
