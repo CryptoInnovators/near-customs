@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { checkTestnetToken } from "./check.js";
 
 const execFileAsync = promisify(execFile);
 const launchApi = "https://nearly.trade/api";
@@ -45,15 +46,19 @@ async function challengeStatus(token) {
     : "Live challenge status: no challenges have been filed.";
 }
 
-export function createHandler({ fetchImpl = fetch, replayFn = replay, challengeFn = challengeStatus } = {}) {
+export function createHandler({ fetchImpl = fetch, replayFn = replay, challengeFn = challengeStatus, testnetCheckFn = checkTestnetToken } = {}) {
   return async function handle(text) {
     const [command, ...args] = String(text || "").trim().split(/\s+/);
     if (command === "/start" || command?.startsWith("/start@")) {
       return "Customs Radar traces whether a token's opening buyers received funds from its creator, using NEAR transaction receipts. Use /check <token.near> for a funding-path verdict and live challenge status.";
     }
-    if (command !== "/check" && !command?.startsWith("/check@")) return "Use /check <token.near> to inspect a launch.";
+    if (command !== "/check" && !command?.startsWith("/check@")) return "Use /check <token.near> or /check <token.testnet> to inspect a launch.";
     const token = args[0];
-    if (!token || !/^[a-z0-9][a-z0-9._-]{1,63}\.near$/.test(token)) return "Usage: /check <token.near>";
+    if (!token || !/^[a-z0-9][a-z0-9._-]{1,63}\.(?:near|testnet)$/.test(token)) return "Usage: /check <token.near> or /check <token.testnet>";
+    if (token.endsWith(".testnet")) {
+      try { return await testnetCheckFn(token); }
+      catch { return `Live Customs challenge check failed for ${token}. Testnet data may be unavailable; try again shortly.`; }
+    }
 
     let launch;
     try {
