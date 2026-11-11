@@ -68,3 +68,4 @@
 2026-11-11T08:42:22Z | G2 | codex-high | PASS | after freecode/codex/dshloop FAIL
 2026-11-11T00:00:00Z | K101846-1 | codex-high | FAIL | after freecode/codex/dshloop FAIL; blocked because the criterion requires mainnet
 2026-11-11T00:00:00Z | K101846-2 | codex-high | PASS | after freecode/codex/dshloop FAIL; scripts/testnet-live.sh 5/5 and tbx scripts/check.sh all checks passed
+2026-11-11T10:00:48Z | K101846-3 | codex-high | PASS | after freecode/codex/dshloop FAIL; scripts/testnet-live.sh PASS seized_amount and tbx scripts/check.sh all checks passed
