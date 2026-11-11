@@ -70,12 +70,24 @@ seizure_check() {
   window=$(view "$TOKEN" window '{}') || { echo 'window RPC failed'; return 1; }
   params=$(view "$TOKEN" customs_params '{}') || { echo 'params RPC failed'; return 1; }
   tx=$(jq -cn --arg h "$CHALLENGE_TX" --arg s "$HUNTER" '{jsonrpc:"2.0",id:"customs",method:"EXPERIMENTAL_tx_status",params:{tx_hash:$h,sender_account_id:$s,wait_until:"FINAL"}}')
-  status=$(rpc "$tx") || { echo 'challenge tx status failed'; return 1; }
-  hit=$(jq -c --arg token "$TOKEN" '[.result.receipts_outcome[]|select(.outcome.executor_id==$token)|. as $r|.outcome.logs[]|select(contains("\"event\":\"wallet_seized\""))|{block_hash:$r.block_hash,log:.}] | first // empty' <<<"$status")
+  status=$(curl -fsS --max-time 8 -H 'content-type: application/json' -d "$tx" "$RPC" 2>/dev/null | jq -ce 'select(.result != null)') || {
+    local details receipts
+    details=$(curl -fsS --max-time 30 "https://api-testnet.nearblocks.io/v3/txns/$CHALLENGE_TX") || { echo 'challenge transaction lookup failed'; return 1; }
+    receipts=$(curl -fsS --max-time 30 "https://api-testnet.nearblocks.io/v3/txns/$CHALLENGE_TX/receipts") || { echo 'challenge receipt lookup failed'; return 1; }
+    status=$(jq -cen --arg h "$CHALLENGE_TX" --arg s "$HUNTER" --arg token "$TOKEN" --argjson d "$details" --argjson r "$receipts" '
+      $d.data as $d | $r.data as $r | if $d.transaction_hash != $h or $d.signer_account_id != $s or $d.receiver_account_id != $token or $d.outcomes.status != true then error("challenge transaction is not final and successful") else
+        {result:{receipts_outcome:[$r | .. | objects | select(.outcome?.logs? and .block?.block_hash?) | {block_hash:.block.block_hash,timestamp_nanosec:.block.block_timestamp,outcome:{executor_id:.outcome.executor_account_id,logs:.outcome.logs}}]}}
+      end') || { echo 'challenge tx status failed'; return 1; }
+  }
+  hit=$(jq -c --arg token "$TOKEN" '[.result.receipts_outcome[]|select(.outcome.executor_id==$token)|. as $r|.outcome.logs[]|select(contains("\"event\":\"wallet_seized\""))|{block_hash:$r.block_hash,timestamp_nanosec:$r.timestamp_nanosec,log:.}] | first // empty' <<<"$status")
   [ -n "$hit" ] || { echo 'expected wallet_seized receipt log, got none'; return 1; }
   block=$(jq -r '.block_hash' <<<"$hit")
-  nanos=$(rpc "$(jq -cn --arg b "$block" '{jsonrpc:"2.0",id:"customs",method:"block",params:{block_id:$b}}')") || { echo 'receipt block query failed'; return 1; }
-  nanos=$(jq -r '.result.header.timestamp_nanosec' <<<"$nanos"); t=$(python3 -c 'import sys; print(int(sys.argv[1])//1000000000)' "$nanos" 2>/dev/null) || return 1
+  nanos=$(jq -r '.timestamp_nanosec // empty' <<<"$hit")
+  if [ -z "$nanos" ]; then
+    nanos=$(rpc "$(jq -cn --arg b "$block" '{jsonrpc:"2.0",id:"customs",method:"block",params:{block_id:$b}}')") || { echo 'receipt block query failed'; return 1; }
+    nanos=$(jq -r '.result.header.timestamp_nanosec' <<<"$nanos")
+  fi
+  t=$(python3 -c 'import sys; print(int(sys.argv[1])//1000000000)' "$nanos" 2>/dev/null) || return 1
   bought=$(jq -r '.bought' <<<"$opening"); vest=$(jq -r '.vest_s' <<<"$params"); bps=${SEIZE_BPS:-$(jq -r '.seize_bps' <<<"$params")}; start=$(jq -r '.start_s' <<<"$window")
   [ "$bought" != null ] && [ "$start" != null ] || { echo 'missing opening bought or window start'; return 1; }
   read -r risk seized frozen < <(python3 -c 'import sys; B,start,vest,t,bps=map(int,sys.argv[1:]); md=lambda a,b,c:(a//c)*b+(a%c)*b//c; risk=md(B,start+vest-t,vest); seized=md(risk,bps,10000); print(risk,seized,risk-seized)' "$bought" "$start" "$vest" "$t" "$bps" 2>/dev/null) || return 1
