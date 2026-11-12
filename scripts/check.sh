@@ -30,6 +30,7 @@ echo "testnet checker sha256 built: $got_testnet pinned in the contract: $want_t
 [ "$want_testnet" = "$got_testnet" ] || { echo "the built testnet checker differs from CHECKER_SHA256_TESTNET in contracts/token/src/lib.rs" >&2; exit 1; }
 scripts/build-token.sh
 scripts/build-token.sh --testnet
+scripts/fetch-outlayer.sh
 cargo test -p customs-walker --features testnet --lib wnear_edge_testnet
 cargo test -p customs-token --features testnet --lib testnet_judge_is_pinned
 cargo test --workspace
