@@ -36,13 +36,15 @@ export function encodeTx({ signerId, publicKey, nonce, receiverId, blockHash, ac
 }
 
 /* url is one endpoint or a list; a rate limit or a refused connection moves to the next endpoint, then backs off 1 s, 2 s, 4 s. */
-export async function rpc(url, method, params) {
+export async function rpc(url, method, params, deadline = Infinity, now = Date.now) {
   const urls = [].concat(url);
   let last;
   for (let i = 0; i < 8; i++) {
     const u = urls[i % urls.length];
+    const left = deadline - now();
+    if (left <= 0) throw last || Error(method + ": deadline reached");
     try {
-      const r = await fetch(u, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(method === "send_tx" ? 90000 : 20000) });
+      const r = await fetch(u, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(Math.min(method === "send_tx" ? 90000 : 20000, left)) });
       const j = await r.json();
       if (!j.error) return j.result;
       last = Error(method + ": " + (j.error.data || j.error.message || JSON.stringify(j.error)));
@@ -57,15 +59,15 @@ export async function rpc(url, method, params) {
 }
 
 /* Signs the actions with secretKey and waits for the transaction to be final. Returns { hash, outcome }, outcome being the RPC's final result. */
-export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, actions }) {
+export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, actions, deadline = Infinity }) {
   const raw = b58decode(secretKey.replace(/^ed25519:/, ""));
   const seed = raw.slice(0, 32), publicKey = raw.length === 64 ? raw.slice(32) : null;
   if (!publicKey) throw Error("secret key must carry its public half");
   const pkcs8 = cat(Uint8Array.from([0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 0x04, 0x20]), seed);
   const key = await crypto.subtle.importKey("pkcs8", pkcs8, { name: "Ed25519" }, false, ["sign"]);
   const pkStr = "ed25519:" + b58encode(publicKey);
-  const ak = await rpc(rpcUrl, "query", { request_type: "view_access_key", finality: "final", account_id: signerId, public_key: pkStr });
-  const block = await rpc(rpcUrl, "block", { finality: "final" });
+  const ak = await rpc(rpcUrl, "query", { request_type: "view_access_key", finality: "final", account_id: signerId, public_key: pkStr }, deadline);
+  const block = await rpc(rpcUrl, "block", { finality: "final" }, deadline);
   const tx = encodeTx({ signerId, publicKey, nonce: BigInt(ak.nonce) + 1n, receiverId, blockHash: b58decode(block.header.hash), actions });
   const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", tx));
   const sig = new Uint8Array(await crypto.subtle.sign("Ed25519", key, hash));
@@ -78,21 +80,22 @@ export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, act
     try {
       if (signed.length > 100000) {
         // a contract upload outlives free RPC request timeouts: broadcast, then poll the hash to FINAL
-        await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "NONE" });
+        await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "NONE" }, deadline);
         for (let i = 0; i < 40 && !outcome; i++) {
           await new Promise((res) => setTimeout(res, 3000));
-          const o = await rpc(rpcUrl, "tx", { tx_hash: txHash, sender_account_id: signerId, wait_until: "FINAL" }).catch(() => null);
+          const o = await rpc(rpcUrl, "tx", { tx_hash: txHash, sender_account_id: signerId, wait_until: "FINAL" }, deadline).catch(() => null);
           if (o?.final_execution_status === "FINAL") outcome = o;
         }
         if (!outcome) throw Error("tx " + txHash + " not final after 120 s");
-      } else outcome = await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "FINAL" });
+      } else outcome = await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "FINAL" }, deadline);
     } catch (e) {
       lastErr = e;
-      try { outcome = await rpc(rpcUrl, "tx", { tx_hash: txHash, sender_account_id: signerId, wait_until: "FINAL" }); } catch (e2) { lastErr = e2; }
+      try { outcome = await rpc(rpcUrl, "tx", { tx_hash: txHash, sender_account_id: signerId, wait_until: "FINAL" }, deadline); } catch (e2) { lastErr = e2; }
     }
+    if (!outcome && Date.now() >= deadline) break;
     if (!outcome) await new Promise((res) => setTimeout(res, 3000));
   }
-  if (!outcome) throw lastErr;
+  if (!outcome) throw Object.assign(lastErr || Error("tx " + txHash + " not final before the deadline"), { tx: txHash });
   return { hash: txHash, outcome };
 }
 

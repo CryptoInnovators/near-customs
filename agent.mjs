@@ -46,13 +46,14 @@ export const STAMP = "customs28-stamp.testnet";
 const ACCOUNT = /^[a-z0-9]+(?:[-_.][a-z0-9]+)*$/;
 const TX_HASH = /^[1-9A-HJ-NP-Za-km-z]{43,44}$/;
 const FILE_GAP_MS = 20000;
+const FILE_DEADLINE_MS = 40000;
 const FILE_PER_HOUR = 20;
 let lastFiled = 0;
 const filedAt = [];
 
 /* POST /stamp/break {launch, wallet, path, payout_to?}: the sponsored filing account (a function-call key scoped to `challenge` on the stamp,
    spending prepaid credit) files the path against the wallet. The contract and the enclave decide; the credit is the cap. */
-export async function stampBreak(request, env, send = callFunction, now = Date.now, view = (id, method, args) => rpc(RPC, "query", { request_type: "call_function", finality: "final", account_id: id, method_name: method, args_base64: btoa(JSON.stringify(args)) })) {
+export async function stampBreak(request, env, send = callFunction, now = Date.now, view = (id, method, args, deadline) => rpc(RPC, "query", { request_type: "call_function", finality: "final", account_id: id, method_name: method, args_base64: btoa(JSON.stringify(args)) }, deadline)) {
   let b;
   try { b = await request.json(); } catch { return json({ error: "Send JSON with launch, wallet and path." }, 400); }
   const ok = (v) => typeof v === "string" && v.length <= 64 && ACCOUNT.test(v);
@@ -69,10 +70,11 @@ export async function stampBreak(request, env, send = callFunction, now = Date.n
   if (wait > 0) return json({ error: "The filing key is rate limited. Try again in " + Math.ceil(wait / 1000) + " s." }, 429, { "retry-after": String(Math.ceil(wait / 1000)) });
   lastFiled = t;
   filedAt.push(t);
+  const deadline = t + FILE_DEADLINE_MS;
   try {
-    const params = JSON.parse(new TextDecoder().decode(new Uint8Array((await view(key.stamp, "stamp_params", {})).result)));
+    const params = JSON.parse(new TextDecoder().decode(new Uint8Array((await view(key.stamp, "stamp_params", {}, deadline)).result)));
     const args = { launch: b.launch, wallet: b.wallet, path: b.path, bond: params.min_bond, payout_to: b.payout_to || null };
-    const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId: key.stamp, method: "challenge", args, gas: 200_000_000_000_000n });
+    const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId: key.stamp, method: "challenge", args, gas: 200_000_000_000_000n, deadline });
     const failure = outcome?.status?.Failure;
     if (failure) {
       const m = /stamp: [^"\\]*/.exec(JSON.stringify(failure));
@@ -82,6 +84,8 @@ export async function stampBreak(request, env, send = callFunction, now = Date.n
     const filed = logs.map((l) => { try { return JSON.parse(l.replace("EVENT_JSON:", "")); } catch { return null; } }).find((e) => e && e.event === "challenge_filed");
     return json({ tx: hash, signer: key.account_id, stamp: key.stamp, status: "filed", challenge_id: filed ? filed.data.challenge_id : null });
   } catch (e) {
-    return json({ error: "The filing transaction did not complete: " + String(e.message || e).slice(0, 160) }, 502);
+    lastFiled = 0;
+    const late = now() >= deadline;
+    return json({ error: late ? "The chain took longer than " + FILE_DEADLINE_MS / 1000 + " s to confirm the filing. Try again." : "The filing transaction did not complete: " + String(e.message || e).slice(0, 160), ...(e && e.tx ? { tx: e.tx } : {}) }, late ? 504 : 502);
   }
 }

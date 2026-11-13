@@ -88,3 +88,23 @@ test("a stamp slot with no key on the host is refused and the named slot's own k
   assert.equal((await r.json()).signer, "f29.testnet");
   assert.equal(calls[0].receiverId, "customs29-stamp.testnet");
 });
+
+test("a filing the chain does not confirm inside the deadline returns 504 with the tx hash and frees the key for a retry", async () => {
+  let t = 400_000_000;
+  const now = () => t;
+  let seen;
+  const send = async (c) => { seen = c; t += 41_000; throw Object.assign(new Error("not final"), { tx: "LATE1" }); };
+  const post = () => stampBreak(new Request("https://x/stamp/break", { method: "POST", body: JSON.stringify({ launch: "a.testnet", wallet: "b.testnet", path: [H, H] }) }), fenv, send, now, view);
+  const r = await post();
+  assert.equal(r.status, 504);
+  const body = await r.json();
+  assert.match(body.error, /longer than 40 s/);
+  assert.equal(body.tx, "LATE1");
+  assert.equal(seen.deadline, 400_040_000);
+  assert.notEqual((await post()).status, 429);
+});
+
+test("rpc stops at its deadline instead of retrying past it", async () => {
+  const { rpc } = await import("../../near-tx.mjs");
+  await assert.rejects(rpc("https://127.0.0.1:1", "block", {}, 0, () => 1), /deadline reached/);
+});

@@ -157,10 +157,18 @@
   function lock(on) { busy = on; buttons().forEach((b) => { b.disabled = on; }); }
 
   async function postBreak(body) {
-    const res = await fetch("/stamp/break", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    const res = await fetch("/stamp/break", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(50000) });
     let j = {};
     try { j = await res.json(); } catch { /* a non-JSON failure is reported by its status below */ }
     return { status: res.status, retry: Number(res.headers.get("retry-after")) || 0, body: j };
+  }
+
+  function failed(li, kind, text) {
+    setState(li, "error");
+    const again = Object.assign(document.createElement("button"), { type: "button", className: "link-btn retry", textContent: "Try again" });
+    again.addEventListener("click", () => { run(kind); });
+    li.textContent = text + " ";
+    li.append(again);
   }
 
   async function run(kind) {
@@ -186,8 +194,7 @@
         return;
       }
       if (r.status !== 200) {
-        setState(filing, "error");
-        filing.textContent = (r.body && r.body.error) || "The filing did not complete (HTTP " + r.status + "). Try again.";
+        failed(filing, kind, (r.body && r.body.error) || "The filing did not complete (HTTP " + r.status + ").");
         return;
       }
       const f = r.body;
@@ -234,8 +241,7 @@
       if (info) paintStamp(info);
       el.steps.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (e) {
-      setState(filing, "error");
-      filing.textContent = "The filing could not be sent: " + String(e.message || e).slice(0, 120) + ". Try again.";
+      failed(filing, kind, e && e.name === "TimeoutError" ? "The chain did not confirm the filing within 50 s." : "The filing could not be sent: " + String(e.message || e).slice(0, 120) + ".");
     } finally { lock(false); if (el.card.dataset.state === "broken") { el.go.hidden = true; el.clean.hidden = true; } }
   }
 
