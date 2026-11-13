@@ -23,7 +23,7 @@
 .mcard:hover{transform:translateY(-3px);border-color:#44444b}
 .mcard-feature{grid-column:span 2;grid-row:span 2;border-color:rgba(198,255,61,.55);background:linear-gradient(180deg,#1a1f10,#101012 60%)}
 .mcard-feature[data-state=broken]{border-color:var(--busted);background:linear-gradient(180deg,#26111a,#101012 60%)}
-.mcard-head{display:flex;gap:var(--space-3);align-items:center;padding-right:128px;min-width:0}
+.mcard-head{display:flex;gap:var(--space-3);align-items:center;min-width:0}
 .mcard-id{min-width:0}
 .mcard-id h2,.mcard-id h3{margin:0;font:600 15px/1.25 var(--font-sans);color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mcard-id .lcard-id{margin:2px 0 0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -33,17 +33,17 @@
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .avatar-customs{background:var(--lime);color:var(--lime-ink)}
 
-.sticker{position:absolute;top:14px;right:14px;z-index:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 12px;min-width:104px;max-width:140px;border:3px solid currentColor;border-radius:10px;transform:rotate(5deg);text-align:center;color:var(--faint);background:rgba(0,0,0,.35);box-shadow:0 3px 0 rgba(0,0,0,.5)}
-.sticker .seal-kind{font:700 12px/1.1 var(--font-sans);letter-spacing:.14em;text-transform:uppercase}
-.sticker b{font:700 20px/1.05 var(--font-sans);letter-spacing:-.01em}
-.sticker span:last-child{font:600 10px/1.2 var(--font-sans);letter-spacing:.06em;text-transform:uppercase;opacity:.85}
-.sticker[data-ink=green]{color:var(--lime);background:rgba(198,255,61,.12)}
+/* the stamp state is one inline line: a glyph and words in colour, no outline, no rotation */
+.sticker{order:-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;color:var(--faint)}
+.sticker .seal-kind{font:700 15px/1.2 var(--font-sans);letter-spacing:.1em;text-transform:uppercase}
+.sticker .seal-kind::before{content:"";display:inline-block;width:9px;height:9px;margin-right:8px;border-radius:50%;background:currentColor;vertical-align:1px}
+.sticker b{font:700 15px/1.2 var(--font-sans)}
+.sticker span:last-child{font:500 13px/1.2 var(--font-sans);color:var(--text-2)}
+.sticker[data-ink=green]{color:var(--lime)}
 .sticker[data-ink=amber]{color:var(--yellow)}
-.sticker[data-ink=grey]{border-style:dashed;color:#8a8a92}
-.sticker[data-ink=red]{color:#fff;background:var(--busted);border-color:#fff;animation:slam .35s cubic-bezier(.2,1.6,.4,1)}
-.sticker.land{animation:slam .35s cubic-bezier(.2,1.6,.4,1)}
-@keyframes slam{from{transform:rotate(5deg) scale(1.7);opacity:0}to{transform:rotate(5deg) scale(1);opacity:1}}
-.mcard-feature .sticker{top:18px;right:20px;transform:rotate(5deg) scale(1.12);transform-origin:top right}
+.sticker[data-ink=red]{color:var(--busted)}
+.sticker.land{animation:fadein .3s ease-out}
+@keyframes fadein{from{opacity:.2}to{opacity:1}}
 
 .mstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-2);margin:0}
 .mstats div{background:rgba(255,255,255,.04);border-radius:12px;padding:8px 10px;min-width:0}
@@ -60,9 +60,6 @@
 .hunt:hover{filter:brightness(1.07)}
 .hunt:active{transform:translateY(4px);box-shadow:0 1px 0 #6c8f10}
 .hunt:disabled{background:#2a2a2f;color:var(--faint);box-shadow:0 5px 0 #1a1a1d;cursor:progress}
-.mcard:not(.mcard-feature) .hunt{margin-top:auto;background:var(--pink);color:#2a0016;box-shadow:0 5px 0 #a02a68}
-.mcard:not(.mcard-feature) .hunt:active{box-shadow:0 1px 0 #a02a68}
-.mcard:not(.mcard-feature) .hunt:disabled{background:#2a2a2f;color:var(--faint);box-shadow:0 5px 0 #1a1a1d}
 
 /* the featured card keeps the hunt button right under the numbers, the proof below it */
 .mcard-feature .lcard-actions{order:4;margin:0;padding:0;flex-direction:column;align-items:stretch;gap:var(--space-2)}
@@ -84,25 +81,46 @@
   .feed-bar p{display:none}
   .cards{grid-template-columns:1fr;gap:16px}.mcard-feature{grid-column:auto}
   .mcard{padding:16px;border-radius:18px}
-  .mcard-head{padding-right:0;padding-top:34px}
-  .sticker{top:10px;right:12px;flex-direction:row;gap:6px;padding:4px 10px;min-width:0;max-width:none}
-  .sticker span:last-child{display:none}.sticker b{font-size:15px}
-  .mcard-feature .sticker{transform:rotate(4deg)}
-  .ticker{font-size:22px}.mstats dd{font-size:16px}
+  .mcard-head{padding-top:0}
+    .ticker{font-size:22px}.mstats dd{font-size:16px}
   .mcard-feature .hunt{height:56px}
   .mcard-feature .lcard-path{overflow:hidden}
 }
 @media (prefers-reduced-motion:reduce){.live-dot,.sticker,.sticker.land,.mstats dd.tick{animation:none}.mcard:hover{transform:none}}
 
 .ticker{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mcard-head{padding-right:124px}
-.mcard:not(.mcard-feature) .sticker{min-width:96px;padding:5px 9px}
-.mcard:not(.mcard-feature) .sticker b{font-size:17px}
 .mstats dd{font-size:17px;font-variant-numeric:normal}
 .mstats dt{white-space:nowrap}
-.mcard:not(.mcard-feature) .ticker{font-size:23px}
-.mcard:not(.mcard-feature) .mcard-head{padding-right:112px}
 @media (max-width:760px){
-  .mcard-head{padding-right:0}
   .mstats{gap:6px}.mstats div{padding:8px}.mstats dt{font-size:9px;letter-spacing:.04em}.mstats dd{font-size:15px}
 }
+
+/* meme.cooking launch cards: the token image leads, flat surface, no outline */
+.mcard.mc{border:0;background:#141416;padding:0 0 18px;gap:var(--space-2);overflow:hidden}
+.mcard.mc:hover{transform:none;background:#18181b}
+.mc>*:not(.mc-pic){margin-left:18px;margin-right:18px}
+.mc-pic{aspect-ratio:16/10;max-height:190px;width:100%;display:grid;place-items:center;overflow:hidden;background:hsl(var(--h,150) 55% 32%);font:700 64px/1 var(--font-sans);color:rgba(255,255,255,.85)}
+.mc-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.mc-head{display:flex;align-items:baseline;gap:var(--space-2);min-width:0;margin-top:var(--space-2)}
+.mc-head .ticker{font-size:24px;flex:none;max-width:55%}
+.mc-name{margin:0;min-width:0;color:var(--text-2);font:500 14px/1.3 var(--font-sans);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc .meter{height:8px;margin-top:2px}
+.mc-raised{margin:0;font:400 13px/1.3 var(--font-sans);color:var(--text-2)}.mc-raised b{color:var(--text);font-weight:700}
+.mc-meta{margin:0;display:flex;flex-wrap:wrap;gap:2px 12px;font:400 12px/1.4 var(--font-mono);color:var(--muted);min-width:0}
+.mc-meta a{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;text-underline-offset:3px}
+.mc-verdict{margin:var(--space-1) 18px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 10px;font-size:13px;line-height:1.4;color:var(--text-2)}
+.mc-verdict b{font:700 14px/1.4 var(--font-sans)}
+.mc-verdict[data-kind=clean] b{color:var(--lime)}
+.mc-verdict[data-kind=funded] b{color:var(--busted)}
+.mc-verdict[data-kind=tracing] b,.mc-verdict[data-kind=unread] b{color:var(--yellow)}
+.mc-rhea{margin:0 18px;font:400 12px/1.4 var(--font-mono);color:var(--muted)}.mc-rhea a{color:var(--violet);text-underline-offset:3px}
+.mc-open{align-self:flex-start;margin-top:auto;padding-top:var(--space-2)}
+.mc-graph{font-size:12px}
+.mc-rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mc-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0}
+.mc-role{flex:none;font:600 10px/1.4 var(--font-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:96px}
+.mc-row code{font:500 12px/1.4 var(--font-mono);color:var(--text);overflow-wrap:anywhere;min-width:0}
+.mc-amt{color:var(--text-2)}
+.mc-row a{color:var(--text-2);text-underline-offset:3px}
+.mc-hot .mc-role,.mc-hot code{color:var(--busted)}
+.mc-foot{margin:var(--space-2) 0 0;color:var(--muted);font-size:11px;line-height:1.4}

@@ -25,12 +25,16 @@ test("the break button files through the sponsored worker endpoint and polls the
   assert.match(js, /state !== "Pending"/);
 });
 
-test("each feed card is built from a traced mainnet launch and its Hunt button runs the stamp flow with that launch's first buyer", async () => {
+test("each feed card is a meme.cooking launch with its own funding trace, Rhea pool read and one inline verdict", async () => {
   const js = await readFile(new URL("../feed.js", import.meta.url), "utf8");
-  assert.match(js, /nearly\.trade\/api/);
-  assert.match(js, /CustomsHunt\.hunt\(\{ launch: item\.token, wallet: buyer\.wallet, tx: buyer\.first_tx/);
-  assert.match(js, /setInterval\(poll, EVERY\)/);
+  assert.match(js, /\/mc\/launches/);
+  assert.match(js, /\/mc\/trades\?meme_id=/);
+  assert.match(js, /get_pool/);
+  assert.match(js, /signer_id === owner/);
+  assert.doesNotMatch(js, /CustomsHunt\.hunt/);
   const stamp = await readFile(new URL("../stamp.js", import.meta.url), "utf8");
-  assert.match(stamp, /window\.CustomsHunt = /);
   assert.match(stamp, /"Busted"/);
+  assert.match(stamp, /Settled on chain/);
+  const css = await readFile(new URL("../feed.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /rotate\(5deg\)/);
 });

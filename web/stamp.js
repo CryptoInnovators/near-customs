@@ -4,7 +4,7 @@
    and the pinned checker decide. "Prompt-inject the hunter" sends it after a clean buyer and then at the bond itself. Every figure and state on this screen is read from the stamp contract; the result is polled until the contract says so. */
 (() => {
   const LAUNCH = "customs26-token.testnet";
-  const SLOTS = ["customs28-stamp.testnet", "customs29-stamp.testnet", "customs30-stamp.testnet", "customs31-stamp.testnet"];
+  const SLOTS = ["customs28-stamp.testnet", "customs29-stamp.testnet", "customs30-stamp.testnet", "customs31-stamp.testnet", "customs32-stamp.testnet"];
   const FUNDED = { wallet: "customs26-buyer1.testnet", path: ["23atwS3gdX11c1r7o3UBZK1w7UAuskk7VofmoaZiP5HU", "75sREratSM2pa3iGJBx61hbwPSx3Wfa8bseN3g6CmR2T"] };
   const CLEAN = { wallet: "customs26-buyer2.testnet", path: ["23atwS3gdX11c1r7o3UBZK1w7UAuskk7VofmoaZiP5HU", "GuTXDmdNSsSosDHgjHJLLxgQH1VwXR1Z5jSfxy1TThV5"] };
   const EXPLORER = "https://testnet.nearblocks.io/";
@@ -54,13 +54,13 @@
   }
 
   /* the stamp to show: the first slot still standing with no open challenge, else any standing, else the one that was broken */
-  let slot = null, lastInfo = null, fundedHop = null;
+  let slot = null, lastInfo = null, fundedHop = null, usedContract = null;
   async function readStamp() {
     const all = await Promise.all(SLOTS.map(async (contract) => ({ contract, stamp: await view(contract, "stamp_of", { launch: LAUNCH }).catch(() => null) })));
     const live = all.filter((s) => s.stamp);
     const standing = live.filter((s) => s.stamp.state === "Standing");
     const newest = [...standing].reverse();
-    slot = newest.find((s) => s.stamp.open === 0) || newest[0] || live[live.length - 1] || null;
+    slot = newest.find((s) => s.stamp.open === 0) || newest[0] || live.find((s) => s.contract === usedContract) || live[live.length - 1] || null;
     lastInfo = { slot, standing: standing.length, total: live.length };
     return lastInfo;
   }
@@ -88,6 +88,9 @@
       el.seal.dataset.ink = "red"; el.kind.textContent = "Busted"; el.sealState.textContent = "bond paid to the hunter";
       el.facts.replaceChildren(document.createTextNode("Broken. "), Object.assign(document.createElement("b"), { textContent: short(broken.prover) }), document.createTextNode(" proved " + short(broken.wallet) + " was funded by the creator and was paid " + near(broken.paid) + ". "), a(EXPLORER + "address/" + info.slot.contract, "Stamp contract"));
       el.go.hidden = true; el.clean.hidden = true;
+      const pf = q("#payout-form"); if (pf) pf.hidden = true;
+      const cap = q("#path-caption");
+      if (cap) cap.replaceChildren(document.createTextNode("Settled on chain: " + short(broken.prover) + " proved the path below and the contract paid " + near(broken.paid) + " from " + short(info.slot.contract) + ". The stamp is broken."));
     } else if (s.state === "Standing") {
       el.seal.dataset.ink = "green"; el.kind.textContent = "Stamped"; el.sealState.textContent = "bond locked";
       el.facts.replaceChildren(document.createTextNode("The creator staked "), Object.assign(document.createElement("b"), { textContent: near(s.bond) }), document.createTextNode(" that none of the 2 opening buyers was their money. " + info.standing + " of " + info.total + " stamps on this launch still stand."));
@@ -129,6 +132,7 @@
     const hop = funded.path[0];
     fundedHop = { from: hop.from, near: hop.near, tx: hop.tx, buyTx: funded.first_tx };
     const cap = q("#path-caption");
+    if (cap && el.card.dataset.state === "broken") return;
     if (cap) cap.replaceChildren(document.createTextNode("The stamp claims no creator money reached a buyer. The chain shows "), Object.assign(document.createElement("b"), { textContent: short(hop.from) }), document.createTextNode(" sent " + hop.near + " NEAR to "), Object.assign(document.createElement("b"), { textContent: short(funded.wallet) }), document.createTextNode(" before it bought. Let the hunter file it and the bond pays the hunter."));
     el.path.replaceChildren(chain([
       { id: hop.from, role: "Creator", hot: true },
@@ -236,7 +240,8 @@
     el.steps.scrollIntoView({ behavior: "smooth", block: "nearest" });
     const bareRun = kind === "bare";
     const target = bareRun ? { launch: bare.launch, wallet: bare.wallet, path: [bare.tx, bare.tx], label: bare.name } : { launch: LAUNCH, ...(kind === "clean" ? CLEAN : FUNDED), label: "Customs coin" };
-    const stampContract = bareRun ? SLOTS[0] : slot && slot.contract;
+    const stampContract = bareRun ? SLOTS[SLOTS.length - 1] : slot && slot.contract;
+    usedContract = stampContract;
     if (!bareRun) plan(kind);
     const filing = step("Filing the funding path against " + short(target.wallet) + "…", "run");
     const t0 = Date.now();

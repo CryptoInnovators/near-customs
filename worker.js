@@ -11,12 +11,60 @@ const UPSTREAM = {
   "drpc-test": "https://near-testnet.drpc.org",
 };
 
+/* meme.cooking, NEAR's official memecoin launchpad: its public API (api.meme.cooking) read through this worker so the page sees one origin,
+   one cache and no CORS failures. /mc/launches slims the 2.5 MB launch list to the launches that raised real deposits and opened a pool. */
+const MC = "https://api.meme.cooking";
+const mcCache = new Map();
+async function mcGet(path, ttlMs) {
+  const hit = mcCache.get(path);
+  if (hit && Date.now() - hit.at < ttlMs) return hit.body;
+  const r = await fetch(MC + path, { headers: { accept: "application/json" } });
+  if (!r.ok) throw Error("meme.cooking answered HTTP " + r.status);
+  const body = await r.json();
+  mcCache.set(path, { at: Date.now(), body });
+  return body;
+}
+const JSON_HEAD = { "content-type": "application/json", "cache-control": "public, max-age=15" };
+async function mcRoute(url) {
+  try {
+    if (url.pathname === "/mc/launches") {
+      const all = await mcGet("/meme", 60_000);
+      const picks = all.filter((m) => m.pool_id && m.token_id && m.staker_count >= 2 && m.image).sort((a, b) => b.meme_id - a.meme_id).slice(0, 12)
+        .map((m) => ({ id: m.meme_id, owner: m.owner, name: m.name, symbol: m.symbol, image: m.image, created_ms: m.created_timestamp_ms, deposit: m.total_deposit, hard_cap: m.hard_cap, soft_cap: m.soft_cap, stakers: m.staker_count, pool_id: m.pool_id, token_id: m.token_id }));
+      return new Response(JSON.stringify({ total: all.length, launches: picks, read_ms: Date.now() }), { headers: JSON_HEAD });
+    }
+    if (url.pathname === "/mc/trades") {
+      const id = url.searchParams.get("meme_id");
+      if (!/^\d{1,6}$/.test(id || "")) return new Response("meme_id must be a number", { status: 400 });
+      const t = await mcGet("/trades?meme_id=" + id, 20_000);
+      const deposits = t.filter((x) => x.is_deposit).map((x) => ({ account: x.account_id, amount: x.amount, ts: x.timestamp_ms, receipt: x.receipt_id })).sort((a, b) => a.ts - b.ts);
+      return new Response(JSON.stringify({ meme_id: Number(id), trades: t.length, deposits }), { headers: JSON_HEAD });
+    }
+    const img = url.pathname.match(/^\/mc\/img\/([A-Za-z0-9]{40,70})$/);
+    if (img) {
+      const key = new Request(url.origin + url.pathname);
+      const hit = await caches.default.match(key);
+      if (hit) return hit;
+      const r = await fetch("https://gateway.pinata.cloud/ipfs/" + img[1]);
+      const type = r.headers.get("content-type") || "";
+      if (!r.ok || !type.startsWith("image/")) return new Response("No image", { status: 404 });
+      const out = new Response(r.body, { headers: { "content-type": type, "cache-control": "public, max-age=86400" } });
+      await caches.default.put(key, out.clone());
+      return out;
+    }
+    return new Response("Not found", { status: 404 });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: String(e.message || e).slice(0, 160) }), { status: 502, headers: { "content-type": "application/json" } });
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/agent/buy") return request.method === "POST" ? agentBuy(request, env) : new Response("Use POST", { status: 405 });
     if (url.pathname === "/hunt/inject") return request.method === "POST" ? huntInject(request, env) : new Response("Use POST", { status: 405 });
     if (url.pathname === "/stamp/break") return request.method === "POST" ? stampBreak(request, env) : new Response("Use POST", { status: 405 });
+    if (url.pathname.startsWith("/mc/") && request.method === "GET") return mcRoute(url);
     const m = url.pathname.match(/^\/fastnear\/([a-z-]+)(\/[A-Za-z0-9/_-]*)?$/);
     if (!m) return env.ASSETS.fetch(request);
     if (m[1] === "ping") return new Response(null, { status: 204 });

@@ -22,6 +22,7 @@ A creator posts a NEAR bond on a stamp contract. The hunter, a testnet account w
 | The OutLayer checker hash is pinned to the testnet token and matches the published module. | [`scripts/testnet-live.sh`](docs/EVIDENCE.md); checker upload [transaction](https://testnet.nearblocks.io/txns/DbC5Gk49XJV3L4mvZnFC4xXRnb7ufLUWFk9Vouaxf5Q2). |
 | An agent-buy gate allowed an anchored ALLOW and refused a BLOCK and a missing verdict. | [ALLOW](https://testnet.nearblocks.io/txns/3o7YxL8qhHr2WyVAkRTRT8CtTaFfuyXSSXLyvu5MLNLh), [BLOCK refusal](https://testnet.nearblocks.io/txns/7incABozUXcN92RdSdKRMczvsMmAg38uCLDRmKFwAEfD), [missing-verdict refusal](https://testnet.nearblocks.io/txns/FuUPNefaNHbMfEPhDecBSdLz4D8YAmuN6HRUKnyRKXnr). |
 | Git history records `kamalbuilds` as commit author from 2026-10-31 through 2026-11-13. | `git log --reverse --format='%ad %an' --date=short`; `git log -1 --format='%ad %an' --date=short`. |
+| The feed is real meme.cooking launches with live Rhea pool liquidity | `api.meme.cooking/meme` (2,321 launches) and `get_pool(8918)` on `v2.ref-finance.near` at block 224413028: 63.8791 NEAR | `curl -s https://api.meme.cooking/trades?meme_id=2203` |
 
 ## Try it in 60 seconds
 
