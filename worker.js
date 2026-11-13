@@ -23,7 +23,13 @@ export default {
     if (!base || request.method !== "POST") return new Response("Not found", { status: 404 });
     const body = await request.text();
     if (body.length > 65536) return new Response("Body too large", { status: 413 });
-    const upstream = await fetch(base + (m[2] || "/"), { method: "POST", headers: { "content-type": "application/json" }, body });
+    /* FastNEAR rate limits (429) hard under a page's burst; absorb it here so the browser sees a 200 and no failed request */
+    let upstream;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      upstream = await fetch(base + (m[2] || "/"), { method: "POST", headers: { "content-type": "application/json" }, body });
+      if (upstream.status !== 429) break;
+      await new Promise((r) => setTimeout(r, Math.min(3000, 400 * 2 ** attempt)));
+    }
     const headers = { "content-type": upstream.headers.get("content-type") || "application/json", "cache-control": "no-store" };
     const retry = upstream.headers.get("retry-after");
     if (retry) headers["retry-after"] = retry;
