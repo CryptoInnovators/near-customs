@@ -77,7 +77,8 @@
   .seal-row{flex-direction:row;align-items:center;gap:var(--space-4);order:1;padding:var(--space-3) 0}
   .seal{width:112px;height:112px;border-width:2px}.seal b{font-size:20px}.seal-kind,.seal span:last-child{font-size:9px}
   .lcard-actions{order:2;margin-top:var(--space-2)}
-  .payout{order:3}
-  .lcard-path{order:4;margin-top:var(--space-4)}
+  .lcard-path{order:3;margin-top:var(--space-3)}
+  .payout{order:4}
   .bare-note{order:3}
+  .chain-edge{min-height:28px}
 }
