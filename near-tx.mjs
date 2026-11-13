@@ -59,7 +59,7 @@ export async function rpc(url, method, params, deadline = Infinity, now = Date.n
 }
 
 /* Signs the actions with secretKey and waits for the transaction to be final. Returns { hash, outcome }, outcome being the RPC's final result. */
-export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, actions, deadline = Infinity }) {
+export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, actions, deadline = Infinity, early = null }) {
   const raw = b58decode(secretKey.replace(/^ed25519:/, ""));
   const seed = raw.slice(0, 32), publicKey = raw.length === 64 ? raw.slice(32) : null;
   if (!publicKey) throw Error("secret key must carry its public half");
@@ -76,6 +76,16 @@ export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, act
   const txHash = b58encode(hash);
   // the same signed bytes are sent again if the first attempt is lost; a transaction is only ever applied once
   let outcome, lastErr;
+  /* a contract that yields keeps its transaction un-final until the enclave answers; `early(outcome)` says the outcome seen so far is enough */
+  if (early) {
+    await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "NONE" }, deadline);
+    for (let i = 0; Date.now() < deadline; i++) {
+      await new Promise((res) => setTimeout(res, i ? 1500 : 800));
+      const o = await rpc(rpcUrl, "EXPERIMENTAL_tx_status", { tx_hash: txHash, sender_account_id: signerId, wait_until: "INCLUDED" }, Math.min(deadline, Date.now() + 8000)).catch(() => null);
+      if (o && Array.isArray(o.receipts_outcome) && (o.status?.Failure || o.status?.SuccessValue !== undefined || early(o))) return { hash: txHash, outcome: o };
+    }
+    throw Object.assign(Error("tx " + txHash + " showed no result before the deadline"), { tx: txHash });
+  }
   for (let attempt = 0; attempt < 5 && !outcome; attempt++) {
     try {
       if (signed.length > 100000) {

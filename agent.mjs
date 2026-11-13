@@ -51,6 +51,8 @@ const FILE_PER_HOUR = 20;
 let lastFiled = 0;
 const filedAt = [];
 
+const filedEvent = (o) => (o.receipts_outcome || []).some((r) => (r.outcome.logs || []).some((l) => l.includes('"event":"challenge_filed"')));
+
 /* POST /stamp/break {launch, wallet, path, payout_to?}: the sponsored filing account (a function-call key scoped to `challenge` on the stamp,
    spending prepaid credit) files the path against the wallet. The contract and the enclave decide; the credit is the cap. */
 export async function stampBreak(request, env, send = callFunction, now = Date.now, view = (id, method, args, deadline) => rpc(RPC, "query", { request_type: "call_function", finality: "final", account_id: id, method_name: method, args_base64: btoa(JSON.stringify(args)) }, deadline)) {
@@ -74,8 +76,8 @@ export async function stampBreak(request, env, send = callFunction, now = Date.n
   try {
     const params = JSON.parse(new TextDecoder().decode(new Uint8Array((await view(key.stamp, "stamp_params", {}, deadline)).result)));
     const args = { launch: b.launch, wallet: b.wallet, path: b.path, bond: params.min_bond, payout_to: b.payout_to || null };
-    const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId: key.stamp, method: "challenge", args, gas: 200_000_000_000_000n, deadline });
-    const failure = outcome?.status?.Failure;
+    const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId: key.stamp, method: "challenge", args, gas: 200_000_000_000_000n, deadline, early: filedEvent });
+    const failure = outcome?.status?.Failure || (filedEvent(outcome || {}) ? null : (outcome?.receipts_outcome || []).map((r) => r.outcome.status?.Failure).find(Boolean));
     if (failure) {
       const m = /stamp: [^"\\]*/.exec(JSON.stringify(failure));
       return json({ tx: hash, signer: key.account_id, stamp: key.stamp, status: "refused", reason: m ? m[0] : JSON.stringify(failure).slice(0, 200) });

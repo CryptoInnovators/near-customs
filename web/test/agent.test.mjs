@@ -108,3 +108,12 @@ test("rpc stops at its deadline instead of retrying past it", async () => {
   const { rpc } = await import("../../near-tx.mjs");
   await assert.rejects(rpc("https://127.0.0.1:1", "block", {}, 0, () => 1), /deadline reached/);
 });
+
+test("the filing returns as soon as the challenge_filed event exists, without waiting for the enclave's yielded receipts", async () => {
+  let seen;
+  const send = async (c) => { seen = c; return { hash: "E1", outcome: { ...filedOutcome, status: { Started: {} } } }; };
+  const r = await stampBreak(new Request("https://x/stamp/break", { method: "POST", body: JSON.stringify({ launch: "a.testnet", wallet: "b.testnet", path: [H, H] }) }), fenv, send, () => 500_000_000, view);
+  assert.equal((await r.json()).status, "filed");
+  assert.equal(seen.early(filedOutcome), true);
+  assert.equal(seen.early({ receipts_outcome: [{ outcome: { logs: [] } }] }), false);
+});
