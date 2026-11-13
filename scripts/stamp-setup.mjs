@@ -5,7 +5,7 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { spawnSync } from "node:child_process";
-import { addFunctionCallKeyAction, createAccountAction, addFullAccessKeyAction, deployContractAction, functionCallAction, newKeyPair, sendActions, transferAction, b58decode } from "../near-tx.mjs";
+import { addFunctionCallKeyAction, createAccountAction, addFullAccessKeyAction, deleteKeyAction, b58encode, deployContractAction, functionCallAction, newKeyPair, sendActions, transferAction, b58decode } from "../near-tx.mjs";
 import { RPC, rpc, view, secretOf, saveCred, sleep, link } from "./lib-testnet.mjs";
 
 // SLOT picks the stamp instance (default 28, the first). Every slot is a separate contract holding its own bond on the same launch,
@@ -92,3 +92,5 @@ await sendActions({ rpcUrl: RPC, signerId: FILER, secretKey: fullSecret, receive
 await mkdir(`${homedir()}/.config/customs`, { recursive: true });
 await writeFile(`${homedir()}/.config/customs/${KEY_FILE}`, JSON.stringify({ account_id: FILER, public_key: fc.publicKeyStr, secret_key: fc.secretKey }), { mode: 0o600 });
 console.log("filer function-call key written to ~/.config/customs/"+KEY_FILE+"", fc.publicKeyStr);
+const gone = await sendActions({ rpcUrl: RPC, signerId: FILER, secretKey: fullSecret, receiverId: FILER, actions: [deleteKeyAction("ed25519:" + b58encode(fullPub))] });
+log("filer full-access key deleted, only the challenge key remains", gone.hash);

@@ -25,7 +25,7 @@ A creator posts a NEAR bond on a stamp contract. The hunter, a testnet account w
 
 ## Try it in 60 seconds
 
-Open [the Customs demo](https://near-customs.earn-shield-alerts.workers.dev) and click **Let Customs Hunt**: the filing transaction appears in about 5 s, then the enclave verdict. Click **Prompt-inject the hunter** to watch the key's refusals.
+Open [the Customs demo](https://near-customs.earn-shield-alerts.workers.dev) and click **Hunt this launch** on the Customs coin card: the filing transaction appears in about 5 s, then the enclave verdict. Click **Simulate a hijacked hunter** to watch the key's refusals.
 
 ## Why NEAR
 
