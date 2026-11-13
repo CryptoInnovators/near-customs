@@ -38,7 +38,8 @@ const win = await view(LAUNCH, "window");
 console.log("token params read: min_bond", params.min_bond, "exec_fee", params.exec_fee, "window", JSON.stringify(win));
 
 const code = await rpc("query", { request_type: "view_code", finality: "final", account_id: STAMP }).catch(() => null);
-if (!code) {
+const initialised = code ? await view(STAMP, "stamp_params").then((p) => !!p, () => false) : false;
+if (!initialised) {
   const init = {
     params: {
       outlayer_id: params.outlayer_id, module_url: params.module_url, module_sha256: params.module_sha256,
@@ -46,8 +47,11 @@ if (!code) {
       reclaim_blocks: params.reclaim_blocks, max_age_blocks: params.max_age_blocks, max_hops: params.max_hops,
     },
   };
-  const r = await as(STAMP, STAMP, [deployContractAction(wasm), functionCallAction("new", init, 60_000_000_000_000n, 0n)]);
-  log("deployed and initialised " + STAMP, r.hash);
+  // a 275 KB upload outlives most free RPC timeouts: deploy with near-cli over an archival endpoint, then this script only initialises
+  const actions = [functionCallAction("new", init, 60_000_000_000_000n, 0n)];
+  if (!code) actions.unshift(deployContractAction(wasm));
+  const r = await as(STAMP, STAMP, actions);
+  log((code ? "initialised " : "deployed and initialised ") + STAMP, r.hash);
 }
 
 let key = await view(STAMP, "verdict_key");
