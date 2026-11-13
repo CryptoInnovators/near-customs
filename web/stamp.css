@@ -71,3 +71,5 @@
   .payout input{min-width:0;width:100%;max-width:none;flex-basis:100%}
   .stage-steps:not(:empty){padding:0 var(--space-4)}
 }
+
+.bare-note{margin:var(--space-4) 0 0;font-size:14px;line-height:1.6;color:var(--text-2)}
