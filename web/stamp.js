@@ -232,6 +232,7 @@
       }
       const info = await readStamp().catch(() => null);
       if (info) paintStamp(info);
+      el.steps.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (e) {
       setState(filing, "error");
       filing.textContent = "The filing could not be sent: " + String(e.message || e).slice(0, 120) + ". Try again.";
