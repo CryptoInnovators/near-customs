@@ -74,13 +74,41 @@
     }
   }
 
+  /* the funding path as nodes and labelled edges; the creator node is outlined hot, each edge links its transaction */
+  function wbrCode(id) {
+    const c = document.createElement("code");
+    c.title = id;
+    id.split(/(?<=[-.])/).forEach((seg, i) => { if (i) c.append(document.createElement("wbr")); c.append(seg); });
+    return c;
+  }
+  function chain(parts) {
+    const ol = document.createElement("div");
+    ol.className = "chain";
+    parts.forEach((p) => {
+      const n = document.createElement(p.edge ? "a" : "div");
+      if (p.edge) {
+        n.className = "chain-edge"; n.href = p.tx.startsWith("http") ? p.tx : EXPLORER + "txns/" + p.tx; n.target = "_blank"; n.rel = "noopener";
+        n.append(Object.assign(document.createElement("b"), { textContent: p.edge }), Object.assign(document.createElement("span"), { textContent: p.label }));
+      } else {
+        n.className = "chain-node" + (p.hot ? " hot" : "") + (p.dashed ? " dashed" : "");
+        n.append(Object.assign(document.createElement("span"), { textContent: p.role }), wbrCode(p.id));
+      }
+      ol.append(n);
+    });
+    return ol;
+  }
+
   function paintFundingPath(replay) {
     const funded = replay.buyers.find((b) => b.wallet === FUNDED.wallet);
     if (!funded || !funded.path.length) return;
     const hop = funded.path[0];
-    const line = document.createElement("div");
-    line.append("The path Customs files: ", Object.assign(document.createElement("b"), { textContent: short(hop.from) }), " sent " + hop.near + " NEAR to ", Object.assign(document.createElement("b"), { textContent: short(funded.wallet) }), " (", txLink(hop.tx, "transfer"), "), which then bought " + funded.near + " NEAR of the launch (", txLink(funded.first_tx, "buy"), ").");
-    el.path.replaceChildren(line);
+    el.path.replaceChildren(chain([
+      { id: hop.from, role: "Creator", hot: true },
+      { edge: hop.near + " NEAR", tx: hop.tx, label: "transfer" },
+      { id: funded.wallet, role: "First buyer" },
+      { edge: funded.near + " NEAR", tx: funded.first_tx, label: "buy" },
+      { id: LAUNCH, role: "Launch" },
+    ]));
   }
 
   /* the unstamped launch: a real mainnet launch whose opening buyers Customs has already traced, so there is a real first buyer to name */
@@ -93,7 +121,11 @@
     el.bareName.textContent = pick.name;
     el.bareId.textContent = pick.token;
     el.bareFacts.textContent = "Its creator posted no bond, so nothing backs the claim that its " + pick.opening_buyers + " opening " + (pick.opening_buyers === 1 ? "buyer was" : "buyers were") + " independent.";
-    el.barePath.replaceChildren("First buyer: ", Object.assign(document.createElement("b"), { textContent: short(pick.buyers[0].wallet) }), " (", a("https://nearblocks.io/txns/" + pick.buyers[0].first_tx, "its first buy"), ")");
+    el.barePath.replaceChildren(chain([
+      { id: pick.creator || "creator", role: "Creator", dashed: true, hot: false },
+      { edge: "no bond", tx: "https://nearblocks.io/txns/" + pick.buyers[0].first_tx, label: "its first buy" },
+      { id: pick.buyers[0].wallet, role: "First buyer" },
+    ]));
   }
 
   /* ---------------------------------------------------------------- steps */
@@ -187,7 +219,8 @@
       const paid = after && typeof after.state === "object" && after.state.Broken ? after.state.Broken.paid : null;
       if (state === "Upheld" && paid) {
         setState(wait, "done"); wait.textContent = "The enclave signed its verdict and the contract verified the signature.";
-        step("Upheld. The stamp is broken and " + near(paid) + " moved to " + who + " in " + secs + " s.", "upheld", a(EXPLORER + "address/" + who, "See the account"));
+        const up = step("Upheld. The stamp is broken and " + near(paid) + " moved to " + who + " in " + secs + " s.", "upheld", a(EXPLORER + "address/" + who, "See the account"));
+        up.prepend(Object.assign(document.createElement("strong"), { className: "payoff", textContent: "+" + near(paid) }));
       } else if (state === "Rejected") {
         setState(wait, "done"); wait.textContent = "The enclave signed its verdict and the contract verified the signature.";
         step("Rejected. " + short(target.wallet) + " was not funded by the creator, so the stamp stands and the " + near(ch.bond) + " filing bond is forfeited (" + secs + " s).", "rejected");
