@@ -213,8 +213,8 @@
       const tick = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); clock.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }, 500);
       let ch = null;
       try {
-        for (let i = 0; i < 90; i++) {
-          await sleep(4000);
+        for (let i = 0; i < 180; i++) {
+          await sleep(2000);
           ch = await view(f.stamp, "challenge_of", { challenge_id: f.challenge_id }).catch(() => null);
           if (ch && ch.state !== "Pending") break;
         }

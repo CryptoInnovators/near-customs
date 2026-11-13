@@ -578,6 +578,10 @@
       else if (launches.length) select(launches[0].token, { fresh: true });
       else showFailure("Launches could not be read.", "Paste a token account above to check one directly.", null);
     }
-    backgroundChecks();
+    /* the background reads are many requests to a rate-limited public API: they start when the visitor reaches the launch list, never during the first screen */
+    if (typeof IntersectionObserver === "function") {
+      const watch = new IntersectionObserver((hits) => { if (hits.some((h) => h.isIntersecting)) { watch.disconnect(); backgroundChecks(); } });
+      watch.observe(el.list);
+    } else backgroundChecks();
   })();
 })();
