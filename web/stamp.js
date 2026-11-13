@@ -4,7 +4,7 @@
    and the pinned checker decide. "Prompt-inject the hunter" sends it after a clean buyer and then at the bond itself. Every figure and state on this screen is read from the stamp contract; the result is polled until the contract says so. */
 (() => {
   const LAUNCH = "customs26-token.testnet";
-  const SLOTS = ["customs28-stamp.testnet", "customs29-stamp.testnet", "customs30-stamp.testnet"];
+  const SLOTS = ["customs28-stamp.testnet", "customs29-stamp.testnet", "customs30-stamp.testnet", "customs31-stamp.testnet"];
   const FUNDED = { wallet: "customs26-buyer1.testnet", path: ["23atwS3gdX11c1r7o3UBZK1w7UAuskk7VofmoaZiP5HU", "75sREratSM2pa3iGJBx61hbwPSx3Wfa8bseN3g6CmR2T"] };
   const CLEAN = { wallet: "customs26-buyer2.testnet", path: ["23atwS3gdX11c1r7o3UBZK1w7UAuskk7VofmoaZiP5HU", "GuTXDmdNSsSosDHgjHJLLxgQH1VwXR1Z5jSfxy1TThV5"] };
   const EXPLORER = "https://testnet.nearblocks.io/";
@@ -59,7 +59,8 @@
     const all = await Promise.all(SLOTS.map(async (contract) => ({ contract, stamp: await view(contract, "stamp_of", { launch: LAUNCH }).catch(() => null) })));
     const live = all.filter((s) => s.stamp);
     const standing = live.filter((s) => s.stamp.state === "Standing");
-    slot = standing.find((s) => s.stamp.open === 0) || standing[0] || live[live.length - 1] || null;
+    const newest = [...standing].reverse();
+    slot = newest.find((s) => s.stamp.open === 0) || newest[0] || live[live.length - 1] || null;
     lastInfo = { slot, standing: standing.length, total: live.length };
     return lastInfo;
   }
