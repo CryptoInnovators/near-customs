@@ -55,7 +55,7 @@ const filedEvent = (o) => (o.receipts_outcome || []).some((r) => (r.outcome.logs
 
 /* POST /stamp/break {launch, wallet, path, payout_to?}: the sponsored filing account (a function-call key scoped to `challenge` on the stamp,
    spending prepaid credit) files the path against the wallet. The contract and the enclave decide; the credit is the cap. */
-export async function stampBreak(request, env, send = callFunction, now = Date.now, view = (id, method, args, deadline) => rpc(RPC, "query", { request_type: "call_function", finality: "final", account_id: id, method_name: method, args_base64: btoa(JSON.stringify(args)) }, deadline), probe = async (url) => (await fetch(url, { method: "HEAD" })).status) {
+export async function stampBreak(request, env, send = callFunction, now = Date.now, view = (id, method, args, deadline) => rpc(RPC, "query", { request_type: "call_function", finality: "final", account_id: id, method_name: method, args_base64: btoa(JSON.stringify(args)) }, deadline), probe = async (url) => { const r = await fetch(url, { headers: { range: "bytes=0-0" } }); await r.body?.cancel(); return r.status; }) {
   let b;
   try { b = await request.json(); } catch { return json({ error: "Send JSON with launch, wallet and path." }, 400); }
   const ok = (v) => typeof v === "string" && v.length <= 64 && ACCOUNT.test(v);
@@ -75,7 +75,7 @@ export async function stampBreak(request, env, send = callFunction, now = Date.n
   const deadline = t + FILE_DEADLINE_MS;
   try {
     const params = JSON.parse(new TextDecoder().decode(new Uint8Array((await view(key.stamp, "stamp_params", {}, deadline)).result)));
-    /* OutLayer fetches the pinned checker by URL; if its host does not serve it, a filed challenge can only end Unanswered after minutes. Say so before the bond moves. */
+    /* FastFS answers GET but 404s HEAD, so the probe is a GET. OutLayer fetches the pinned checker by URL; if its host does not serve it, a filed challenge can only end Unanswered after minutes. Say so before the bond moves. */
     if (params.module_url) {
       const served = await probe(params.module_url).catch(() => 0);
       if (served !== 200) { lastFiled = 0; filedAt.pop(); return json({ error: "The pinned checker module is not served by its host right now (HTTP " + (served || "no answer") + "), so no filing was made and no bond moved. Try again shortly.", status: "unavailable" }, 503); }
