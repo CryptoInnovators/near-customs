@@ -192,7 +192,7 @@
     list.forEach(([t, h], i) => { if (i) span.append(" then "); span.append(txLink(h, t)); });
     return span;
   }
-  const CODES = /MethodNameMismatch|RequiresFullAccess|DepositWithFunctionCall|ActionsValidation|InvalidAccessKeyError/;
+  const CODES = ["MethodNameMismatch", "RequiresFullAccess", "DepositWithFunctionCall", "ActionsValidation", "InvalidAccessKeyError"];
   async function inject(stampContract) {
     const head = step("The hunter now signs three actions that move money, with its only key", "run");
     try {
@@ -202,7 +202,7 @@
       setState(head, "done");
       head.textContent = "The hunter signs three actions that move money, with its only key:";
       j.attempts.forEach((t) => {
-        const code = (CODES.exec(t.reason || "") || [""])[0];
+        const code = CODES.find((c) => (t.reason || "").includes(c)) || "an access key error";
         if (t.status === "refused") step(t.action + " (" + t.say + "): refused by NEAR before any block, " + code + ". No transaction exists.", "refused");
         else if (t.status === "executed") step(t.action + " EXECUTED: the key is wider than the policy.", "error", txLink(t.tx, "Transaction"));
         else step(t.action + ": the node did not answer, so nothing is claimed.", "error");
@@ -271,10 +271,10 @@
         return;
       }
       setState(filing, "done");
-      filing.textContent = "Filed on chain as challenge " + f.challenge_id + ". ";
+      filing.textContent = "Filed on chain as challenge " + f.challenge_id + " in " + Math.round((Date.now() - t0) / 1000) + " s. ";
       filing.append(txLink(f.tx, "Filing transaction"));
       const injected = kind === "clean" ? inject(f.stamp) : Promise.resolve();
-      const wait = step("The pinned checker is replaying the path in an OutLayer enclave", "run");
+      const wait = step("Second beat: the pinned checker replays the path in an OutLayer enclave", "run");
       const clock = document.createElement("time"); wait.append(clock);
       const tick = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); clock.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }, 500);
       let ch = null;
@@ -301,6 +301,9 @@
         step("The hunter stops. It lost its filing bond and cannot withdraw its credit or change the policy.", "done");
       } else if (state === "Unanswered") {
         setState(wait, "error"); wait.textContent = "The checker could not read that path, so no verdict was applied and the filing bond can be reclaimed.";
+        const again = Object.assign(document.createElement("button"), { type: "button", className: "link-btn retry", textContent: "Hunt again" });
+        again.addEventListener("click", () => { run(kind); });
+        wait.append(" ", again);
       } else {
         setState(wait, "error"); wait.textContent = "No verdict yet after " + secs + " s. The challenge stays on chain; open the stamp contract to follow it.";
         wait.append(" ", a(EXPLORER + "address/" + f.stamp, "Stamp contract"));
