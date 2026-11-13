@@ -45,7 +45,7 @@ export async function agentBuy(request, env, send = callFunction, now = Date.now
 export const STAMP = "customs28-stamp.testnet";
 const ACCOUNT = /^[a-z0-9]+(?:[-_.][a-z0-9]+)*$/;
 const TX_HASH = /^[1-9A-HJ-NP-Za-km-z]{43,44}$/;
-const FILE_GAP_MS = 20000;
+const FILE_GAP_MS = 8000;
 const FILE_DEADLINE_MS = 40000;
 const FILE_PER_HOUR = 20;
 let lastFiled = 0;
