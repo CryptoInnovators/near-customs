@@ -36,7 +36,7 @@ async function makeAccount(id, near) {
 }
 
 await makeAccount(STAMP, 3);
-await makeAccount(FILER, 1);
+await makeAccount(FILER, Number(process.env.FILER_NEAR) || 1);
 
 const params = await view(LAUNCH, "customs_params");
 const win = await view(LAUNCH, "window");
@@ -49,7 +49,7 @@ if (!initialised) {
     params: {
       outlayer_id: params.outlayer_id, module_url: params.module_url, module_sha256: params.module_sha256,
       min_stamp: NEAR(1).toString(), hold_s: 86400, min_bond: "100000000000000000000000", exec_fee: params.exec_fee,
-      reclaim_blocks: params.reclaim_blocks, max_age_blocks: params.max_age_blocks, max_hops: params.max_hops,
+      reclaim_blocks: params.reclaim_blocks, max_age_blocks: Number(process.env.MAX_AGE) || params.max_age_blocks, max_hops: params.max_hops,
     },
   };
   // a 275 KB upload outlives most free RPC timeouts: deploy with near-cli over an archival endpoint, then this script only initialises
