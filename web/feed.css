@@ -124,3 +124,18 @@
 .mc-row a{color:var(--text-2);text-underline-offset:3px}
 .mc-hot .mc-role,.mc-hot code{color:var(--busted)}
 .mc-foot{margin:var(--space-2) 0 0;color:var(--muted);font-size:11px;line-height:1.4}
+
+/* Customs card in the same flat genre as the meme.cooking cards: no outline, no tile boxes, no pills */
+.mcard.mcard-feature{border:0;background:#141416;padding:22px 24px 24px;border-radius:20px}
+.mcard-feature[data-state=broken]{border:0;background:#1a1215}
+.mcard.mcard-feature:hover{transform:none;background:#17171a}
+.mcard-feature .mstats{gap:0;border-top:1px solid #26262a;border-bottom:1px solid #26262a}
+.mcard-feature .mstats div{background:none;border-radius:0;padding:12px 0 12px 16px;border-left:1px solid #26262a}
+.mcard-feature .mstats div:first-child{padding-left:0;border-left:0}
+.mcard-feature .meter{height:6px}
+.mcard-feature .chain-node{background:none;border:0;border-left:2px solid #34343a;border-radius:0;padding:2px 0 2px 10px}
+.mcard-feature .chain-node.hot{border-left-color:var(--busted)}
+.chips{gap:6px 28px}
+.chip{padding:0;border:0;border-radius:0;background:none}
+.chip-win,.chip-lose{border:0;background:none}
+@media (max-width:760px){.mcard.mcard-feature{padding:18px 16px 20px}.chips{gap:6px 18px}}
