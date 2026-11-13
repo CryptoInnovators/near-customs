@@ -16,7 +16,7 @@ const anchors = (await read("anchors.json")) || {};
 const key = JSON.parse(await readFile(`${homedir()}/.near-credentials/testnet/${ORACLE}.json`, "utf8")).private_key;
 
 async function onchain(token) {
-  const r = await fetch(RPC[0], { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "query", params: { request_type: "call_function", finality: "final", account_id: GATE, method_name: "verdict_of", args_base64: Buffer.from(JSON.stringify({ token })).toString("base64") } }) });
+  const r = await fetch(RPC[0], { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "query", params: { request_type: "call_function", finality: "final", account_id: GATE, method_name: "verdict_of", args_base64: Buffer.from(JSON.stringify({ token })).toString("base64") } }), signal: AbortSignal.timeout(20000) });
   const j = await r.json();
   return j.result?.result ? JSON.parse(Buffer.from(j.result.result).toString()) : null;
 }

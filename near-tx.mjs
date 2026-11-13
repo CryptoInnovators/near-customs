@@ -42,7 +42,7 @@ async function rpc(url, method, params) {
   for (let i = 0; i < 8; i++) {
     const u = urls[i % urls.length];
     try {
-      const r = await fetch(u, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+      const r = await fetch(u, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(20000) });
       const j = await r.json();
       if (!j.error) return j.result;
       last = Error(method + ": " + (j.error.data || j.error.message || JSON.stringify(j.error)));

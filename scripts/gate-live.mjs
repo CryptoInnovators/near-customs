@@ -20,7 +20,7 @@ async function rpc(method, params) {
     const j = await r.json();
     if (!j.error) return j.result;
     if (!/rate|limit/i.test(JSON.stringify(j.error))) throw Error(method + ": " + JSON.stringify(j.error).slice(0, 200));
-    await sleep(1500 * (i + 1));
+    await sleep(3000 * (i + 1));
   }
   throw Error(method + ": rate limited");
 }

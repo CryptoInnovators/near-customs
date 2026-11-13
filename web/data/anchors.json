@@ -1,16 +1,16 @@
 {
   "nearly-993927.nearlytrade.near": {
-    "tx": "BB3Qaq1mNnYkU6FPhPe6VXpipttoAcwD1kTGPayx2m9r",
+    "tx": "EUDrANtctGyJQSqXRbBbx3Ywa2sWriuE99UbcPVagUCi",
     "verdict": "WARN",
     "evidence": "bbc06024ce83c3ea43cef700a8df9c9184bbde389f4afd967323e13105b0841e"
   },
   "batman-4.nearlytrade.near": {
-    "tx": "AD5NSRk2VpxgeqfCAehSQkpgMSCRUhGsGBexfM5QnrxR",
+    "tx": "6ETXqodmiby7m9JDrSSUHWLdG2ZB72CMTVMZKb7WVzjM",
     "verdict": "ALLOW",
     "evidence": "85684097cfcbf3c7859e029b5102531c066917dae91e8a0f989cf94b835cb2a1"
   },
   "singularty.nearlytrade.near": {
-    "tx": "9CDPeUaxFmYsaNwQWw647567crsTjR1FkFtHSF9nxsJQ",
+    "tx": "4Ke2bubeqhJQyYz8spZMsxdSH7eeRwhG3k5suCfsfSDE",
     "verdict": "ALLOW",
     "evidence": "4fc11cb44d3b58d82ec1cc1d17602efe12df54a93a12b700fa8b1ae9a8cf413c"
   },
@@ -43,5 +43,10 @@
     "tx": "81NVTF4EJBDSasAJy11PamjSR76VMRHgZ6tkmyeednzA",
     "verdict": "ALLOW",
     "evidence": "c7da88ad0c9c094a1db39ec19fd7815037dc482b7a5df5fa79d1780804b20e6e"
+  },
+  "customs26-token.testnet": {
+    "tx": "Dhd1dpXd3UXeafXz8dcJSf3EkSsSXpbFknpn8nneg1nb",
+    "verdict": "BLOCK",
+    "evidence": "e4b36562a13dbcc932541a1a934e12529e725a3ffd09f64a4a8a2990ef785796"
   }
 }
