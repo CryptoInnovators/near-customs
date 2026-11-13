@@ -50,7 +50,7 @@
     if (!num || !note) return;
     if (k.full) { num.textContent = "Full access"; note.textContent = k.account + " holds a full-access key"; return; }
     num.textContent = k.methods.length === 1 ? "1 method" : k.methods.length + " methods";
-    note.replaceChildren(a(EXPLORER + "address/" + k.account, short(k.account)), document.createTextNode(": function-call only, `" + k.methods.join("`, `") + "`"));
+    note.replaceChildren(a(EXPLORER + "address/" + k.account, short(k.account)), document.createTextNode(": function-call key, may call " + k.methods.join(", ") + " only"));
   }
 
   /* the stamp to show: the first slot still standing with no open challenge, else any standing, else the one that was broken */
