@@ -56,6 +56,15 @@ Pinned verdict key `ed25519:Akwz7rSe9k1uWuPBHesPfxeYMGJksCQmHLd2ABETTsgw` (pin t
 | The hunter key refuses to move money | `release_stamp` and `withdraw_credit` return `MethodNameMismatch`, a transfer returns `RequiresFullAccess`; no transaction is created | `curl -s -X POST https://near-customs.earn-shield-alerts.workers.dev/hunt/inject -d '{"stamp":"customs31-stamp.testnet"}'`; `web/test/agent.test.mjs` fails when the refusal check is loosened |
 | Hunter key scope | one function-call key, receiver `customs31-stamp.testnet`, methods `challenge`, no full-access key | `near account list-keys customs31-hunter.testnet network-config testnet` |
 
+## Customs Hunt on the standing slot 32 (`customs32-stamp.testnet`), 2026-11-14
+
+| Check | Result | Evidence |
+|---|---|---|
+| Hunter key scope | one function-call key on `customs32-hunter.testnet`, receiver `customs32-stamp.testnet`, methods `challenge`, no full-access key | `near account list-keys customs32-hunter.testnet network-config testnet` |
+| Prompt-injected hunter through the real page, cold | files the clean buyer, challenge 2 filed in 5 s and Rejected 14 s after the click, 0.1 NEAR filing bond forfeited, the stamp stands | https://testnet.nearblocks.io/txns/Cat19u9mE74gGk8DcjMbjzdB9Mu2aTxmoRNqiJR8Kgxk ; `challenge_of(2)` is `Rejected` |
+| Hunt lifecycle rail on the card | the card shows Filed on chain, Enclave verdict, Bond paid or forfeited, each lit from the contract state it reads | `node scripts/cold-run.mjs <url> "#break-clean" out.png` |
+| The page refuses to file when the checker module is not served | `POST /stamp/break` returns 503 with `status: unavailable` before any bond moves; `web/test/agent.test.mjs` goes red when the guard is removed | `node --test web/test/agent.test.mjs` |
+
 ## meme.cooking and Rhea integration (read-only mainnet), 2026-11-14
 | Fact | Evidence | Command |
 |---|---|---|
