@@ -47,8 +47,9 @@ export async function rpc(url, method, params, deadline = Infinity, now = Date.n
       const r = await fetch(u, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(Math.min(method === "send_tx" ? 90000 : 20000, left)) });
       const j = await r.json();
       if (!j.error) return j.result;
-      last = Error(method + ": " + (j.error.data || j.error.message || JSON.stringify(j.error)));
-      if (!/rate|limit|timeout|busy|too many|deprecated/i.test(String(j.error.data || j.error.message))) throw last;
+      const why = typeof j.error.data === "string" ? j.error.data : JSON.stringify(j.error.data || j.error.message || j.error);
+      last = Error(method + ": " + why);
+      if (!/rate|limit|timeout|busy|too many|deprecated/i.test(why)) throw last;
     } catch (e) {
       if (e === last) throw e;
       last = e;
@@ -59,7 +60,7 @@ export async function rpc(url, method, params, deadline = Infinity, now = Date.n
 }
 
 /* Signs the actions with secretKey and waits for the transaction to be final. Returns { hash, outcome }, outcome being the RPC's final result. */
-export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, actions, deadline = Infinity, early = null }) {
+export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, actions, deadline = Infinity, early = null, once = false }) {
   const raw = b58decode(secretKey.replace(/^ed25519:/, ""));
   const seed = raw.slice(0, 32), publicKey = raw.length === 64 ? raw.slice(32) : null;
   if (!publicKey) throw Error("secret key must carry its public half");
@@ -76,6 +77,8 @@ export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, act
   const txHash = b58encode(hash);
   // the same signed bytes are sent again if the first attempt is lost; a transaction is only ever applied once
   let outcome, lastErr;
+  /* `once`: one broadcast, and the node's own answer is the result (a transaction the protocol refuses has no hash to poll) */
+  if (once) return { hash: txHash, outcome: await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "FINAL" }, deadline) };
   /* a contract that yields keeps its transaction un-final until the enclave answers; `early(outcome)` says the outcome seen so far is enough */
   if (early) {
     await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "NONE" }, deadline);

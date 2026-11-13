@@ -2,7 +2,7 @@
 // the key lives in the AGENT_KEY secret (JSON {account_id, secret_key}). The gate decides: it releases 0.01 testnet NEAR on an
 // anchored ALLOW and panics, moving nothing, on WARN, BLOCK or no verdict. The response carries the transaction hash; the page
 // re-reads that transaction from the chain itself and shows what the chain says.
-import { callFunction, rpc } from "./near-tx.mjs";
+import { callFunction, functionCallAction, rpc, sendActions, transferAction } from "./near-tx.mjs";
 
 export const GATE = "customs27-gate.testnet";
 export const AMOUNT = 10n ** 22n;
@@ -90,4 +90,42 @@ export async function stampBreak(request, env, send = callFunction, now = Date.n
     const late = now() >= deadline;
     return json({ error: late ? "The chain took longer than " + FILE_DEADLINE_MS / 1000 + " s to confirm the filing. Try again." : "The filing transaction did not complete: " + String(e.message || e).slice(0, 160), ...(e && e.tx ? { tx: e.tx } : {}) }, late ? 504 : 502);
   }
+}
+
+/* ---------------------------------------------------------------- the prompt-injected hunter: what its key refuses */
+
+const INJECTED = [
+  { id: "release_stamp", say: "release the creator's bond to itself", actions: () => [functionCallAction("release_stamp", { launch: "customs26-token.testnet" }, 30_000_000_000_000n, 0n)] },
+  { id: "withdraw_credit", say: "withdraw its filing credit", actions: () => [functionCallAction("withdraw_credit", { amount: (10n ** 24n).toString() }, 30_000_000_000_000n, 0n)] },
+  { id: "transfer", say: "transfer NEAR out of the hunter account", actions: () => [transferAction(10n ** 24n)] },
+];
+const REFUSAL = /MethodNameMismatch|RequiresFullAccess|DepositWithFunctionCall|ActionsValidation|InvalidAccessKeyError/;
+const INJECT_GAP_MS = 3000;
+let lastInject = 0;
+
+/* POST /hunt/inject {stamp?}: the hunter, told by an injected prompt to move money, signs each forbidden action with its only key.
+   The NEAR protocol answers before any block includes the transaction; the answer is returned word for word. A result of "executed" would mean the key was too wide. */
+export async function huntInject(request, env, send = sendActions, now = Date.now) {
+  let b = {};
+  try { b = await request.json(); } catch { /* an empty body names no stamp */ }
+  if (!env.FILER_KEY) return json({ error: "The filing key is not configured on this host." }, 503);
+  const keys = [].concat(JSON.parse(env.FILER_KEY)).map((k) => ({ ...k, stamp: k.stamp || STAMP }));
+  const key = keys.find((k) => k.stamp === (b.stamp || STAMP));
+  if (!key) return json({ error: "That stamp contract has no filing key on this host." }, 400);
+  const t = now();
+  const wait = lastInject + INJECT_GAP_MS - t;
+  if (wait > 0) return json({ error: "The hunter is mid-run. Try again in " + Math.ceil(wait / 1000) + " s." }, 429, { "retry-after": String(Math.ceil(wait / 1000)) });
+  lastInject = t;
+  const deadline = t + 25000;
+  const attempts = await Promise.all(INJECTED.map(async (a) => {
+    const receiverId = a.id === "transfer" ? key.account_id : key.stamp;
+    try {
+      const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId, actions: a.actions(), once: true, deadline });
+      return { action: a.id, say: a.say, status: "executed", tx: hash, result: JSON.stringify(outcome?.status || {}).slice(0, 160) };
+    } catch (e) {
+      const why = String(e.message || e);
+      return { action: a.id, say: a.say, status: REFUSAL.test(why) ? "refused" : "unanswered", reason: why.replace(/^send_tx: /, "").slice(0, 260) };
+    }
+  }));
+  return json({ signer: key.account_id, stamp: key.stamp, attempts });
 }

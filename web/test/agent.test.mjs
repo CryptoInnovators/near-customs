@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { agentBuy, readOutcome, AMOUNT, GATE } from "../../agent.mjs";
+import { agentBuy, huntInject, readOutcome, AMOUNT, GATE } from "../../agent.mjs";
 import { b58decode, b58encode, encodeTx, functionCallAction } from "../../near-tx.mjs";
 
 const req = (body) => new Request("https://x/agent/buy", { method: "POST", body: typeof body === "string" ? body : JSON.stringify(body) });
@@ -116,4 +116,26 @@ test("the filing returns as soon as the challenge_filed event exists, without wa
   assert.equal((await r.json()).status, "filed");
   assert.equal(seen.early(filedOutcome), true);
   assert.equal(seen.early({ receipts_outcome: [{ outcome: { logs: [] } }] }), false);
+});
+
+test("the injected hunter signs three forbidden actions and each refusal is the protocol's own words", async () => {
+  const sent = [];
+  const send = async (c) => { sent.push(c); throw Error('send_tx: {"TxExecutionError":{"InvalidTxError":{"InvalidAccessKeyError":{"MethodNameMismatch":{"method_name":"x"}}}}}'); };
+  const r = await huntInject(new Request("https://x/hunt/inject", { method: "POST", body: "{}" }), fenv, send, () => 50_000_000);
+  const body = await r.json();
+  assert.deepEqual(body.attempts.map((a) => a.action), ["release_stamp", "withdraw_credit", "transfer"]);
+  assert.ok(body.attempts.every((a) => a.status === "refused" && /MethodNameMismatch/.test(a.reason)));
+  assert.ok(sent.every((c) => c.once === true), "one broadcast each");
+});
+
+test("a key that is too wide is reported as executed, never as refused", async () => {
+  const send = async () => ({ hash: "T9", outcome: { status: { SuccessValue: "" } } });
+  const body = await (await huntInject(new Request("https://x/hunt/inject", { method: "POST", body: "{}" }), fenv, send, () => 60_000_000)).json();
+  assert.ok(body.attempts.every((a) => a.status === "executed" && a.tx === "T9"));
+});
+
+test("a node that did not answer is reported as unanswered, not as a refusal", async () => {
+  const send = async () => { throw Error("send_tx: deadline reached"); };
+  const body = await (await huntInject(new Request("https://x/hunt/inject", { method: "POST", body: "{}" }), fenv, send, () => 70_000_000)).json();
+  assert.ok(body.attempts.every((a) => a.status === "unanswered"));
 });
