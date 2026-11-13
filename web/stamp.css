@@ -99,3 +99,4 @@
 @media (max-width:900px){.proof-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.chain-note{display:none}}
 @media (max-width:760px){.proof-strip .num{font-size:26px}.proof-strip li{padding:var(--space-3)}.path-caption{order:3;margin-top:var(--space-3)}.lcard-path{order:4;margin-top:0}.payout{order:5}}
 @media (min-width:761px){.seal-row{order:1}.path-caption{order:2}.lcard-path{order:3}.lcard-actions{order:4;margin-top:var(--space-4)}.payout{order:5;margin-top:var(--space-3)}}
+@media (min-width:761px){.bare-note{order:3}.lcard-path{order:3}.proof-strip{margin:var(--space-4) 0}.proof-strip li{padding:var(--space-3) var(--space-4)}.proof-strip .num{font-size:30px}.lcard{padding:var(--space-4) var(--space-6)}.path-caption{margin-top:var(--space-3);padding-top:var(--space-3)}.seal-row{padding:var(--space-2) 0}}
