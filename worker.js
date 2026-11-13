@@ -8,6 +8,7 @@ const UPSTREAM = {
   "tx-test": "https://tx.test.fastnear.com",
   "rpc-main": "https://rpc.mainnet.fastnear.com",
   "rpc-test": "https://rpc.testnet.fastnear.com",
+  "drpc-test": "https://near-testnet.drpc.org",
 };
 
 export default {
