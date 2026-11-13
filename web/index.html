@@ -21,13 +21,19 @@
     <a href="token.html?t=customs26-token.testnet">Customs coin</a>
     <a href="attack-lab.html">How the check works</a>
   </nav>
-  <p class="chain"><span data-network>NEAR MAINNET</span> <b data-block aria-label="final block">reading</b></p>
+  <p class="chain"><span data-network>NEAR MAINNET</span> <b data-block aria-label="final block">reading</b> <span class="chain-note">launch reads, stamps on testnet</span></p>
 </header>
 
 <main id="main">
   <section id="stage" class="stage" aria-labelledby="stage-title">
     <h1 id="stage-title">Launches post a bond. Break one.</h1>
     <p class="stage-sub">A stamp is a NEAR bond saying none of a launch's first buyers was the creator's money. Prove one was and the bond is yours.</p>
+    <ul class="proof-strip" id="proof-strip" aria-label="Proof">
+      <li><b class="num">1.1 NEAR</b><span>paid to the last prover</span><i>Upheld on chain <a href="https://testnet.nearblocks.io/txns/FY68EWNPp3w9ggT62BURc36PvxHF4DPaLnYuESFZybCY" target="_blank" rel="noopener">tx</a></i></li>
+      <li><b class="num">Rejected</b><span>a clean buyer, stamp kept</span><i>the contract refuses <a href="https://testnet.nearblocks.io/txns/4cYWnGFvTifba7ppwddVAUVYQZ3rTPnm9MxjLTDpsM7M" target="_blank" rel="noopener">tx</a></i></li>
+      <li><b class="num" id="proof-standing">1 of 3</b><span>stamps still standing</span><i>read from the stamp contracts</i></li>
+      <li><b class="num">TDX</b><span>OutLayer enclave verdict</span><i id="proof-hash">checker pinned in the stamp contract</i></li>
+    </ul>
     <div class="pair">
       <article id="card-stamped" class="lcard" aria-labelledby="stamped-name" data-state="loading">
         <header class="lcard-head"><div><h2 id="stamped-name">Customs coin</h2><p class="lcard-id" id="stamped-id">customs26-token.testnet</p></div><p class="lcard-tag">Testnet launch</p></header>
@@ -60,12 +66,6 @@
         </div>
       </article>
     </div>
-    <ul class="proof-strip" id="proof-strip" aria-label="Proof">
-      <li><span>Checker</span><b id="proof-hash">reading from the stamp contract</b></li>
-      <li><span>Runs in</span><b>OutLayer TDX enclave, verdict signature checked on chain</b></li>
-      <li><span>Last break</span><b>Upheld, 1.1 NEAR paid <a href="https://testnet.nearblocks.io/txns/FY68EWNPp3w9ggT62BURc36PvxHF4DPaLnYuESFZybCY" target="_blank" rel="noopener">tx</a></b></li>
-      <li><span>Last refusal</span><b>clean buyer Rejected, stamp kept <a href="https://testnet.nearblocks.io/txns/4cYWnGFvTifba7ppwddVAUVYQZ3rTPnm9MxjLTDpsM7M" target="_blank" rel="noopener">tx</a></b></li>
-    </ul>
     <ol id="stage-steps" class="stage-steps" aria-live="polite"></ol>
   </section>
 

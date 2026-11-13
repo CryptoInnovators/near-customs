@@ -48,6 +48,8 @@
   }
 
   function paintStamp(info) {
+    const standingEl = q("#proof-standing");
+    if (standingEl && info.total) standingEl.textContent = info.standing + " of " + info.total;
     const s = info.slot && info.slot.stamp;
     el.seal.classList.remove("land"); void el.seal.offsetWidth; el.seal.classList.add("land");
     if (!s) {
@@ -115,7 +117,7 @@
 
   /* the unstamped launch: a real mainnet launch whose opening buyers Customs has already traced, so there is a real first buyer to name */
   const proofHash = q("#proof-hash");
-  if (proofHash) view(SLOTS[0], "stamp_params", {}).then((p) => { proofHash.textContent = "sha256 " + p.module_sha256.slice(0, 10) + "…" + p.module_sha256.slice(-8) + " pinned in the stamp contract"; }).catch(() => { proofHash.textContent = "pinned in the stamp contract"; });
+  if (proofHash) view(SLOTS[0], "stamp_params", {}).then((p) => { proofHash.textContent = "checker sha256 " + p.module_sha256.slice(0, 8) + "…" + p.module_sha256.slice(-6) + " pinned"; }).catch(() => {});
 
   let bare = null;
   async function loadBare() {
