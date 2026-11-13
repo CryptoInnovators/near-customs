@@ -2,7 +2,21 @@
 
 [![ci](https://github.com/kamalbuilds/near-customs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kamalbuilds/near-customs/actions/workflows/ci.yml)
 
-A NEP-141 memecoin on NEAR whose contract holds every opening buyer to a 24 hour vest and pays anyone who proves the creator's money funded one of them. A static page (`web/`) reads any Nearly launch live from mainnet and shows which opening buyers the creator's money reached.
+**Launches post a bond. Break one.** A Customs stamp is a NEAR bond a launch creator posts, saying none of the launch's first buyers was the creator's own money. Anyone who proves otherwise collects the bond: a pinned WASI checker running in an OutLayer TDX enclave reads the funding path, signs a verdict, and the stamp contract verifies that signature before it moves money. A clean launch refuses the challenge and keeps its bond.
+
+Live: https://near-customs.earn-shield-alerts.workers.dev/ (NEAR testnet; reads NEAR mainnet launches read-only).
+
+### Do this, see that (live, no wallet, about 30 seconds)
+
+1. Open https://near-customs.earn-shield-alerts.workers.dev/ . You see the stamped Customs coin (`1 NEAR standing`, bond read from a `customs*-stamp.testnet` contract) next to an unstamped mainnet launch (`NOTHING POSTED`).
+2. Click **Break this stamp**. A sponsored filing key files the creator-to-buyer funding path, and the page shows each step: filed on chain, the enclave signing its verdict, then `Upheld. The stamp is broken and 1.1 NEAR moved to customs29-hunter.testnet` with the transaction link. Reference run: https://testnet.nearblocks.io/txns/FY68EWNPp3w9ggT62BURc36PvxHF4DPaLnYuESFZybCY
+3. Click **Challenge the clean buyer instead**. The same pipeline runs against a buyer the creator never paid and ends `Rejected`: the stamp stands. Reference run: https://testnet.nearblocks.io/txns/4cYWnGFvTifba7ppwddVAUVYQZ3rTPnm9MxjLTDpsM7M
+4. On the unstamped mainnet launch, click **Try to break it**. The contract refuses: no stamp, no bond to take. Reference run: https://testnet.nearblocks.io/txns/DWyYVvmZKTSfBr8rq6S2R9kmTxwf11hgX5WEhTTZaLDq
+5. Below the fold, paste any NEAR launch into **Check any launch before you buy** to read its opening buyers and the funding path behind a verdict.
+
+Every transaction above is recorded with its checks in `docs/EVIDENCE.md` (`node scripts/stamp-live.mjs` reproduces them; `node scripts/cold-run.mjs <url> "#break-go" out.png` drives the real page to the contract's verdict).
+
+The Customs token below is the same bond logic built into a NEP-141 memecoin: its contract holds every opening buyer to a 24 hour vest and pays anyone who proves the creator's money funded one of them. A static page (`web/`) reads any Nearly launch live from mainnet and shows which opening buyers the creator's money reached.
 
 Built for NEAR HACKATHON in the memecoins and security tracks. The build window opened 2026-10-19 (Q-001); the first commit in this repository is dated 2026-10-31 and every commit is inside the window.
 
