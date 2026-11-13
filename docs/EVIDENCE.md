@@ -21,3 +21,15 @@ Every figure in the README and `docs/SPIKE.md`, with the command that produces i
 | Checker module OutLayer runs on testnet | sha256 `fc72c7b662fc48ca497c9582a0b1aa8271e051d132283a9645cd5395b485f975`, equal to the CI artifact `customs-checker-wasm-testnet` | `scripts/testnet-live.sh` (check `judge_pinned`) | `curl` of the FastFS URL in `customs_params().module_url`; upload transaction `DbC5Gk49XJV3L4mvZnFC4xXRnb7ufLUWFk9Vouaxf5Q2` |
 
 Access-key detail behind the key row: one wallet in the 11 launches holds any key that its creator also holds. `krhuize.tg` (buyer in `mob.nearlytrade.near`) and `tiadoyinnn.near` (creator) both list `ed25519:BS5tkyAHU6dyLHVYBGGxCKzqAa5jB1j1xyAMQ1Cwaqny` as a `FunctionCall` key limited to `aa-harvest-moon.near`, at block 221867528 (the buy block) and at block 222392783. The buy transaction 9Nu1ne79AHYEzip6LiSiZTodF9RQwnGAzDfSRtAyZf4Z was signed by `ed25519:H2aYmjWs22Y7ynqjBxArLqYcESE3MzSfEKp8X6x6122H`, a FullAccess key of `krhuize.tg` only. A limited key issued by one app carries no control of either account, so the contract convicts on printed receipts alone.
+
+## Agent buy gate on testnet (`customs27-gate.testnet`)
+
+An agent account holding only a function-call key scoped to `buy` on the gate asks it to spend. The gate holds a Customs verdict per launch (anchored by the oracle account) and releases funds only on ALLOW. Produced by `node scripts/gate-live.mjs`, each run polled to FINAL, each asserting the venue account's balance moved by exactly the amount or not at all.
+
+| Run | Launch and anchored verdict | Result | FINAL transaction |
+|---|---|---|---|
+| Success | `batman-4.nearlytrade.near`, ALLOW | cleared, venue +0.01 NEAR | https://testnet.nearblocks.io/txns/3o7YxL8qhHr2WyVAkRTRT8CtTaFfuyXSSXLyvu5MLNLh |
+| Must fail | `customs26-token.testnet`, BLOCK (creator paid 1 of 2 opening buyers) | refused with the gate's reason, venue +0 | https://testnet.nearblocks.io/txns/7incABozUXcN92RdSdKRMczvsMmAg38uCLDRmKFwAEfD |
+| Must fail | `never-anchored-launch.nearlytrade.near`, no verdict | refused `NO VERDICT`, venue +0 | https://testnet.nearblocks.io/txns/FuUPNefaNHbMfEPhDecBSdLz4D8YAmuN6HRUKnyRKXnr |
+
+Gate wasm sha256 `61926181abf26e6af4406315c6795c4a09db9aa16a8eb775d1b6f42fcb36beb6` (CI run 43419838536); the agent account's only key is the function-call key (full-access key deleted in `5TVs3wM4jK2ZqYzravgPQs9MvYaDaH7c37GZfb1RXJUR` and `8ahWMk5hqowuVzED9bft4ErFK6nzLyc75gKRBey5JYWN`).
