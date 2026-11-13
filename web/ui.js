@@ -199,8 +199,17 @@ function fundedSummary(buyers, traceStatus) {
   return { funded, fundedCost, devBuys, devBuyCost, totalCost };
 }
 
+/* A verdict exists only when every opening buyer has a final trace. Until then figures is null and the page prints progress. */
+const RESOLVED = new Set(["linked", "creator", "unlinked", "unpriced"]);
+function traceVerdict(buyers) {
+  const list = Array.isArray(buyers) ? buyers : [];
+  const done = list.filter((b) => b && b.trace && RESOLVED.has(b.trace.status)).length;
+  const complete = list.length > 0 && done === list.length;
+  return { done, total: list.length, complete, figures: complete ? fundedSummary(list, (b) => b.trace.status) : null };
+}
+
 function setField(color) {
   document.body.dataset.field = color;
 }
 
-if (typeof module !== "undefined") module.exports = { esc, shorten, shortAccount, group, amountParts, utc, countdown, stampHtml, STAMPS, fundedSummary };
+if (typeof module !== "undefined") module.exports = { esc, shorten, shortAccount, group, amountParts, utc, countdown, stampHtml, STAMPS, fundedSummary, traceVerdict };

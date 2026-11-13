@@ -15,7 +15,7 @@ const seq = (...steps) => {
   f.calls = 0;
   return f;
 };
-const fast = { tries: 3, waitMs: 1 };
+const fast = { tries: 3, waitMs: 1, backoffMs: 1 };
 
 test("a dropped connection then a good answer returns the answer", async () => {
   const f = seq(new TypeError("Failed to fetch"), reply(200, "{}"));
@@ -51,4 +51,12 @@ test("an abort is never retried", async () => {
   const f = seq(e);
   await assert.rejects(postWithRetry(f, "u", {}, fast), /aborted/);
   assert.equal(f.calls, 1);
+});
+
+test("a 429 backs off and doubles the wait each attempt", async () => {
+  const f = seq(reply(429, "slow"), reply(429, "slow"), reply(200, "{}"));
+  const t0 = Date.now();
+  const out = await postWithRetry(f, "u", {}, { tries: 3, waitMs: 1, backoffMs: 60 });
+  assert.equal(out.res.status, 200);
+  assert.ok(Date.now() - t0 >= 170, "expected about 60 + 120 ms of backoff, got " + (Date.now() - t0));
 });

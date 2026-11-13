@@ -27,16 +27,19 @@ const limiter = (() => {
 })();
 
 /* One POST with bounded retries for the failures a public endpoint returns under load:
-   a refused connection (fetch TypeError, which is what a CORS-less 429 looks like), HTTP 429 and HTTP 5xx. */
+   a refused connection (fetch TypeError, which is what a CORS-less 429 looks like), HTTP 429 and HTTP 5xx.
+   A 429 waits 2 s, 4 s, 8 s (or the server's Retry-After when it is longer); other failures wait waitMs * attempt. */
 async function postWithRetry(fetchFn, url, init, opts) {
   const tries = (opts && opts.tries) || 3;
   const wait = (opts && opts.waitMs) || 700;
+  const backoff = (opts && opts.backoffMs) || 2000;
+  const limited = /fastnear/.test(url);
   let last;
   for (let attempt = 1; attempt <= tries; attempt++) {
     try {
-      if (/^https:\/\/(?:tx\.main|rpc\.mainnet)\.fastnear\.com(?:\/|$)/.test(url)) await limiter.take();
+      if (limited) await limiter.take();
       const res = await fetchFn(url, init);
-      if (/^https:\/\/(?:tx\.main|rpc\.mainnet)\.fastnear\.com(?:\/|$)/.test(url)) limiter.response(res.status);
+      if (limited) limiter.response(res.status);
       if (res.status === 429 || res.status >= 500) {
         last = { res, text: await res.text() };
       } else {
@@ -46,10 +49,24 @@ async function postWithRetry(fetchFn, url, init, opts) {
       if (err && err.name === "AbortError") throw err;
       last = { err };
     }
-    if (attempt < tries && last.res?.status !== 429) await new Promise((r) => setTimeout(r, wait * attempt));
+    if (attempt < tries) {
+      const after = last.res?.status === 429 ? Math.max(backoff * 2 ** (attempt - 1), 1000 * (Number(last.res.headers?.get?.("retry-after")) || 0)) : wait * attempt;
+      await new Promise((r) => setTimeout(r, after));
+    }
   }
   if (last.err) throw last.err;
   return last;
+}
+
+/* The deployed site proxies FastNEAR at /fastnear/<tx-main|tx-test|rpc-main|rpc-test> (worker.js), so a 429 reaches the
+   page as a status instead of a CORS failure. A plain static server has no proxy; then the page calls FastNEAR directly. */
+let proxyProbe = null;
+function fastnearBase(network, kind) {
+  const direct = { "tx-main": "https://tx.main.fastnear.com", "tx-test": "https://tx.test.fastnear.com", "rpc-main": "https://rpc.mainnet.fastnear.com", "rpc-test": "https://rpc.testnet.fastnear.com" };
+  const key = kind + "-" + (network === "testnet" ? "test" : "main");
+  if (typeof location === "undefined" || !/^https?:$/.test(location.protocol)) return Promise.resolve(direct[key]);
+  proxyProbe = proxyProbe || fetch("/fastnear/ping").then((r) => r.status === 204).catch(() => false);
+  return proxyProbe.then((ok) => (ok ? location.origin + "/fastnear/" + key : direct[key]));
 }
 
 if (typeof module !== "undefined") module.exports = { postWithRetry };

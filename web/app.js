@@ -175,7 +175,7 @@ async function postJSON(url, body, label) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
       signal: ctrl.signal,
-    }, { tries: 5, waitMs: 900 });
+    }, { tries: 4, waitMs: 900 });
     if (!res.ok) {
       throw new Error(label + " returned HTTP " + res.status + ". " + tidy(text));
     }
@@ -562,8 +562,8 @@ async function scanToken(token, created) {
 
 async function inspect(token, creator, runId, hooks = {}) {
   NET = String(token).endsWith(".testnet") ? "testnet" : "mainnet";
-  TX_API = NET === "testnet" ? "https://tx.test.fastnear.com" : "https://tx.main.fastnear.com";
-  RPC = NET === "testnet" ? "https://rpc.testnet.fastnear.com" : "https://rpc.mainnet.fastnear.com";
+  TX_API = await fastnearBase(NET, "tx");
+  RPC = await fastnearBase(NET, "rpc");
   state.pages = 0;
   state.batches = 0;
   state.cached = 0;
@@ -578,7 +578,8 @@ async function inspect(token, creator, runId, hooks = {}) {
     const response = await fetch(NEARLY_API + "/trades/" + encodeURIComponent(token));
     if (response.ok) tape = await response.json();
   }
-  tape = Array.isArray(tape) ? tape.filter((t) => t.side === "buy" && t.trader && t.ts_ms && t.block) : [];
+  // A Nearly dev buy lands in a lock contract (trader lock_N.nearlytrade.near) on behalf of its owner, the creator.
+  tape = Array.isArray(tape) ? tape.filter((t) => t.side === "buy" && t.trader && t.ts_ms && t.block).map((t) => (t.owner ? Object.assign({}, t, { trader: t.owner }) : t)) : [];
   let created, scan = { list: [], pages: 0, complete: true }, txs = [], moves = [], sales = [];
   let t0, t0Height;
   if (tape.length) {
@@ -683,32 +684,20 @@ async function inspect(token, creator, runId, hooks = {}) {
   }
 
   progress("Tracing funding for the first " + Math.min(TRACE_WALLETS, list.length) + " priced wallets.");
-  const eligible = [];
-  let started = 0;
-  let budgetHit = false;
   for (const b of list) {
     if (b.wallet === creator) b.trace = { status: "creator", path: [], note: "" };
     else if (b.cost === 0n) b.trace = { status: "unpriced", path: [], note: "The buy moved no wNEAR into the market, so the half-cost floor cannot be computed." };
-    else if (eligible.length < TRACE_WALLETS) eligible.push(b);
-    else b.trace = { status: "not_traced", path: [], note: "The page traces the " + TRACE_WALLETS + " largest priced buys. This wallet sits outside that limit and was not ruled out." };
-    if (typeof hooks.onTrace === "function" && b.trace) hooks.onTrace(b);
+    else b.trace = null;
+    if (b.trace && typeof hooks.onTrace === "function") hooks.onTrace(b);
   }
-  await mapLimit(eligible, CONCURRENCY, async (b) => {
-    if (runId !== state.run) return;
-    if (budgetHit) {
-      b.trace = { status: "not_traced", path: [], note: "The funding search reached its receipt budget earlier. This wallet was not ruled out." };
-      return;
-    }
-    started++;
-    progress("Tracing " + started + " of " + eligible.length + ": " + b.wallet);
-    try {
-      b.trace = await trace(b.wallet, { wallet: b.wallet, cost: b.cost, ts: b.first, height: b.firstHeight, creator }, runId);
-      if (b.trace.status === "not_traced") budgetHit = true;
-    } catch (err) {
-      b.trace = { status: "not_traced", path: [], note: "A read for this wallet failed (" + tidy(err.message) + "). It was not ruled out." };
-    }
-    if (typeof hooks.onTrace === "function") hooks.onTrace(b);
-  });
+  await traceAll(list, creator, runId, hooks, TRACE_WALLETS);
+  // One unattended second pass for buyers a rate limit or the budget left untraced, at lower concurrency.
+  if (runId === state.run && list.some((b) => b.trace && b.trace.status === "not_traced")) {
+    await new Promise((r) => setTimeout(r, 2000));
+    state.pages = 0;
+    state.batches = 0;
+    await traceAll(list, creator, runId, hooks, TRACE_WALLETS, 3);
+  }
 
   if (runId !== state.run) return null;
 
@@ -734,7 +723,46 @@ async function inspect(token, creator, runId, hooks = {}) {
   };
 }
 
-globalThis.CustomsInspector = { inspect: (token, creator, hooks = {}) => inspect(token, creator, ++state.run, hooks), setProgress: (fn) => { progress = fn; } };
+/* Traces every buyer whose trace is missing or not_traced, the first `cap` of them; the rest are marked not_traced. */
+async function traceAll(list, creator, runId, hooks, cap, limit = CONCURRENCY) {
+  const eligible = [];
+  for (const b of list) {
+    if (b.trace && b.trace.status !== "not_traced") continue;
+    if (eligible.length < cap) eligible.push(b);
+    else b.trace = { status: "not_traced", path: [], note: "The page traces the " + cap + " largest priced buys at a time. This wallet was not ruled out." };
+    if (b.trace && typeof hooks.onTrace === "function") hooks.onTrace(b);
+  }
+  let started = 0;
+  let budgetHit = false;
+  await mapLimit(eligible, limit, async (b) => {
+    if (runId !== state.run) return;
+    if (budgetHit) {
+      b.trace = { status: "not_traced", path: [], note: "The funding search reached its receipt budget earlier. This wallet was not ruled out." };
+      if (typeof hooks.onTrace === "function") hooks.onTrace(b);
+      return;
+    }
+    started++;
+    progress("Tracing " + started + " of " + eligible.length + ": " + b.wallet);
+    try {
+      b.trace = await trace(b.wallet, { wallet: b.wallet, cost: b.cost, ts: b.first, height: b.firstHeight, creator }, runId);
+      if (b.trace.status === "not_traced") budgetHit = true;
+    } catch (err) {
+      b.trace = { status: "not_traced", path: [], note: "A read for this wallet failed (" + tidy(err.message) + "). It was not ruled out." };
+    }
+    if (typeof hooks.onTrace === "function") hooks.onTrace(b);
+  });
+}
+
+/* Re-traces the buyers of a finished inspection that are still not_traced, with a fresh budget. */
+async function retryUntraced(data, hooks = {}) {
+  const runId = ++state.run;
+  state.pages = 0;
+  state.batches = 0;
+  await traceAll(data.list, data.creator, runId, hooks, data.list.length, 4);
+  return runId === state.run ? data : null;
+}
+
+globalThis.CustomsInspector = { inspect: (token, creator, hooks = {}) => inspect(token, creator, ++state.run, hooks), retry: retryUntraced, setProgress: (fn) => { progress = fn; } };
 
 /* ---------------------------------------------------------------- rendering */
 
