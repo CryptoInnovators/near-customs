@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="check.css">
 <link rel="stylesheet" href="stamp.css">
+<link rel="stylesheet" href="feed.css">
 <link rel="icon" href="data:,">
 </head>
 <body>
@@ -26,21 +27,25 @@
 
 <main id="main">
   <section id="stage" class="stage" aria-labelledby="stage-title">
-    <h1 id="stage-title">Let Customs Hunt.</h1>
-    <p class="stage-sub">An agent with one function-call key hunts launches whose creator funded their own first buyer. The pinned checker proves the path and the creator's bond pays the agent. A false hunt forfeits its filing bond.</p>
-    <ul class="proof-strip" id="proof-strip" aria-label="Proof">
-      <li><b class="num">1.1 NEAR</b><span>paid to the hunter</span><i>Upheld on chain <a href="https://testnet.nearblocks.io/txns/FY68EWNPp3w9ggT62BURc36PvxHF4DPaLnYuESFZybCY" target="_blank" rel="noopener">tx</a></i></li>
-      <li><b class="num">Rejected</b><span>a false hunt, bond forfeited</span><i>the contract refuses <a href="https://testnet.nearblocks.io/txns/4cYWnGFvTifba7ppwddVAUVYQZ3rTPnm9MxjLTDpsM7M" target="_blank" rel="noopener">tx</a></i></li>
-      <li><b class="num" id="proof-key">1 method</b><span>the hunter's key may call</span><i id="proof-key-note">read from its access key on chain</i></li>
-      <li><b class="num">TDX</b><span>OutLayer enclave verdict</span><i id="proof-hash">checker pinned in the stamp contract</i></li>
+    <h1 id="stage-title">Let Customs <span>Hunt.</span></h1>
+    <p class="stage-sub">Every launch below can carry a creator bond. An agent with one function-call key hunts the ones whose creator funded their own first buyer: a proven path pays the bond to the agent, a false hunt forfeits its filing bond.</p>
+    <ul class="chips" id="proof-strip" aria-label="Proof">
+      <li class="chip chip-win"><b>+1.1 NEAR</b><span>paid to the hunter</span><a href="https://testnet.nearblocks.io/txns/FY68EWNPp3w9ggT62BURc36PvxHF4DPaLnYuESFZybCY" target="_blank" rel="noopener">Upheld tx</a></li>
+      <li class="chip chip-lose"><b>Rejected</b><span>false hunt, filing bond forfeited</span><a href="https://testnet.nearblocks.io/txns/4cYWnGFvTifba7ppwddVAUVYQZ3rTPnm9MxjLTDpsM7M" target="_blank" rel="noopener">tx</a></li>
+      <li class="chip"><b id="proof-key">1 method</b><span id="proof-key-note">ALLOW challenge. BLOCK transfers, withdrawals, releases.</span></li>
+      <li class="chip"><b>TDX</b><span id="proof-hash">enclave verdict, checker pinned in the contract</span></li>
     </ul>
-    <div class="pair">
-      <article id="card-stamped" class="lcard" aria-labelledby="stamped-name" data-state="loading">
-        <header class="lcard-head"><div><h2 id="stamped-name">Customs coin</h2><p class="lcard-id" id="stamped-id">customs26-token.testnet</p></div><p class="lcard-tag">Testnet launch</p></header>
-        <div class="seal-row">
-          <div id="seal" class="seal" data-ink="amber" role="img" aria-label="Stamp status"><span class="seal-kind">Stamp</span><b id="seal-amount">Reading</b><span id="seal-state">the contract</span></div>
-          <p id="stamped-facts" class="facts">Reading the stamp from the contract.</p>
-        </div>
+    <div class="feed-bar"><h2><i class="live-dot" aria-hidden="true"></i>Live launches</h2><p id="feed-clock">Reading NEAR mainnet launches</p></div>
+    <div class="cards" id="feed-cards">
+      <article id="card-stamped" class="mcard mcard-feature" aria-labelledby="stamped-name" data-state="loading">
+        <div id="seal" class="sticker" data-ink="amber" role="img" aria-label="Stamp status"><span class="seal-kind" id="seal-kind">Stamp</span><b id="seal-amount">Reading</b><span id="seal-state">the contract</span></div>
+        <header class="mcard-head">
+          <span class="avatar avatar-customs" aria-hidden="true"><svg viewBox="0 0 22 22" width="30" height="30"><g transform="rotate(-6 11 11)"><rect x="2" y="4" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M6.5 11.2l3 3 6-6.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g></svg></span>
+          <div class="mcard-id"><p class="ticker">$CUSTOMS</p><h2 id="stamped-name">Customs coin</h2><p class="lcard-id" id="stamped-id">customs26-token.testnet</p></div>
+        </header>
+        <dl class="mstats"><div><dt>Bond held</dt><dd id="m-bond">Reading</dd></div><div><dt>Hold ends in</dt><dd id="m-hold">Reading</dd></div><div><dt>Stamps standing</dt><dd id="m-standing">Reading</dd></div></dl>
+        <div class="meter" role="img" aria-label="Bond hold progress"><i id="m-meter"></i></div>
+        <p id="stamped-facts" class="facts">Reading the stamp from the contract.</p>
         <p class="path-caption" id="path-caption"></p>
         <div class="lcard-path" id="stamped-path"></div>
         <form id="payout-form" class="payout" novalidate>
@@ -49,20 +54,8 @@
           <p id="payout-hint" class="hint" role="alert" hidden></p>
         </form>
         <div class="lcard-actions">
-          <button id="break-go" class="go" type="button">Let Customs Hunt</button>
-          <button id="break-clean" class="link-btn" type="button">Prompt-inject the hunter: false path, then take the bond</button>
-        </div>
-      </article>
-      <article id="card-bare" class="lcard" aria-labelledby="bare-name" data-state="bare">
-        <header class="lcard-head"><div><h2 id="bare-name">Reading a launch</h2><p class="lcard-id" id="bare-id"></p></div><p class="lcard-tag">NEAR mainnet launch</p></header>
-        <div class="seal-row">
-          <div class="seal" data-ink="grey" role="img" aria-label="No stamp"><span class="seal-kind">Stamp</span><b>None</b><span>nothing posted</span></div>
-          <p id="bare-facts" class="facts">Its creator posted no bond, so nothing backs the claim that its first buyers were independent.</p>
-        </div>
-        <div class="lcard-path" id="bare-path"></div>
-        <p class="bare-note">A hunt against a launch with no stamp goes to the stamp contract, which refuses on chain and prints the refusal as the receipt. A stamp is what turns a hunt into a payout.</p>
-        <div class="lcard-actions">
-          <button id="bare-go" class="outline" type="button">Hunt this launch</button>
+          <button id="break-go" class="hunt" type="button">Hunt this launch</button>
+          <button id="break-clean" class="link-btn" type="button">Simulate a hijacked hunter: false path, then take the bond</button>
         </div>
       </article>
     </div>
@@ -153,6 +146,6 @@
     </div>
   </div>
 </main>
-<script src="net.js"></script><script src="ui.js"></script><script src="rule.js"></script><script src="verdict.js"></script><script src="app.js"></script><script src="check.js"></script><script src="stamp.js"></script>
+<script src="net.js"></script><script src="ui.js"></script><script src="rule.js"></script><script src="verdict.js"></script><script src="app.js"></script><script src="check.js"></script><script src="stamp.js"></script><script src="feed.js"></script>
 </body>
 </html>

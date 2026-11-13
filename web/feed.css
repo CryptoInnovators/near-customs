@@ -1,0 +1,108 @@
+/* The launch feed: memecoin cards with stickers. Loud colour on the near-black base, chunky type, one big button per card. */
+:root{--lime:#c6ff3d;--lime-ink:#122000;--pink:#ff4fa3;--yellow:#ffd23f;--busted:#ff3b5c;--violet:#8b5cff}
+.stage{display:flex;flex-direction:column;padding:24px 0 8px}
+.stage h1{font:700 56px/1 var(--font-sans);letter-spacing:-.035em;order:1}
+.stage h1 span{color:var(--lime);display:inline-block;transform:rotate(-2deg);text-shadow:0 0 28px rgba(198,255,61,.35)}
+.stage-sub{order:2;margin:var(--space-2) 0 var(--space-4);max-width:78ch;font-size:16px;line-height:1.5}
+.chips{order:3;list-style:none;margin:0 0 var(--space-4);padding:0;display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.chip{display:flex;align-items:baseline;gap:var(--space-2);padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:var(--panel);font-size:13px;color:var(--text-2);max-width:100%}
+.chip b{font:700 15px/1 var(--font-sans);color:var(--text);white-space:nowrap}
+.chip span{min-width:0}
+.chip a{color:var(--text);text-underline-offset:3px;white-space:nowrap}
+.chip-win{border-color:rgba(198,255,61,.5);background:rgba(198,255,61,.08)}.chip-win b{color:var(--lime)}
+.chip-lose b{color:var(--busted)}
+.feed-bar{order:4;display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);margin:0 0 var(--space-3)}
+.feed-bar h2{margin:0;display:flex;align-items:center;gap:var(--space-2);font:700 22px/1 var(--font-sans);letter-spacing:-.01em}
+.feed-bar p{margin:0;font:400 13px/1 var(--font-mono);color:var(--muted)}
+.live-dot{width:10px;height:10px;border-radius:50%;background:var(--busted);box-shadow:0 0 0 0 rgba(255,59,92,.6);animation:ping 1.6s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 9px rgba(255,59,92,0)}100%{box-shadow:0 0 0 0 rgba(255,59,92,0)}}
+.cards{order:5;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch}
+.stage-steps{order:6}
+
+.mcard{position:relative;display:flex;flex-direction:column;gap:var(--space-3);min-width:0;padding:20px;background:linear-gradient(180deg,#17171a,#101012);border:2px solid #2a2a2f;border-radius:20px;transition:transform .15s,border-color .15s}
+.mcard:hover{transform:translateY(-3px);border-color:#44444b}
+.mcard-feature{grid-column:span 2;grid-row:span 2;border-color:rgba(198,255,61,.55);background:linear-gradient(180deg,#1a1f10,#101012 60%)}
+.mcard-feature[data-state=broken]{border-color:var(--busted);background:linear-gradient(180deg,#26111a,#101012 60%)}
+.mcard-head{display:flex;gap:var(--space-3);align-items:center;padding-right:128px;min-width:0}
+.mcard-id{min-width:0}
+.mcard-id h2,.mcard-id h3{margin:0;font:600 15px/1.25 var(--font-sans);color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mcard-id .lcard-id{margin:2px 0 0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ticker{margin:0;font:700 26px/1.1 var(--font-sans);letter-spacing:-.02em;color:var(--text)}
+.mcard-feature .ticker{color:var(--lime)}
+.avatar{flex:none;width:56px;height:56px;border-radius:16px;display:grid;place-items:center;overflow:hidden;font:700 26px/1 var(--font-sans);color:#fff;background:hsl(var(--h,150) 70% 45%);transform:rotate(-4deg);box-shadow:0 3px 0 rgba(0,0,0,.45)}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar-customs{background:var(--lime);color:var(--lime-ink)}
+
+.sticker{position:absolute;top:14px;right:14px;z-index:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 12px;min-width:104px;max-width:140px;border:3px solid currentColor;border-radius:10px;transform:rotate(5deg);text-align:center;color:var(--faint);background:rgba(0,0,0,.35);box-shadow:0 3px 0 rgba(0,0,0,.5)}
+.sticker .seal-kind{font:700 12px/1.1 var(--font-sans);letter-spacing:.14em;text-transform:uppercase}
+.sticker b{font:700 20px/1.05 var(--font-sans);letter-spacing:-.01em}
+.sticker span:last-child{font:600 10px/1.2 var(--font-sans);letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.sticker[data-ink=green]{color:var(--lime);background:rgba(198,255,61,.12)}
+.sticker[data-ink=amber]{color:var(--yellow)}
+.sticker[data-ink=grey]{border-style:dashed;color:#8a8a92}
+.sticker[data-ink=red]{color:#fff;background:var(--busted);border-color:#fff;animation:slam .35s cubic-bezier(.2,1.6,.4,1)}
+.sticker.land{animation:slam .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes slam{from{transform:rotate(5deg) scale(1.7);opacity:0}to{transform:rotate(5deg) scale(1);opacity:1}}
+.mcard-feature .sticker{top:18px;right:20px;transform:rotate(5deg) scale(1.12);transform-origin:top right}
+
+.mstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-2);margin:0}
+.mstats div{background:rgba(255,255,255,.04);border-radius:12px;padding:8px 10px;min-width:0}
+.mstats dt{font:600 10px/1 var(--font-sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.mstats dd{margin:5px 0 0;font:700 19px/1.1 var(--font-sans);font-variant-numeric:tabular-nums;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mstats dd.tick{animation:tick .9s}
+@keyframes tick{0%{color:var(--lime);transform:translateY(-3px)}100%{color:var(--text);transform:none}}
+.meter{height:12px;border-radius:999px;background:#222226;overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:999px;background:repeating-linear-gradient(115deg,var(--lime) 0 10px,#9fd62a 10px 20px);transition:width .6s}
+.mcard-feature[data-state=broken] .meter i{background:var(--busted)}
+.meter-label{margin:-4px 0 0;font:500 12px/1.2 var(--font-mono);color:var(--muted)}
+
+.hunt{height:54px;width:100%;padding:0 var(--space-6);border:0;border-radius:14px;background:var(--lime);color:var(--lime-ink);font:700 18px/1 var(--font-sans);letter-spacing:-.01em;cursor:pointer;box-shadow:0 5px 0 #6c8f10;transition:transform .1s,box-shadow .1s,filter .1s}
+.hunt:hover{filter:brightness(1.07)}
+.hunt:active{transform:translateY(4px);box-shadow:0 1px 0 #6c8f10}
+.hunt:disabled{background:#2a2a2f;color:var(--faint);box-shadow:0 5px 0 #1a1a1d;cursor:progress}
+.mcard:not(.mcard-feature) .hunt{margin-top:auto;background:var(--pink);color:#2a0016;box-shadow:0 5px 0 #a02a68}
+.mcard:not(.mcard-feature) .hunt:active{box-shadow:0 1px 0 #a02a68}
+.mcard:not(.mcard-feature) .hunt:disabled{background:#2a2a2f;color:var(--faint);box-shadow:0 5px 0 #1a1a1d}
+
+/* the featured card keeps the hunt button right under the numbers, the proof below it */
+.mcard-feature .lcard-actions{order:4;margin:0;padding:0;flex-direction:column;align-items:stretch;gap:var(--space-2)}
+.mcard-feature .facts{order:5;margin-top:var(--space-1)}
+.mcard-feature .path-caption{order:6;margin:0;padding:0;border:0}
+.mcard-feature .lcard-path{order:7;margin:0;padding:0}
+.mcard-feature .payout{order:8;margin:0}
+.mcard-feature .link-btn{align-self:flex-start}
+.mcard-feature .hunt{height:60px;font-size:20px}
+.mcard-feature .chain-node{background:#0c0c0e}
+.mcard-feature .chain-edge b,.mcard-feature .chain-edge span{background:#101012}
+
+@media (max-width:1100px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.mcard-feature{grid-column:span 2;grid-row:auto}}
+@media (max-width:760px){
+  .stage{padding-top:14px}
+  .stage h1{font-size:40px}
+  .stage-sub{font-size:14px;margin-bottom:var(--space-3)}
+  .chips{order:7;margin:var(--space-4) 0 0}.feed-bar{order:3}.cards{order:4}.stage-steps{order:5}
+  .feed-bar p{display:none}
+  .cards{grid-template-columns:1fr;gap:16px}.mcard-feature{grid-column:auto}
+  .mcard{padding:16px;border-radius:18px}
+  .mcard-head{padding-right:0;padding-top:34px}
+  .sticker{top:10px;right:12px;flex-direction:row;gap:6px;padding:4px 10px;min-width:0;max-width:none}
+  .sticker span:last-child{display:none}.sticker b{font-size:15px}
+  .mcard-feature .sticker{transform:rotate(4deg)}
+  .ticker{font-size:22px}.mstats dd{font-size:16px}
+  .mcard-feature .hunt{height:56px}
+  .mcard-feature .lcard-path{overflow:hidden}
+}
+@media (prefers-reduced-motion:reduce){.live-dot,.sticker,.sticker.land,.mstats dd.tick{animation:none}.mcard:hover{transform:none}}
+
+.ticker{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mcard-head{padding-right:124px}
+.mcard:not(.mcard-feature) .sticker{min-width:96px;padding:5px 9px}
+.mcard:not(.mcard-feature) .sticker b{font-size:17px}
+.mstats dd{font-size:17px;font-variant-numeric:normal}
+.mstats dt{white-space:nowrap}
+.mcard:not(.mcard-feature) .ticker{font-size:23px}
+.mcard:not(.mcard-feature) .mcard-head{padding-right:112px}
+@media (max-width:760px){
+  .mcard-head{padding-right:0}
+  .mstats{gap:6px}.mstats div{padding:8px}.mstats dt{font-size:9px;letter-spacing:.04em}.mstats dd{font-size:15px}
+}
