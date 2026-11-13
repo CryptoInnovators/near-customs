@@ -1,0 +1,34 @@
+name: gate
+on:
+  push:
+    branches: [main]
+    paths: ["contracts/gate/**", ".github/workflows/gate.yml"]
+  workflow_dispatch:
+jobs:
+  gate:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: contracts/gate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.96.1
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts/gate
+      - name: unit tests
+        run: cargo test
+      - name: build the gate wasm
+        run: RUSTFLAGS='--cfg near -C link-arg=-s' cargo build --target wasm32-unknown-unknown --release
+      - name: hash
+        run: sha256sum target/wasm32-unknown-unknown/release/customs_gate.wasm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: customs-gate
+          path: |
+            contracts/gate/target/wasm32-unknown-unknown/release/customs_gate.wasm
+            contracts/gate/Cargo.lock
