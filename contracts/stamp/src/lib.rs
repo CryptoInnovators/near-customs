@@ -357,7 +357,7 @@ impl StampBook {
     }
 
     /// Return the filing bond of a challenge the enclave never answered.
-    pub fn reclaim_bond(&mut self, challenge_id: u64) -> near_sdk::Promise {
+    pub fn reclaim_bond(&mut self, challenge_id: u64) -> near_sdk::PromiseOrValue<()> {
         let mut ch = self.challenges.get(&challenge_id).cloned().unwrap_or_else(|| env::panic_str("stamp: unknown challenge"));
         require!(env::predecessor_account_id() == ch.challenger, "stamp: only the challenger reclaims");
         match ch.state {
@@ -374,9 +374,9 @@ impl StampBook {
         if ch.from_credit {
             let have = self.credits.get(&ch.challenger).copied().unwrap_or(0);
             self.credits.insert(ch.challenger.clone(), have + ch.bond.0);
-            return near_sdk::Promise::new(env::current_account_id());
+            return near_sdk::PromiseOrValue::Value(());
         }
-        near_sdk::Promise::new(ch.challenger).transfer(NearToken::from_yoctonear(ch.bond.0))
+        near_sdk::Promise::new(ch.challenger).transfer(NearToken::from_yoctonear(ch.bond.0)).into()
     }
 
     /// The creator takes the bond back after `hold_s`, when the stamp still stands and no challenge is open.
