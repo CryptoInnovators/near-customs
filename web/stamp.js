@@ -13,11 +13,14 @@
   const el = {
     card: q("#card-stamped"), seal: q("#seal"), amount: q("#seal-amount"), sealState: q("#seal-state"), facts: q("#stamped-facts"), path: q("#stamped-path"),
     go: q("#break-go"), clean: q("#break-clean"), kind: q("#seal-kind"), bond: q("#m-bond"), hold: q("#m-hold"), standing: q("#m-standing"), meter: q("#m-meter"),
-    payout: q("#payout"), hint: q("#payout-hint"), steps: q("#stage-steps"),
+    payout: q("#payout"), rail: q("#hunt-rail"), hint: q("#payout-hint"), steps: q("#stage-steps"),
   };
   if (!el.card) return;
 
   const near = (y) => { const n = Number(BigInt(y) / 10n ** 20n) / 1e4; return (n % 1 === 0 ? String(n) : n.toFixed(2).replace(/0+$/, "").replace(/\.$/, "")) + " NEAR"; };
+  const RAIL_IDLE = ["Filed on chain", "Enclave verdict", "Bond paid"];
+  const railSet = (i, state, text) => { const li = el.rail.children[i]; li.dataset.state = state; li.querySelector("span").textContent = text == null ? RAIL_IDLE[i] : text; };
+  const railReset = () => RAIL_IDLE.forEach((_, i) => railSet(i, "idle"));
   const a = (href, text) => { const x = document.createElement("a"); x.href = href; x.target = "_blank"; x.rel = "noreferrer"; x.textContent = text; return x; };
   const txLink = (hash, text) => a(EXPLORER + "txns/" + hash, text || "View the transaction");
   const short = (id) => (id.length > 26 ? id.slice(0, 12) + "…" + id.slice(-12) : id);
@@ -49,8 +52,8 @@
     const num = q("#proof-key"), note = q("#proof-key-note");
     if (!num || !note) return;
     if (k.full) { num.textContent = "Full access"; note.textContent = k.account + " holds a full-access key"; return; }
-    num.textContent = k.methods.length === 1 ? "1 method" : k.methods.length + " methods";
-    note.replaceChildren(a(EXPLORER + "address/" + k.account, "ALLOW " + k.methods.join(", ") + " only"), document.createTextNode(". BLOCK transfers, withdrawals, releases."));
+    num.textContent = "Hunter key";
+    note.replaceChildren(a(EXPLORER + "address/" + k.account, "function-call key, ALLOW " + k.methods.join(", ") + " only"), document.createTextNode(". BLOCK transfers, withdrawals, releases."));
   }
 
   /* the stamp to show: the first slot still standing with no open challenge, else any standing, else the one that was broken */
@@ -242,12 +245,13 @@
     const target = bareRun ? { launch: bare.launch, wallet: bare.wallet, path: [bare.tx, bare.tx], label: bare.name } : { launch: LAUNCH, ...(kind === "clean" ? CLEAN : FUNDED), label: "Customs coin" };
     const stampContract = bareRun ? SLOTS[SLOTS.length - 1] : slot && slot.contract;
     usedContract = stampContract;
-    if (!bareRun) plan(kind);
+    if (!bareRun) { plan(kind); railReset(); railSet(0, "run", "Filing on chain"); }
     const filing = step("Filing the funding path against " + short(target.wallet) + "…", "run");
     const t0 = Date.now();
     try {
       const r = await postBreak({ stamp: stampContract, launch: target.launch, wallet: target.wallet, path: target.path, payout_to: payout.value });
       if (r.status === 429) {
+        if (!bareRun) railSet(0, "error", "Filer busy");
         setState(filing, "error");
         const again = Object.assign(document.createElement("button"), { type: "button", className: "link-btn retry", textContent: "Try again" });
         again.addEventListener("click", () => { run(kind); });
@@ -256,11 +260,13 @@
         return;
       }
       if (r.status !== 200) {
+        if (!bareRun) railSet(0, "error", "Not filed");
         failed(filing, kind, (r.body && r.body.error) || "The filing did not complete (HTTP " + r.status + ").");
         return;
       }
       const f = r.body;
       if (f.status === "refused") {
+        if (!bareRun) railSet(0, "error", "Refused by contract");
         setState(filing, "refused");
         filing.textContent = (bareRun ? "Refused: " : "Refused by the contract: ") + f.reason.replace(/^stamp: /, "").replace(/^./, (c) => c.toUpperCase()) + ". ";
         filing.append(txLink(f.tx, "The refusal is on chain."));
@@ -268,13 +274,14 @@
         if (bareRun) step("Nothing moved. A launch with no stamp has no bond to take.", "done");
         return;
       }
+      if (!bareRun) { railSet(0, "done", "Filed in " + Math.round((Date.now() - t0) / 1000) + " s"); railSet(1, "run", "Enclave checking"); }
       setState(filing, "done");
       filing.textContent = "Filed on chain as challenge " + f.challenge_id + " in " + Math.round((Date.now() - t0) / 1000) + " s. ";
       filing.append(txLink(f.tx, "Filing transaction"));
       const injected = kind === "clean" ? inject(f.stamp) : Promise.resolve();
       const wait = step("Second beat: the pinned checker replays the path in an OutLayer enclave", "run");
       const clock = document.createElement("time"); wait.append(clock);
-      const tick = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); clock.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }, 500);
+      const tick = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); const t = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); clock.textContent = t; if (!bareRun) railSet(1, "run", "Enclave checking " + t); }, 500);
       let ch = null;
       try {
         for (let i = 0; i < 180; i++) {
@@ -290,19 +297,23 @@
       const paid = after && typeof after.state === "object" && after.state.Broken ? after.state.Broken.paid : null;
       if (state === "Upheld" && paid) {
         setState(wait, "done"); wait.textContent = "The enclave signed its verdict and the contract verified the signature.";
+        if (!bareRun) { railSet(1, "done", "Verified in " + secs + " s"); railSet(2, "done", "+" + near(paid) + " to " + short(who)); }
         const up = step("Upheld. The stamp is broken and " + near(paid) + " moved to " + who + " in " + secs + " s.", "upheld", a(EXPLORER + "address/" + who, "See the account"));
         up.prepend(Object.assign(document.createElement("strong"), { className: "payoff", textContent: "+" + near(paid) }));
         step("The hunter stops. The stamp it broke was its one hunt, and its key reaches nothing else.", "done");
       } else if (state === "Rejected") {
         setState(wait, "done"); wait.textContent = "The enclave signed its verdict and the contract verified the signature.";
+        if (!bareRun) { railSet(1, "done", "Verified in " + secs + " s"); railSet(2, "reject", "Filing bond forfeited"); }
         step("Rejected. " + short(target.wallet) + " was not funded by the creator, so the stamp stands and the " + near(ch.bond) + " filing bond is forfeited (" + secs + " s).", "rejected");
         step("The hunter stops. It lost its filing bond and cannot withdraw its credit or change the policy.", "done");
       } else if (state === "Unanswered") {
+        if (!bareRun) { railSet(1, "error", "No verdict"); railSet(2, "idle", "Filing bond reclaimable"); }
         setState(wait, "error"); wait.textContent = "The checker could not read that path, so no verdict was applied and the filing bond can be reclaimed.";
         const again = Object.assign(document.createElement("button"), { type: "button", className: "link-btn retry", textContent: "Hunt again" });
         again.addEventListener("click", () => { run(kind); });
         wait.append(" ", again);
       } else {
+        if (!bareRun) railSet(1, "error", "No verdict after " + secs + " s");
         setState(wait, "error"); wait.textContent = "No verdict yet after " + secs + " s. The challenge stays on chain; open the stamp contract to follow it.";
         wait.append(" ", a(EXPLORER + "address/" + f.stamp, "Stamp contract"));
       }
@@ -311,6 +322,7 @@
       if (info) paintStamp(info);
       el.steps.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (e) {
+      if (!bareRun) railSet(0, "error", "Not filed");
       failed(filing, kind, e && e.name === "TimeoutError" ? "The chain did not confirm the filing within 50 s." : "The filing could not be sent: " + String(e.message || e).slice(0, 120) + ".");
     } finally { lock(false); if (el.card.dataset.state === "broken") { el.go.hidden = true; el.clean.hidden = true; } }
   }

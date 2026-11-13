@@ -28,11 +28,11 @@
 <main id="main">
   <section id="stage" class="stage" aria-labelledby="stage-title">
     <h1 id="stage-title">Let Customs <span>Hunt.</span></h1>
-    <p class="stage-sub">A memecoin whose creator locks a bond in the contract. An agent with one function-call key hunts launches where the creator funded their own opening buyer: a proven path pays the bond to the agent, a false hunt forfeits its filing bond. Every card below is a real meme.cooking launch, traced live.</p>
+    <p class="stage-sub">Creators lock a bond that no buyer in their launch was self-funded. An agent hunts for the receipt that proves otherwise: proven, it takes the bond; wrong, it forfeits its filing fee. Every card below is a real meme.cooking launch, traced live.</p>
     <ul class="chips" id="proof-strip" aria-label="Proof">
       <li class="chip chip-win"><b>+1.1 NEAR</b><span>paid to the hunter</span><a href="https://testnet.nearblocks.io/txns/FY68EWNPp3w9ggT62BURc36PvxHF4DPaLnYuESFZybCY" target="_blank" rel="noopener">Upheld tx</a></li>
       <li class="chip chip-lose"><b>Rejected</b><span>false hunt, filing bond forfeited</span><a href="https://testnet.nearblocks.io/txns/4cYWnGFvTifba7ppwddVAUVYQZ3rTPnm9MxjLTDpsM7M" target="_blank" rel="noopener">tx</a></li>
-      <li class="chip"><b id="proof-key">1 method</b><span id="proof-key-note">ALLOW challenge. BLOCK transfers, withdrawals, releases.</span></li>
+      <li class="chip"><b id="proof-key">Hunter key</b><span id="proof-key-note">function-call key, ALLOW challenge only. BLOCK transfers, withdrawals, releases.</span></li>
       <li class="chip"><b>TDX</b><span id="proof-hash">enclave verdict, checker pinned in the contract</span></li>
     </ul>
     <div class="feed-bar"><h2><i class="live-dot" aria-hidden="true"></i>Launches on meme.cooking</h2><p id="feed-clock">Reading meme.cooking</p></div>
@@ -40,7 +40,7 @@
       <article id="card-stamped" class="mcard mcard-feature" aria-labelledby="stamped-name" data-state="loading">
         <div id="seal" class="sticker" data-ink="amber" role="img" aria-label="Stamp status"><span class="seal-kind" id="seal-kind">Stamp</span><b id="seal-amount">Reading</b><span id="seal-state">the contract</span></div>
         <header class="mcard-head">
-          <span class="avatar avatar-customs" aria-hidden="true"><svg viewBox="0 0 22 22" width="30" height="30"><g transform="rotate(-6 11 11)"><rect x="2" y="4" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M6.5 11.2l3 3 6-6.4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g></svg></span>
+          <span class="avatar avatar-customs" aria-hidden="true"><svg viewBox="0 0 56 56" width="56" height="56"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-dasharray="3.2 3.2"/><circle cx="28" cy="28" r="19" fill="currentColor"/><path d="M19.5 28.5l6 6 11.5-12.5" fill="none" stroke="var(--lime)" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <div class="mcard-id"><p class="ticker">$CUSTOMS</p><h2 id="stamped-name">Customs coin</h2><p class="lcard-id" id="stamped-id">customs26-token.testnet</p></div>
         </header>
         <dl class="mstats"><div><dt>Bond held</dt><dd id="m-bond">Reading</dd></div><div><dt>Hold ends in</dt><dd id="m-hold">Reading</dd></div><div><dt>Stamps standing</dt><dd id="m-standing">Reading</dd></div></dl>
@@ -55,11 +55,12 @@
         </form>
         <div class="lcard-actions">
           <button id="break-go" class="hunt" type="button">Hunt this launch</button>
+          <ol id="hunt-rail" class="rail" aria-label="Hunt lifecycle"><li data-state="idle"><i>1</i><span>Filed on chain</span></li><li data-state="idle"><i>2</i><span>Enclave verdict</span></li><li data-state="idle"><i>3</i><span>Bond paid</span></li></ol>
           <button id="break-clean" class="link-btn" type="button">Simulate a hijacked hunter: false path, then take the bond</button>
         </div>
+        <ol id="stage-steps" class="stage-steps" aria-live="polite"></ol>
       </article>
     </div>
-    <ol id="stage-steps" class="stage-steps" aria-live="polite"></ol>
   </section>
 
   <section id="check" class="ask" aria-labelledby="ask-title">

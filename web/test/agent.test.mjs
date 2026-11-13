@@ -139,3 +139,22 @@ test("a node that did not answer is reported as unanswered, not as a refusal", a
   const body = await (await huntInject(new Request("https://x/hunt/inject", { method: "POST", body: "{}" }), fenv, send, () => 70_000_000)).json();
   assert.ok(body.attempts.every((a) => a.status === "unanswered"));
 });
+
+test("filing is refused before any bond moves when the host does not serve the pinned checker module", async () => {
+  const calls = [];
+  const send = async (c) => { calls.push(c); return { hash: "F2", outcome: filedOutcome }; };
+  const withUrl = async () => ({ result: Array.from(new TextEncoder().encode(JSON.stringify({ min_bond: "100000000000000000000000", module_url: "https://host.example/checker.wasm" }))) });
+  let t = 700_000_000;
+  const post = (probe) => stampBreak(new Request("https://x/stamp/break", { method: "POST", body: JSON.stringify({ launch: "a.testnet", wallet: "b.testnet", path: [H, H] }) }), fenv, send, () => t, withUrl, probe);
+  const gone = await post(async () => 404);
+  assert.equal(gone.status, 503);
+  const body = await gone.json();
+  assert.equal(body.status, "unavailable");
+  assert.match(body.error, /HTTP 404/);
+  assert.equal(calls.length, 0);
+  assert.equal((await post(async () => { throw Error("network"); })).status, 503);
+  assert.equal(calls.length, 0);
+  const served = await post(async () => 200);
+  assert.equal((await served.json()).status, "filed");
+  assert.equal(calls.length, 1);
+});
