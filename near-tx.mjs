@@ -76,7 +76,16 @@ export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, act
   let outcome, lastErr;
   for (let attempt = 0; attempt < 5 && !outcome; attempt++) {
     try {
-      outcome = await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "FINAL" });
+      if (signed.length > 100000) {
+        // a contract upload outlives free RPC request timeouts: broadcast, then poll the hash to FINAL
+        await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "NONE" });
+        for (let i = 0; i < 40 && !outcome; i++) {
+          await new Promise((res) => setTimeout(res, 3000));
+          const o = await rpc(rpcUrl, "tx", { tx_hash: txHash, sender_account_id: signerId, wait_until: "FINAL" }).catch(() => null);
+          if (o?.final_execution_status === "FINAL") outcome = o;
+        }
+        if (!outcome) throw Error("tx " + txHash + " not final after 120 s");
+      } else outcome = await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "FINAL" });
     } catch (e) {
       lastErr = e;
       try { outcome = await rpc(rpcUrl, "tx", { tx_hash: txHash, sender_account_id: signerId, wait_until: "FINAL" }); } catch (e2) { lastErr = e2; }
