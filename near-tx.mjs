@@ -36,7 +36,7 @@ export function encodeTx({ signerId, publicKey, nonce, receiverId, blockHash, ac
 }
 
 /* url is one endpoint or a list; a rate limit or a refused connection moves to the next endpoint, then backs off 1 s, 2 s, 4 s. */
-async function rpc(url, method, params) {
+export async function rpc(url, method, params) {
   const urls = [].concat(url);
   let last;
   for (let i = 0; i < 8; i++) {
@@ -51,7 +51,7 @@ async function rpc(url, method, params) {
       if (e === last) throw e;
       last = e;
     }
-    await new Promise((res) => setTimeout(res, 1000 * 2 ** Math.floor(i / urls.length)));
+    await new Promise((res) => setTimeout(res, Math.min(8000, 1000 * 2 ** Math.floor(i / urls.length))));
   }
   throw last;
 }
@@ -70,15 +70,20 @@ export async function sendActions({ rpcUrl, signerId, secretKey, receiverId, act
   const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", tx));
   const sig = new Uint8Array(await crypto.subtle.sign("Ed25519", key, hash));
   const signed = cat(tx, Uint8Array.of(0), sig);
-  const b64 = btoa(String.fromCharCode(...signed));
+  const b64 = Buffer.from(signed).toString("base64");
   const txHash = b58encode(hash);
-  let outcome;
-  try {
-    outcome = await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "FINAL" });
-  } catch (e) {
-    // a transaction that failed on chain still has a hash; read its final status
-    outcome = await rpc(rpcUrl, "tx", { tx_hash: txHash, sender_account_id: signerId, wait_until: "FINAL" });
+  // the same signed bytes are sent again if the first attempt is lost; a transaction is only ever applied once
+  let outcome, lastErr;
+  for (let attempt = 0; attempt < 5 && !outcome; attempt++) {
+    try {
+      outcome = await rpc(rpcUrl, "send_tx", { signed_tx_base64: b64, wait_until: "FINAL" });
+    } catch (e) {
+      lastErr = e;
+      try { outcome = await rpc(rpcUrl, "tx", { tx_hash: txHash, sender_account_id: signerId, wait_until: "FINAL" }); } catch (e2) { lastErr = e2; }
+    }
+    if (!outcome) await new Promise((res) => setTimeout(res, 3000));
   }
+  if (!outcome) throw lastErr;
   return { hash: txHash, outcome };
 }
 
@@ -91,3 +96,8 @@ export async function newKeyPair() {
   const publicKey = new Uint8Array(await crypto.subtle.exportKey("raw", k.publicKey));
   return { publicKey, publicKeyStr: "ed25519:" + b58encode(publicKey), secretKey: "ed25519:" + b58encode(cat(seed, publicKey)) };
 }
+
+export const deployContractAction = (wasm) => cat(Uint8Array.of(0), u32(wasm.length), wasm);
+export const transferAction = (deposit) => cat(Uint8Array.of(3), u128(deposit));
+export const createAccountAction = () => Uint8Array.of(0);
+export const addFullAccessKeyAction = (publicKey) => cat(Uint8Array.of(5), pk(publicKey), u64(0), Uint8Array.of(1));

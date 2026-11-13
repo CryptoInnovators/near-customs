@@ -2,11 +2,11 @@
 // the key lives in the AGENT_KEY secret (JSON {account_id, secret_key}). The gate decides: it releases 0.01 testnet NEAR on an
 // anchored ALLOW and panics, moving nothing, on WARN, BLOCK or no verdict. The response carries the transaction hash; the page
 // re-reads that transaction from the chain itself and shows what the chain says.
-import { callFunction } from "./near-tx.mjs";
+import { callFunction, rpc } from "./near-tx.mjs";
 
 export const GATE = "customs27-gate.testnet";
 export const AMOUNT = 10n ** 22n;
-const RPC = ["https://rpc.testnet.fastnear.com"];
+const RPC = ["https://near-testnet.drpc.org", "https://rpc.testnet.fastnear.com"];
 const TOKEN = /^[a-z0-9]+(?:[-_.][a-z0-9]+)*$/;
 const MIN_GAP_MS = 6000;
 let last = 0;
@@ -37,5 +37,48 @@ export async function agentBuy(request, env, send = callFunction, now = Date.now
     return json({ tx: hash, signer: key.account_id, released: "0.01 NEAR", ...readOutcome(outcome) });
   } catch (e) {
     return json({ error: "The agent's transaction did not complete: " + String(e.message || e).slice(0, 160) }, 502);
+  }
+}
+
+/* ---------------------------------------------------------------- sponsored filing: "Break this stamp" */
+
+export const STAMP = "customs28-stamp.testnet";
+const ACCOUNT = /^[a-z0-9]+(?:[-_.][a-z0-9]+)*$/;
+const TX_HASH = /^[1-9A-HJ-NP-Za-km-z]{43,44}$/;
+const FILE_GAP_MS = 20000;
+const FILE_PER_HOUR = 20;
+let lastFiled = 0;
+const filedAt = [];
+
+/* POST /stamp/break {launch, wallet, path, payout_to?}: the sponsored filing account (a function-call key scoped to `challenge` on the stamp,
+   spending prepaid credit) files the path against the wallet. The contract and the enclave decide; the credit is the cap. */
+export async function stampBreak(request, env, send = callFunction, now = Date.now, view = (id, method, args) => rpc(RPC, "query", { request_type: "call_function", finality: "final", account_id: id, method_name: method, args_base64: btoa(JSON.stringify(args)) })) {
+  let b;
+  try { b = await request.json(); } catch { return json({ error: "Send JSON with launch, wallet and path." }, 400); }
+  const ok = (v) => typeof v === "string" && v.length <= 64 && ACCOUNT.test(v);
+  if (!b || !ok(b.launch) || !ok(b.wallet) || (b.payout_to !== undefined && !ok(b.payout_to))) return json({ error: "launch, wallet and payout_to must be NEAR account ids." }, 400);
+  if (!Array.isArray(b.path) || b.path.length < 2 || b.path.length > 13 || !b.path.every((h) => typeof h === "string" && TX_HASH.test(h))) return json({ error: "path must be 2 to 13 transaction hashes." }, 400);
+  if (!env.FILER_KEY) return json({ error: "The filing key is not configured on this host." }, 503);
+  const t = now();
+  while (filedAt.length && t - filedAt[0] > 3600_000) filedAt.shift();
+  const wait = Math.max(lastFiled + FILE_GAP_MS - t, filedAt.length >= FILE_PER_HOUR ? filedAt[0] + 3600_000 - t : 0);
+  if (wait > 0) return json({ error: "The filing key is rate limited. Try again in " + Math.ceil(wait / 1000) + " s." }, 429, { "retry-after": String(Math.ceil(wait / 1000)) });
+  lastFiled = t;
+  filedAt.push(t);
+  const key = JSON.parse(env.FILER_KEY);
+  try {
+    const params = JSON.parse(new TextDecoder().decode(new Uint8Array((await view(STAMP, "stamp_params", {})).result)));
+    const args = { launch: b.launch, wallet: b.wallet, path: b.path, bond: params.min_bond, payout_to: b.payout_to || null };
+    const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId: STAMP, method: "challenge", args, gas: 200_000_000_000_000n });
+    const failure = outcome?.status?.Failure;
+    if (failure) {
+      const m = /stamp: [^"\\]*/.exec(JSON.stringify(failure));
+      return json({ tx: hash, signer: key.account_id, status: "refused", reason: m ? m[0] : JSON.stringify(failure).slice(0, 200) });
+    }
+    const logs = (outcome.receipts_outcome || []).flatMap((r) => r.outcome.logs || []);
+    const filed = logs.map((l) => { try { return JSON.parse(l.replace("EVENT_JSON:", "")); } catch { return null; } }).find((e) => e && e.event === "challenge_filed");
+    return json({ tx: hash, signer: key.account_id, status: "filed", challenge_id: filed ? filed.data.challenge_id : null });
+  } catch (e) {
+    return json({ error: "The filing transaction did not complete: " + String(e.message || e).slice(0, 160) }, 502);
   }
 }

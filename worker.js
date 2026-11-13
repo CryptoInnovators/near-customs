@@ -1,7 +1,7 @@
 // Serves web/ as static assets and proxies FastNEAR reads at /fastnear/<tx-main|tx-test|rpc-main|rpc-test>/...
 // FastNEAR answers a rate limit (429) without CORS headers, which a browser can only see as a failed fetch;
 // same-origin through this worker the page sees the 429 and backs off (web/net.js).
-import { agentBuy } from "./agent.mjs";
+import { agentBuy, stampBreak } from "./agent.mjs";
 
 const UPSTREAM = {
   "tx-main": "https://tx.main.fastnear.com",
@@ -14,6 +14,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/agent/buy") return request.method === "POST" ? agentBuy(request, env) : new Response("Use POST", { status: 405 });
+    if (url.pathname === "/stamp/break") return request.method === "POST" ? stampBreak(request, env) : new Response("Use POST", { status: 405 });
     const m = url.pathname.match(/^\/fastnear\/([a-z-]+)(\/[A-Za-z0-9/_-]*)?$/);
     if (!m) return env.ASSETS.fetch(request);
     if (m[1] === "ping") return new Response(null, { status: 204 });
