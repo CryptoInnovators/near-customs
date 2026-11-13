@@ -26,6 +26,7 @@ enum Key {
     Stamps,
     Challenges,
     OpenByWallet,
+    Credits,
 }
 
 #[derive(Clone)]
@@ -87,6 +88,10 @@ pub struct Challenge {
     pub wallet: AccountId,
     pub challenger: AccountId,
     pub bond: U128,
+    /// Who is paid when the challenge is upheld; the challenger unless it named another account.
+    pub payout_to: AccountId,
+    /// The bond and fee were taken from the challenger's filing credit, not attached.
+    pub from_credit: bool,
     pub path: Vec<String>,
     pub path_hash: String,
     pub created_block: u64,
@@ -121,6 +126,8 @@ pub struct StampBook {
     stamps: LookupMap<AccountId, Stamp>,
     challenges: LookupMap<u64, Challenge>,
     open_by_wallet: LookupMap<(AccountId, AccountId), u64>,
+    /// Prepaid filing credit per account. A function-call key cannot attach a deposit, so a sponsor funds an account here and its key files against it.
+    credits: LookupMap<AccountId, u128>,
     next_challenge: u64,
     forfeited: u128,
 }
@@ -155,6 +162,7 @@ impl StampBook {
             stamps: LookupMap::new(Key::Stamps),
             challenges: LookupMap::new(Key::Challenges),
             open_by_wallet: LookupMap::new(Key::OpenByWallet),
+            credits: LookupMap::new(Key::Credits),
             next_challenge: 0,
             forfeited: 0,
         }
@@ -189,15 +197,46 @@ impl StampBook {
         self.event("stamp_posted", json!({"launch": launch, "creator": creator, "bond": U128(bond), "release_s": now + self.params.hold_s}));
     }
 
+    /// Add the attached deposit to `account`'s filing credit. Anyone can fund any account; only that account can spend or withdraw it.
+    #[payable]
+    pub fn deposit_credit(&mut self, account: AccountId) {
+        let add = env::attached_deposit().as_yoctonear();
+        require!(add > 0, "stamp: attach a deposit");
+        let have = self.credits.get(&account).copied().unwrap_or(0);
+        self.credits.insert(account.clone(), have + add);
+        self.event("credit_added", json!({"account": account, "amount": U128(add)}));
+    }
+
+    pub fn withdraw_credit(&mut self, amount: U128) -> near_sdk::Promise {
+        let who = env::predecessor_account_id();
+        let have = self.credits.get(&who).copied().unwrap_or(0);
+        require!(amount.0 > 0 && amount.0 <= have, "stamp: the filing credit is below that amount");
+        self.credits.insert(who.clone(), have - amount.0);
+        near_sdk::Promise::new(who).transfer(NearToken::from_yoctonear(amount.0))
+    }
+
+    pub fn credit_of(&self, account: AccountId) -> U128 {
+        U128(self.credits.get(&account).copied().unwrap_or(0))
+    }
+
     /// Prove that the creator's money paid `wallet` before it bought. `path` is the hop transactions in order, then the buy.
-    /// Attach `bond + exec_fee`. Upheld: the prover is paid the creator's bond and gets the filing bond back. Rejected: the filing
+    /// Attach `bond + exec_fee`, or attach nothing and spend that much of the caller's filing credit. `payout_to` names who is paid on an upheld verdict. Upheld: the prover is paid the creator's bond and gets the filing bond back. Rejected: the filing
     /// bond is forfeited. No usable answer: the filing bond is reclaimable.
     #[payable]
-    pub fn challenge(&mut self, launch: AccountId, wallet: AccountId, path: Vec<String>, bond: U128) -> near_sdk::Promise {
+    pub fn challenge(&mut self, launch: AccountId, wallet: AccountId, path: Vec<String>, bond: U128, payout_to: Option<AccountId>) -> near_sdk::Promise {
         let p = self.params.clone();
         let challenger = env::predecessor_account_id();
         require!(bond.0 >= p.min_bond.0, "stamp: bond is below min_bond");
-        require!(env::attached_deposit().as_yoctonear() == bond.0 + p.exec_fee.0, "stamp: attach exactly bond + exec_fee");
+        let need = bond.0 + p.exec_fee.0;
+        let attached = env::attached_deposit().as_yoctonear();
+        let from_credit = attached == 0;
+        if from_credit {
+            let have = self.credits.get(&challenger).copied().unwrap_or(0);
+            require!(have >= need, "stamp: the filing credit is below bond + exec_fee");
+            self.credits.insert(challenger.clone(), have - need);
+        } else {
+            require!(attached == need, "stamp: attach exactly bond + exec_fee, or nothing to spend filing credit");
+        }
         require!(self.verdict_key.is_some(), "stamp: the verdict key is not pinned yet; call pin_verdict_key");
         require!(challenger != wallet, "stamp: a wallet cannot challenge itself");
         require!(path.len() >= 2 && path.len() <= max_path_len(p.max_hops), "stamp: path is the hop transactions, then the opening buy");
@@ -207,7 +246,6 @@ impl StampBook {
         }
         let mut stamp = self.stamps.get(&launch).cloned().unwrap_or_else(|| env::panic_str("stamp: this launch has no stamp"));
         require!(stamp.state == StampState::Standing, "stamp: this stamp is no longer standing");
-        require!(wallet != stamp.creator || true, "");
         require!(!self.open_by_wallet.contains_key(&(launch.clone(), wallet.clone())), "stamp: a challenge on this wallet is already open");
 
         let id = self.next_challenge;
@@ -220,6 +258,8 @@ impl StampBook {
                 wallet: wallet.clone(),
                 challenger: challenger.clone(),
                 bond,
+                payout_to: payout_to.clone().unwrap_or_else(|| challenger.clone()),
+                from_credit,
                 path: path.clone(),
                 path_hash: path_hash.clone(),
                 created_block: env::block_height(),
@@ -307,12 +347,12 @@ impl StampBook {
             return false;
         }
         let paid = stamp.bond.0 + ch.bond.0;
-        stamp.state = StampState::Broken { prover: ch.challenger.clone(), wallet: ch.wallet.clone(), challenge_id, paid: U128(paid) };
+        stamp.state = StampState::Broken { prover: ch.payout_to.clone(), wallet: ch.wallet.clone(), challenge_id, paid: U128(paid) };
         self.stamps.insert(ch.launch.clone(), stamp.clone());
         ch.state = ChallengeState::Upheld { paid: U128(paid) };
         self.challenges.insert(challenge_id, ch.clone());
-        let _ = near_sdk::Promise::new(ch.challenger.clone()).transfer(NearToken::from_yoctonear(paid));
-        self.event("stamp_broken", json!({"challenge_id": challenge_id, "launch": ch.launch, "wallet": ch.wallet, "prover": ch.challenger, "paid": U128(paid)}));
+        let _ = near_sdk::Promise::new(ch.payout_to.clone()).transfer(NearToken::from_yoctonear(paid));
+        self.event("stamp_broken", json!({"challenge_id": challenge_id, "launch": ch.launch, "wallet": ch.wallet, "prover": ch.payout_to, "paid": U128(paid)}));
         true
     }
 
@@ -331,6 +371,11 @@ impl StampBook {
         }
         ch.state = ChallengeState::Reclaimed;
         self.challenges.insert(challenge_id, ch.clone());
+        if ch.from_credit {
+            let have = self.credits.get(&ch.challenger).copied().unwrap_or(0);
+            self.credits.insert(ch.challenger.clone(), have + ch.bond.0);
+            return near_sdk::Promise::new(env::current_account_id());
+        }
         near_sdk::Promise::new(ch.challenger).transfer(NearToken::from_yoctonear(ch.bond.0))
     }
 
@@ -517,7 +562,7 @@ mod tests {
         b.post_stamp(accounts(2), accounts(3), 150, 750);
         let h = "11111111111111111111111111111111".to_string();
         ctx(accounts(4), E24 / 10 + E24 / 100, 300);
-        b.challenge(accounts(2), accounts(5), vec![h.clone(), h], U128(E24 / 10));
+        b.challenge(accounts(2), accounts(5), vec![h.clone(), h], U128(E24 / 10), None);
     }
 
     #[test]
@@ -548,5 +593,38 @@ mod tests {
         b.post_stamp(accounts(2), accounts(3), 150, 750);
         ctx(accounts(4), 0, 1300);
         let _ = b.release_stamp(accounts(2));
+    }
+
+    #[test]
+    #[should_panic(expected = "the filing credit is below bond + exec_fee")]
+    fn a_key_with_no_credit_cannot_file() {
+        let mut b = book();
+        b.verdict_key = Some("ed25519:6E8sCci9badyRkXb3JoRpBj5p8C6Tw41ELDZoiihKEtp".parse().unwrap());
+        ctx(accounts(1), 2 * E24, 200);
+        b.post_stamp(accounts(2), accounts(3), 150, 750);
+        let h = "11111111111111111111111111111111".to_string();
+        ctx(accounts(4), 0, 300);
+        b.challenge(accounts(2), accounts(5), vec![h.clone(), h], U128(E24 / 10), None);
+    }
+
+    #[test]
+    fn credit_is_funded_for_an_account_and_withdrawn_only_by_it() {
+        let mut b = book();
+        ctx(accounts(1), 3 * E24, 200);
+        b.deposit_credit(accounts(4));
+        assert_eq!(b.credit_of(accounts(4)).0, 3 * E24);
+        ctx(accounts(4), 0, 201);
+        let _ = b.withdraw_credit(U128(E24));
+        assert_eq!(b.credit_of(accounts(4)).0, 2 * E24);
+    }
+
+    #[test]
+    #[should_panic(expected = "the filing credit is below that amount")]
+    fn a_stranger_has_no_credit_to_withdraw() {
+        let mut b = book();
+        ctx(accounts(1), 3 * E24, 200);
+        b.deposit_credit(accounts(4));
+        ctx(accounts(5), 0, 201);
+        let _ = b.withdraw_credit(U128(1));
     }
 }
