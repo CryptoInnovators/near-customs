@@ -1,11 +1,112 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Customs: launch board</title><meta name="description" content="Inspect Nearly launches and see which opening buyers trace to a creator.">
-<link rel="stylesheet" href="tokens.css"><link rel="stylesheet" href="style.css"><link rel="icon" href="data:,">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Customs: see who really bought first</title>
+<meta name="description" content="Every new NEAR token launch, checked for creator-funded buyers before you buy. ALLOW, WARN or BLOCK with the funding path drawn and linked.">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="check.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
-<header class="topbar"><a class="wordmark" href="index.html">CUSTOMS</a><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search tokens or creators" aria-label="Search tokens or creators"><kbd>/</kbd></label><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button><nav id="primary-nav"><a href="index.html" aria-current="page">Board</a><a href="token.html?t=phire.nearlytrade.near">Inspect</a><a href="attack-lab.html">How detection works</a></nav><span class="network">NEAR MAINNET</span></header>
-<main class="board-wrap"><h1>Keep opening buyers from dumping on the next buyer.</h1><p id="verdict-summary" class="verdict-summary" role="status">Loading checked launches…</p><div class="board-tools"><div class="filters" role="group" aria-label="Launch filter"><button class="chip active" data-sort="fdv">Market cap</button><button class="chip" data-sort="new">New</button><button class="chip" data-sort="volume">Volume</button></div><label class="search small-search"><input id="table-search" type="search" placeholder="Search launches" aria-label="Search launches"></label></div><section class="token-panel" aria-label="Nearly launches"><div class="panel-heading"><strong>Launches</strong><span id="board-state" role="status">Reading Nearly launches…</span></div><div class="table-scroll"><table class="market-table"><thead><tr><th>#</th><th>Token</th><th>Age</th><th>Market cap</th><th>24h volume</th><th>24h change</th><th>Holders</th><th>Opening buyers</th><th>Funded</th></tr></thead><tbody id="launch-rows"><tr><td colspan="9" class="loading-cell">Reading live launch data…</td></tr></tbody></table></div></section></main><script src="net.js"></script><script src="ui.js"></script><script src="rule.js"></script><script src="app.js"></script><script src="board.js"></script>
-</body></html>
+<a class="skip" href="#check-input">Skip to the check</a>
+<header class="top">
+  <a class="mark" href="index.html" aria-label="Customs home"><svg viewBox="0 0 22 22" width="22" height="22" aria-hidden="true"><g transform="rotate(-6 11 11)"><rect x="2" y="4" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6.5 11.2l3 3 6-6.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg><span>CUSTOMS</span></a>
+  <button class="menu" type="button" aria-expanded="false" aria-controls="nav">Menu</button>
+  <nav id="nav" aria-label="Primary">
+    <a href="index.html" aria-current="page">Check a launch</a>
+    <a href="token.html?t=customs26-token.testnet">Customs coin</a>
+    <a href="attack-lab.html">How the check works</a>
+  </nav>
+  <p class="chain"><span data-network>NEAR MAINNET</span> <b data-block aria-label="final block">reading</b></p>
+</header>
+
+<main id="main">
+  <section class="ask" aria-labelledby="ask-title">
+    <h1 id="ask-title">See who really bought first.</h1>
+    <p class="ask-sub">Every new NEAR token launch, checked for creator-funded buyers before you buy.</p>
+    <form id="check-form" class="check-form" novalidate>
+      <label class="sr" for="check-input">Token account</label>
+      <input id="check-input" name="t" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Check any launch: token account, e.g. nearly.nearlytrade.near" aria-describedby="check-hint">
+      <button id="check-go" class="go" type="submit">Check opening buyers</button>
+    </form>
+    <p id="check-hint" class="hint" role="alert" hidden></p>
+  </section>
+
+  <div class="grid">
+    <aside class="feed" aria-labelledby="launch-title">
+      <div class="launch-head">
+        <h2 id="launch-title">Latest launches</h2>
+        <div class="tabs" role="group" aria-label="Sort launches">
+          <button type="button" data-sort="new" aria-pressed="true">Latest</button>
+          <button type="button" data-sort="flag" aria-pressed="false">Flagged first</button>
+        </div>
+      </div>
+      <p id="feed-note" class="feed-note"></p>
+      <ol id="launch-list" class="launch-list"><li class="launch-empty">Reading launches…</li></ol>
+      <button id="launch-more" class="link more" type="button" hidden></button>
+    </aside>
+
+    <div class="detail">
+      <section id="verdict" class="verdict" aria-label="Verdict" data-state="loading">
+        <div class="ident">
+          <div class="ident-main">
+            <h2 id="v-name">Reading the latest check</h2>
+            <p class="ident-meta"><span id="v-account"></span><button type="button" class="link" id="v-copy" hidden>Copy link</button></p>
+            <p class="ident-meta" id="v-creator"></p>
+          </div>
+          <a id="v-nearly" class="ext" href="https://nearly.trade" target="_blank" rel="noreferrer" hidden>Nearly <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="call" aria-live="polite">
+          <div id="v-stamp" class="stamp" data-ink="amber"><span>Checking</span></div>
+          <div class="call-text">
+            <p id="v-line" class="v-line">Reading the first 10 minutes of sales…</p>
+            <p id="v-sub" class="v-sub"></p>
+            <div id="v-actions" class="v-actions"></div>
+          </div>
+        </div>
+        <dl class="stats">
+          <div><dt>Opening buyers</dt><dd id="s-buyers">0</dd></div>
+          <div><dt>Traced</dt><dd id="s-traced">0 of 0</dd></div>
+          <div><dt>Window</dt><dd>10 min</dd></div>
+          <div><dt>Read at block</dt><dd id="s-block">reading</dd></div>
+        </dl>
+        <p id="v-read" class="read"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="graph-title">
+        <h2 id="graph-title">Where the opening buyers' NEAR came from</h2>
+        <p id="graph-cap" class="panel-cap"></p>
+        <div id="graph" class="graph"></div>
+        <div class="split split-in">
+          <div class="split-head"><span>Opening buys by source</span><b id="v-total"></b></div>
+          <div id="v-bar" class="bar" role="img" aria-label="Opening buys by source"></div>
+          <ul id="v-legend" class="legend"></ul>
+        </div>
+
+      </section>
+
+      <section id="agent" class="panel agent" aria-labelledby="agent-title">
+        <div class="agent-head">
+          <div>
+            <h2 id="agent-title">Let an agent buy it</h2>
+            <p class="panel-cap">A testnet agent holds a spend-only key. Before it spends, it asks the Customs gate for this launch's verdict. The gate contract refuses the buy on BLOCK and WARN.</p>
+          </div>
+          <button id="agent-go" class="outline" type="button">Let an agent buy it</button>
+        </div>
+        <ol id="agent-steps" class="steps" aria-live="polite"></ol>
+      </section>
+
+      <section class="panel ledger-wrap" aria-labelledby="ledger-title">
+        <h2 id="ledger-title">Opening buyers</h2>
+        <p id="ledger-cap" class="panel-cap"></p>
+        <div class="ledger-head" aria-hidden="true"><span>Buyer</span><span>Bought</span><span>Funding path</span><span>Verdict</span></div>
+        <ol id="ledger" class="ledger"></ol>
+      </section>
+    </div>
+  </div>
+</main>
+<script src="net.js"></script><script src="ui.js"></script><script src="rule.js"></script><script src="verdict.js"></script><script src="app.js"></script><script src="check.js"></script>
+</body>
+</html>

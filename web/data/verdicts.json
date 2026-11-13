@@ -2,403 +2,2998 @@
   "items": [
     {
       "token": "nearly-993927.nearlytrade.near",
+      "name": "NEARLY",
+      "symbol": "NEARLY",
       "creator": "nearlytrade.near",
+      "created_at_ms": 1790037402372,
+      "complete": true,
       "opening_buyers": 1,
-      "funded": 1,
-      "funded_near": 2.121199317636133,
-      "total_near": 2.121199317636133,
-      "head_block": 223689225,
-      "computed_at": "2026-11-09T10:21:47.575Z"
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.06686994688159864,
+      "total_near": 0.06686994688159864,
+      "first_block": 224285979,
+      "read_block": 224343477,
+      "computed_at": "2026-11-13T09:17:49.076Z",
+      "buyers": [
+        {
+          "wallet": "nearlytrade.near",
+          "near": 0.06686994688159864,
+          "first_tx": "LB7mYRbBNQqnRWcEq7tKJ5XKY8xQ93pjvZBMafVJMB4",
+          "status": "creator",
+          "path": []
+        }
+      ]
     },
     {
       "token": "batman-4.nearlytrade.near",
+      "name": "Batman",
+      "symbol": "BATMAN",
       "creator": "9aa8db17b5d6b4b5e168eb27625c0efd56dc215b1208991a3382587c7c50109d",
+      "created_at_ms": 1790482352637,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 121,
-      "head_block": 223561704,
-      "computed_at": "2026-11-09T10:21:53.055Z"
-    },
-    {
-      "token": "diarhea.nearlytrade.near",
-      "creator": "aaalex.near",
-      "opening_buyers": 4,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 101.00249439090933,
-      "head_block": 223260770,
-      "computed_at": "2026-11-09T10:21:58.260Z"
+      "creator_near": 0,
+      "total_near": 1.9442541399037563,
+      "first_block": 224154212,
+      "read_block": 224343485,
+      "computed_at": "2026-11-13T09:17:53.269Z",
+      "buyers": [
+        {
+          "wallet": "pool.near-meme-router.near",
+          "near": 1.9442541399037563,
+          "first_tx": "7U4dYj4vC3Q8pt6e4o1FLgAxEMPYJpFQqm8dimkkpeL9",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "singularty.nearlytrade.near",
+      "name": "Singularity is NEAR",
+      "symbol": "SINGULARTY",
       "creator": "near.near",
+      "created_at_ms": 1790615594849,
+      "complete": true,
+      "opening_buyers": 2,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 12.249981286514398,
+      "first_block": 222820715,
+      "read_block": 224343491,
+      "computed_at": "2026-11-13T09:17:57.034Z",
+      "buyers": [
+        {
+          "wallet": "via-trading.near",
+          "near": 6.145560986514397,
+          "first_tx": "13tB1r3HbHmJX7KtGaV3q7P3nRgygAk2wQnQcAG936pe",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "intearbots.near",
+          "near": 6.1044203,
+          "first_tx": "CF8LGkdtvihhvM6ccFJWxTPmrdnmFif8T8jCBwyxPi44",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "diarhea.nearlytrade.near",
+      "name": "DIARHEA",
+      "symbol": "DIARHEA",
+      "creator": "aaalex.near",
+      "created_at_ms": 1790523537090,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 0.1767914954310092,
-      "head_block": 222619712,
-      "computed_at": "2026-11-09T10:22:05.854Z"
+      "creator_near": 0,
+      "total_near": 12.093077237998177,
+      "first_block": 223776430,
+      "read_block": 224343532,
+      "computed_at": "2026-11-13T09:18:20.045Z",
+      "buyers": [
+        {
+          "wallet": "mrnicevery.near",
+          "near": 12.093077237998177,
+          "first_tx": "E9BoMVUKEHe7rTs4dVg4y9qoKzvtxvug2rBoAoBMt9a4",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "ninu-4.nearlytrade.near",
+      "name": "NEAR INU",
+      "symbol": "NINU",
       "creator": "9705014be9963a60e473339c42b73aa6fb439cafe056b9717682c564efde5baa",
+      "created_at_ms": 1790501449994,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 0.22,
-      "head_block": 222689587,
-      "computed_at": "2026-11-09T10:22:09.051Z"
+      "creator_near": 0,
+      "total_near": 19.8,
+      "first_block": 223041159,
+      "read_block": 224343540,
+      "computed_at": "2026-11-13T09:18:24.273Z",
+      "buyers": [
+        {
+          "wallet": "futureis.user.intear.near",
+          "near": 19.8,
+          "first_tx": "14tTrZUbcMj49rYfona1fUutC4wZmLRNfJhiFza7f2rJ",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "neargotchi.nearlytrade.near",
+      "name": "Neargotchi AI",
+      "symbol": "NEARGOTCHI",
+      "creator": "neargotchiai.near",
+      "created_at_ms": 1794241317029,
+      "complete": true,
+      "opening_buyers": 16,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 666.379365918882,
+      "first_block": 224222196,
+      "read_block": 224357202,
+      "computed_at": "2026-11-13T11:29:14.814Z",
+      "buyers": [
+        {
+          "wallet": "koniciwi.near",
+          "near": 200,
+          "first_tx": "B71smyd6QLK5ANNfehPUBvPFuoLmPvaW556VAKiu93Wf",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "rekttin.near",
+          "near": 100,
+          "first_tx": "DUidZD7UpVyPz4wQcjVjDc8JUUALKomeBE5EKZBwexGd",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "fuck_you_all.user.intear.near",
+          "near": 74.13874907617169,
+          "first_tx": "6nj1qixoYdni2ykzHXXXMVy582VTgj7bKceWs6RV5mvu",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "13f6f307a8f97f645c3ff597d2cd6aa46e23bf7c44c99154b21c2bc740c797b7",
+          "near": 48,
+          "first_tx": "TVLC5qd1woD9UQnGsbjPkEiSUoUFpNrBpgEZwBDmDau",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "toxic_sentinel.user.intear.near",
+          "near": 49.91283663819355,
+          "first_tx": "GKmXtzKA7MwpV5MeADXSEHXr2MkgU99X9qwrxAgZKHhK",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "rusty_spire.user.intear.near",
+          "near": 44.1804359008594,
+          "first_tx": "2f6GAfSvieGUsRpciCxMrFJorjuPSx4QcGEo6aGVowKV",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "rooti.near",
+          "near": 39,
+          "first_tx": "2xrMQkdnW1Xs3DUERgycrmLMTcqfLK9SpWCELKd98RUs",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "snowy_machine.user.intear.near",
+          "near": 29.64362609408445,
+          "first_tx": "FSdfWPimRrTmCFU358BA3RRP5opCjR3hoLeH5Jgoh8Bs",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "kirillsokolovsky.tg",
+          "near": 19.965658497039303,
+          "first_tx": "CRtj9BAHSjtgH1nzZ5L6gTKyyioqt8AmxvZJbVGbtEjq",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "volat.near",
+          "near": 12,
+          "first_tx": "FmKrfpqDCkQbQGobfH827aHn5RfXTax4DAcmNug1WGoV",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "mev.user.intear.near",
+          "near": 13.723773397341912,
+          "first_tx": "FQre66TQLPaUowdRjHaJwgB3Qs4hV2hyNFkiZjuwGSWj",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "js1112s.near",
+          "near": 10.000000000000002,
+          "first_tx": "2ny9YJT4mSKTHQjRjVHnhcH5C2W3UcLvWqWmbTTAAM74",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "toxic-jeet.user.intear.near",
+          "near": 9.882130967663594,
+          "first_tx": "BvkKgTTdt8J1SPHCYV6pxAwG3cQGJhkJTh31aibvz3xM",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "igor_ua5.near",
+          "near": 10.000000000000002,
+          "first_tx": "7ELjXgyVJ2uyYWwV2qzRKyJVDWsNy8dMZgGtxTddMF1P",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "krhuize.tg",
+          "near": 3.9361511705662178,
+          "first_tx": "EEwNy2NKg2vjZoFsqhQ29pohTWPzV1wJ6K41AkvL492h",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "chautran.near",
+          "near": 1.9960041769617283,
+          "first_tx": "5PsyW6XB477dRVWU4RzyJDTFrCsx18HCeXPGepaSwHZ3",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "qcat-3.nearlytrade.near",
+      "name": "Quantus Cat",
+      "symbol": "QCAT",
       "creator": "scorp56.near",
-      "opening_buyers": 1,
+      "created_at_ms": 1791413928660,
+      "complete": true,
+      "opening_buyers": 3,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 22.292033911098322,
-      "head_block": 223338524,
-      "computed_at": "2026-11-09T10:22:12.300Z"
-    },
-    {
-      "token": "dragons-2.nearlytrade.near",
-      "creator": "drygoat3271.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 0.69993,
-      "head_block": 222071301,
-      "computed_at": "2026-11-09T10:22:14.478Z"
+      "creator_near": 0,
+      "total_near": 408.2238155216905,
+      "first_block": 223710592,
+      "read_block": 224357232,
+      "computed_at": "2026-11-13T11:29:33.051Z",
+      "buyers": [
+        {
+          "wallet": "neartie1796.near",
+          "near": 269.87626901063675,
+          "first_tx": "HwkF88boYBC3iyZjjMwXFhaT9VPTdCeT2AmxXwdBkwWp",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "sweetpie933.near",
+          "near": 104.49162551121073,
+          "first_tx": "F4xXqKBuzxiR89Y7L7hettA2wjoGfUojEkVpCY5mn3eB",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "scorp66.near",
+          "near": 33.855920999843,
+          "first_tx": "B2bY7ZZiTfUeyXuWQPYjhg87A4jSt7HiYUcTctNyqzbz",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "ai-8.nearlytrade.near",
+      "name": "Autonomous Inu",
+      "symbol": "AI",
       "creator": "maxgains.near",
+      "created_at_ms": 1790834303721,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 0.00297,
-      "head_block": 222971909,
-      "computed_at": "2026-11-09T10:22:18.957Z"
-    },
-    {
-      "token": "imeme-8.nearlytrade.near",
-      "creator": "imemeai.near",
-      "opening_buyers": 4,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 67.88189598980489,
-      "head_block": 223255136,
-      "computed_at": "2026-11-09T10:22:28.993Z"
-    },
-    {
-      "token": "rich.nearlytrade.near",
-      "creator": "nearishh.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 1.8808930379139395,
-      "head_block": 218997833,
-      "computed_at": "2026-11-09T10:22:30.705Z"
+      "creator_near": 0,
+      "total_near": 0.00198,
+      "first_block": 222975104,
+      "read_block": 224357247,
+      "computed_at": "2026-11-13T11:29:41.799Z",
+      "buyers": [
+        {
+          "wallet": "dbe9675aa5b11b6e5706b683bf30fc95b459f1499d49f1521023ba12e37829ef",
+          "near": 0.00198,
+          "first_tx": "6b94SVu7GbNyQMkbZurgSn2ifvUJAyd6p7yVJvYdwnsj",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "trade-2.nearlytrade.near",
+      "name": "neartrade.lol",
+      "symbol": "TRADE",
       "creator": "tradenear.near",
-      "opening_buyers": 1,
+      "created_at_ms": 1790710209439,
+      "complete": true,
+      "opening_buyers": 2,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 0.011490069893033696,
-      "head_block": 221974420,
-      "computed_at": "2026-11-09T10:22:38.525Z"
+      "creator_near": 0,
+      "total_near": 84.75999999999999,
+      "first_block": 222307669,
+      "read_block": 224357284,
+      "computed_at": "2026-11-13T11:30:04.958Z",
+      "buyers": [
+        {
+          "wallet": "rekttin.near",
+          "near": 59.760000000000005,
+          "first_tx": "FXtA6HmPE4BGV9wmQi27aRA9NFgszyQCEFL5PTPLUgMT",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "pablo158.near",
+          "near": 25,
+          "first_tx": "7hCUEUib6f3mHAA5kz5EeQki2xxUTALRZ5RBm7xDUFXw",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
-      "token": "pmoney-4.nearlytrade.near",
-      "creator": "cinnabands.near",
+      "token": "dragons-2.nearlytrade.near",
+      "name": "Near Dragons",
+      "symbol": "DRAGONS",
+      "creator": "drygoat3271.near",
+      "created_at_ms": 1792755303337,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 0.19999999999999998,
-      "head_block": 223087702,
-      "computed_at": "2026-11-09T10:22:47.032Z"
-    },
-    {
-      "token": "dragon-3.nearlytrade.near",
-      "creator": "littlefrog7181.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 0.022894,
-      "head_block": 221434689,
-      "computed_at": "2026-11-09T10:22:48.895Z"
+      "creator_near": 0,
+      "total_near": 10.000000000000002,
+      "first_block": 222241615,
+      "read_block": 224357291,
+      "computed_at": "2026-11-13T11:30:08.807Z",
+      "buyers": [
+        {
+          "wallet": "elcsabito.near",
+          "near": 10.000000000000002,
+          "first_tx": "Cv7iJgtyKbcNNneAb6SE43AxXSjPgRBVVamyqdpYykW4",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "nearkat-630f25.nearlytrade.near",
+      "name": "NearKat",
+      "symbol": "NEARKAT",
       "creator": "8d4736b0fa6c66969e5498fa4337261d45cd4461f841c03891a9533d958c7e40",
-      "opening_buyers": 2,
+      "created_at_ms": 1790110874202,
+      "complete": true,
+      "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 105,
-      "head_block": 220257705,
-      "computed_at": "2026-11-09T10:22:51.273Z"
+      "creator_near": 0,
+      "total_near": 200,
+      "first_block": 220262055,
+      "read_block": 224357300,
+      "computed_at": "2026-11-13T11:30:14.337Z",
+      "buyers": [
+        {
+          "wallet": "qwenm.near",
+          "near": 200,
+          "first_tx": "HJWsmie8shSUs6asNnv5PgxYLG52ifVirrgY5vgsFAB9",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "rich.nearlytrade.near",
+      "name": "Nearly Rich",
+      "symbol": "RICH",
+      "creator": "nearishh.near",
+      "created_at_ms": 1790177998212,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 1.8808930379139395,
+      "first_block": 218997833,
+      "read_block": 224357306,
+      "computed_at": "2026-11-13T11:30:17.979Z",
+      "buyers": [
+        {
+          "wallet": "nubz.near",
+          "near": 1.8808930379139395,
+          "first_tx": "9r4EAmwhQwUL382nZ9fZqwjkW7SKor5SYftFbfzrkego",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "pmoney-4.nearlytrade.near",
+      "name": "Programmable Money",
+      "symbol": "PMONEY",
+      "creator": "cinnabands.near",
+      "created_at_ms": 1790543448163,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 0.05,
+      "first_block": 223165582,
+      "read_block": 224357315,
+      "computed_at": "2026-11-13T11:30:23.254Z",
+      "buyers": [
+        {
+          "wallet": "littlegoat118.near",
+          "near": 0.05,
+          "first_tx": "2QDdz62xB8H5K7sNC5ffsXvv4HDfSYBJ5qsHEQoXDeAi",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "dragon-3.nearlytrade.near",
+      "name": "The Black Dragon",
+      "symbol": "DRAGON",
+      "creator": "littlefrog7181.near",
+      "created_at_ms": 1790695648489,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 52.12014511683169,
+      "first_block": 221567638,
+      "read_block": 224357320,
+      "computed_at": "2026-11-13T11:30:26.452Z",
+      "buyers": [
+        {
+          "wallet": "ixslot1.nearlyops.near",
+          "near": 52.12014511683169,
+          "first_tx": "6UpKqXy1SxKYXHqguLfjvex3D4LTWBBNwk5ohiFXHWsJ",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "nearlycat.nearlytrade.near",
+      "name": "Nearly Cat",
+      "symbol": "NEARLYCAT",
       "creator": "575f33e985598f429f49d780b1b654c10baae042551ae00a59a9ee7a21da9953",
+      "created_at_ms": 1790177347457,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
+      "creator_near": 0,
       "total_near": 9.897436654737737,
-      "head_block": 217727334,
-      "computed_at": "2026-11-09T10:22:55.788Z"
-    },
-    {
-      "token": "kinu-3.nearlytrade.near",
-      "creator": "kinuonnear.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 0.9957529804152017,
-      "head_block": 222144050,
-      "computed_at": "2026-11-09T10:22:57.820Z"
+      "first_block": 217727334,
+      "read_block": 224357325,
+      "computed_at": "2026-11-13T11:30:29.494Z",
+      "buyers": [
+        {
+          "wallet": "pramoddhaanda.near",
+          "near": 9.897436654737737,
+          "first_tx": "33g45jffLwTAAxcEbv8SX96Qo27n9qQqh6inEfbxauy9",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "babynearly-2.nearlytrade.near",
+      "name": "Baby Nearly",
+      "symbol": "BABYNEARLY",
       "creator": "575f33e985598f429f49d780b1b654c10baae042551ae00a59a9ee7a21da9953",
+      "created_at_ms": 1790177173266,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
+      "creator_near": 0,
       "total_near": 0.9939130209573858,
-      "head_block": 217417684,
-      "computed_at": "2026-11-09T10:23:00.030Z"
+      "first_block": 217417684,
+      "read_block": 224357345,
+      "computed_at": "2026-11-13T11:30:40.536Z",
+      "buyers": [
+        {
+          "wallet": "pleiades_sweet.near",
+          "near": 0.9939130209573858,
+          "first_tx": "Ba2tq2Tq5TTSSBHJsWKHuMPpyH6qZif9LGi1RNdautv1",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "kinu-3.nearlytrade.near",
+      "name": "KINU",
+      "symbol": "KINU",
+      "creator": "kinuonnear.near",
+      "created_at_ms": 1791811339932,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 0.025035934266719857,
+      "first_block": 222425976,
+      "read_block": 224357355,
+      "computed_at": "2026-11-13T11:30:46.121Z",
+      "buyers": [
+        {
+          "wallet": "whatdoyoumean.near",
+          "near": 0.025035934266719857,
+          "first_tx": "9pxmDaBDG2TZZahBo1TUQJ8uyn8NAM6dzHMLFQGXDUPP",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "nrmil.nearlytrade.near",
+      "name": "NEARLY MILLIONAIRE",
+      "symbol": "NRMIL",
       "creator": "kashekee.near",
+      "created_at_ms": 1790205480942,
+      "complete": true,
       "opening_buyers": 1,
-      "funded": 1,
-      "funded_near": 9.88855628273745,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 9.88855628273745,
       "total_near": 9.88855628273745,
-      "head_block": 216971892,
-      "computed_at": "2026-11-09T10:23:04.223Z"
+      "first_block": 216971892,
+      "read_block": 224357356,
+      "computed_at": "2026-11-13T11:30:46.795Z",
+      "buyers": [
+        {
+          "wallet": "kashekee.near",
+          "near": 9.88855628273745,
+          "first_tx": "2VsvxBRSp62eo1ALqD3iPGYa5tqegUsjFhAtBAufgLa7",
+          "status": "creator",
+          "path": []
+        }
+      ]
     },
     {
       "token": "fees.nearlytrade.near",
+      "name": "Fees",
+      "symbol": "FEES",
       "creator": "vantradotfun.near",
+      "created_at_ms": 1790274190365,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
+      "creator_near": 0,
       "total_near": 0,
-      "head_block": 217085133,
-      "computed_at": "2026-11-09T10:23:11.565Z"
+      "first_block": 217085133,
+      "read_block": 224357365,
+      "computed_at": "2026-11-13T11:30:52.068Z",
+      "buyers": [
+        {
+          "wallet": "lock.nearlytrade.near",
+          "near": 0,
+          "first_tx": "4QRCfKdjwBscfJ2WxJKK7Y5WrBuHVeCifcDmQsMoQjtU",
+          "status": "unpriced",
+          "path": []
+        }
+      ]
     },
     {
       "token": "nearlyguy.nearlytrade.near",
+      "name": "Nearly Guy",
+      "symbol": "NEARLYGUY",
       "creator": "575f33e985598f429f49d780b1b654c10baae042551ae00a59a9ee7a21da9953",
+      "created_at_ms": 1790183050463,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
+      "creator_near": 0,
       "total_near": 0,
-      "head_block": 216934501,
-      "computed_at": "2026-11-09T10:23:16.879Z"
+      "first_block": 216934501,
+      "read_block": 224357370,
+      "computed_at": "2026-11-13T11:30:54.999Z",
+      "buyers": [
+        {
+          "wallet": "lock.nearlytrade.near",
+          "near": 0,
+          "first_tx": "pSJnvUUDHcveRHRTZkm2qoF1ZPv1wduBa4wMZDqJSLb",
+          "status": "unpriced",
+          "path": []
+        }
+      ]
     },
     {
       "token": "testv2.nearlytrade.near",
+      "name": "testv2",
+      "symbol": "TESTV2",
       "creator": "c0c0689c15edcafab82cc7ff8d210b90052b932fa4391b8b7dae8cbddcb82090",
+      "created_at_ms": 1790280521858,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
+      "creator_near": 0,
       "total_near": 0,
-      "head_block": 217095714,
-      "computed_at": "2026-11-09T10:23:21.591Z"
-    },
-    {
-      "token": "eclipse.nearlytrade.near",
-      "creator": "129ad8f20d29c77cff3fd5217fd703ee44d24046d52a0d6c47be6b77b9bfb76a",
-      "opening_buyers": 2,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 3.352318214401655,
-      "head_block": 222161886,
-      "computed_at": "2026-11-09T10:23:24.230Z"
-    },
-    {
-      "token": "pcat.nearlytrade.near",
-      "creator": "pearlfather.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 0.9999456282995391,
-      "head_block": 223049838,
-      "computed_at": "2026-11-09T10:23:30.690Z"
-    },
-    {
-      "token": "veil-5.nearlytrade.near",
-      "creator": "veilsurf.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 0.09999999999999999,
-      "head_block": 220682700,
-      "computed_at": "2026-11-09T10:23:33.809Z"
+      "first_block": 217095714,
+      "read_block": 224357375,
+      "computed_at": "2026-11-13T11:30:58.002Z",
+      "buyers": [
+        {
+          "wallet": "lock.nearlytrade.near",
+          "near": 0,
+          "first_tx": "FiKZaq2ZFgRhQyPFtoQDsaW7cFYmB2oMgp8RVtBR15gZ",
+          "status": "unpriced",
+          "path": []
+        }
+      ]
     },
     {
       "token": "nomo.nearlytrade.near",
+      "name": "NOMO",
+      "symbol": "NOMO",
       "creator": "openflour2217.near",
+      "created_at_ms": 1790722823750,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
+      "creator_near": 0,
       "total_near": 0.04,
-      "head_block": 221537630,
-      "computed_at": "2026-11-09T10:23:45.107Z"
+      "first_block": 221599511,
+      "read_block": 224357436,
+      "computed_at": "2026-11-13T11:31:33.742Z",
+      "buyers": [
+        {
+          "wallet": "0fb5bdc4d3ee4230.trade.unrlzd.near",
+          "near": 0.04,
+          "first_tx": "7jvS8GXuk2jtcQ2pyygqpTGFGWDHdMoiodEt9WZgcBa3",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "imeme-8.nearlytrade.near",
+      "name": "iMeme",
+      "symbol": "IMEME",
+      "creator": "imemeai.near",
+      "created_at_ms": 1793930408264,
+      "complete": true,
+      "opening_buyers": 4,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 74.99838660809131,
+      "first_block": 223257309,
+      "read_block": 224357506,
+      "computed_at": "2026-11-13T11:32:13.503Z",
+      "buyers": [
+        {
+          "wallet": "nobelieee.near",
+          "near": 50,
+          "first_tx": "GnFuzqQVR4oDr5BbzD3seqN5tfxzA4gPrXVkMP1Et5ut",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "missoralways.near",
+          "near": 20.000000000000004,
+          "first_tx": "Dh7cfpNP1mseV1FHoeC1xfyv3SrUD8R6kQmzQUwBwxW9",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "alex.user.intear.near",
+          "near": 4,
+          "first_tx": "FZtxnBjeXv3XgArnBdJUgt2KVu8YKxkWH49YNQEnYVPH",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "buyitall.near",
+          "near": 0.9983866080913015,
+          "first_tx": "2sChgsvohSm4AphWEcS45meCbuoHSDQNf98xUyKkoey6",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "sherifchenko.nearlytrade.near",
+      "name": "SHERIFFCHENKO",
+      "symbol": "SHERIFCHENKO",
       "creator": "zavodil.near",
-      "opening_buyers": 1,
+      "created_at_ms": 1791554993239,
+      "complete": true,
+      "opening_buyers": 3,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 10.000000000000002,
-      "head_block": 221994210,
-      "computed_at": "2026-11-09T10:23:49.140Z"
+      "creator_near": 0,
+      "total_near": 94.45,
+      "first_block": 222186857,
+      "read_block": 224357549,
+      "computed_at": "2026-11-13T11:32:38.233Z",
+      "buyers": [
+        {
+          "wallet": "rekttin.near",
+          "near": 49.800000000000004,
+          "first_tx": "Gaqm2g4HAcBuMHVqWcrZ42ZT2NK1jYcjD2V6Q1HvCXQA",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "futureis.user.intear.near",
+          "near": 34.65,
+          "first_tx": "EXvbDfy3ixdf9YwbGBGRFyUV2cvW6TWpoe5HoQDNq8Ft",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "nftgokhanerbatu.near",
+          "near": 10.000000000000002,
+          "first_tx": "HkE4jrVxKV6uRvg9zt4voRLUZ5EztBSGLhqy9gCy2FSh",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
-      "token": "mpoo.nearlytrade.near",
-      "creator": "meta-poo-shitcoin.near",
-      "opening_buyers": 1,
+      "token": "eclipse.nearlytrade.near",
+      "name": "ECLIPSE",
+      "symbol": "ECLIPSE",
+      "creator": "129ad8f20d29c77cff3fd5217fd703ee44d24046d52a0d6c47be6b77b9bfb76a",
+      "created_at_ms": 1790481481597,
+      "complete": true,
+      "opening_buyers": 2,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 59.71243264543282,
-      "head_block": 221144250,
-      "computed_at": "2026-11-09T10:23:53.769Z"
+      "creator_near": 0,
+      "total_near": 9.405326140896067,
+      "first_block": 222208529,
+      "read_block": 224357568,
+      "computed_at": "2026-11-13T11:32:48.466Z",
+      "buyers": [
+        {
+          "wallet": "via-trading.near",
+          "near": 4.746141526711779,
+          "first_tx": "9Cb2DXsQPiPSmXrBJRozk5pivf6He8zn4kkfiTa9XRVu",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "whatdoyoumean.near",
+          "near": 4.659184614184288,
+          "first_tx": "TARmFKrK9yndzA4AT92ijN2LLchAS4PmQqWDMwHbUHT",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
-      "token": "spud-3.nearlytrade.near",
-      "creator": "blueroom8163.near",
+      "token": "veil-5.nearlytrade.near",
+      "name": "Veil",
+      "symbol": "VEIL",
+      "creator": "veilsurf.near",
+      "created_at_ms": 1791739139318,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 9.9,
-      "head_block": 220907477,
-      "computed_at": "2026-11-09T10:23:56.221Z"
+      "creator_near": 0,
+      "total_near": 1,
+      "first_block": 221087864,
+      "read_block": 224357575,
+      "computed_at": "2026-11-13T11:32:52.303Z",
+      "buyers": [
+        {
+          "wallet": "basiukyiv.tg",
+          "near": 1,
+          "first_tx": "7zk6jBQm6HWTwcgdGw7641PhiNm8oidvqt53sq3gatDG",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "nstocks.nearlytrade.near",
+      "name": "Near Stocks",
+      "symbol": "NSTOCKS",
       "creator": "swiftharbor4181.near",
+      "created_at_ms": 1790507111750,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
+      "creator_near": 0,
       "total_near": 0.1,
-      "head_block": 218443410,
-      "computed_at": "2026-11-09T10:23:57.735Z"
+      "first_block": 218443410,
+      "read_block": 224357795,
+      "computed_at": "2026-11-13T11:34:56.333Z",
+      "buyers": [
+        {
+          "wallet": "seyoung971.near",
+          "near": 0.1,
+          "first_tx": "EzaZmBvqHXgfWh68SUEPEzwMZuZ75Uq9WWk5DHhDYGxY",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
       "token": "pl4.nearlytrade.near",
+      "name": "Planet4",
+      "symbol": "PL4",
       "creator": "r3ndaik.tg",
-      "opening_buyers": 1,
+      "created_at_ms": 1790958591823,
+      "complete": true,
+      "opening_buyers": 2,
       "funded": 0,
+      "creator_buys": 0,
       "funded_near": 0,
-      "total_near": 0.03874355509718327,
-      "head_block": 219801635,
-      "computed_at": "2026-11-09T10:24:01.628Z"
+      "creator_near": 0,
+      "total_near": 1.1,
+      "first_block": 219942664,
+      "read_block": 224357823,
+      "computed_at": "2026-11-13T11:35:12.945Z",
+      "buyers": [
+        {
+          "wallet": "ristuld.tg",
+          "near": 0.8,
+          "first_tx": "DKxdptDZabQoHv655WZLqjQ3JYUXCWs4bbcJkcnA48Vh",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "root52.user.intear.near",
+          "near": 0.3,
+          "first_tx": "Gx8wwuev6D22RqoTr832KkZF3bTucvv8dZtc6NJoyguQ",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     },
     {
-      "token": "robin-3.nearlytrade.near",
-      "creator": "jakeronthia.near",
+      "token": "dacity.nearlytrade.near",
+      "name": "Dacity meme",
+      "symbol": "DACITY",
+      "creator": "hvgdtyujnbvffyuj.near",
+      "created_at_ms": 1794520234289,
+      "complete": true,
+      "opening_buyers": 7,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.885875,
+      "total_near": 5.8416254634165785,
+      "first_block": 224271493,
+      "read_block": 224357935,
+      "computed_at": "2026-11-13T11:36:15.557Z",
+      "buyers": [
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 0.9988007696481286,
+          "first_tx": "5pLevRaxY7JL5HEJ3i6C4M8NiTdEiDJngm76BtNXCfQW",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 0.9988007696481286,
+          "first_tx": "GXU7Pm24QTsdA6XigHsvYnUhwAqnrpjYfWUZwStE44AW",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 0.9988007696481286,
+          "first_tx": "DusMxGpV4KSqAGgt3q5Kt2bgzGcAxTiWHWJyht1yt8bG",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 0.9988007696481286,
+          "first_tx": "AUGEJBg9P9eQDQqw5FG3JTXPCYgb8dJqPjwvrViWgCBv",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "hvgdtyujnbvffyuj.near",
+          "near": 0.885875,
+          "first_tx": "98yUguv9wGpQhMg9Jr7ypgk6FyBDY3WHYKQNChQS2geh",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.4994003848240643,
+          "first_tx": "73LX8GQfZFsJyeLsEsfbJAyfDoY1rkSYtP95a41ui1t1",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "poliag.near",
+          "near": 0.461147,
+          "first_tx": "KcE5rncTBrCWpybuY4NVB2HURnH8iK7GnyskHUH4xaN",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "nihao.nearlytrade.near",
+      "name": "NI HAO CAT",
+      "symbol": "NIHAO",
+      "creator": "slowtag1642.near",
+      "created_at_ms": 1794516666503,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 2,
+      "total_near": 2,
+      "first_block": 224265215,
+      "read_block": 224357936,
+      "computed_at": "2026-11-13T11:36:16.173Z",
+      "buyers": [
+        {
+          "wallet": "slowtag1642.near",
+          "near": 2,
+          "first_tx": "Dedgd6u9q1ViA4Czo2EDoVCkHKJNrf2H8ypMdF9rXbZM",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "linkpaid.nearlytrade.near",
+      "name": "LinkPaid",
+      "symbol": "LINKPAID",
+      "creator": "nmns.near",
+      "created_at_ms": 1794504378856,
+      "complete": true,
+      "opening_buyers": 2,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 30.998800769648128,
+      "first_block": 224243740,
+      "read_block": 224357964,
+      "computed_at": "2026-11-13T11:36:32.349Z",
+      "buyers": [
+        {
+          "wallet": "slowtag1642.near",
+          "near": 30,
+          "first_tx": "Hxy5NNMVd5LfzhMnqN45GsTXLpmLfHj7L1gZ1o7pBT6Q",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 0.9988007696481286,
+          "first_tx": "CLhf34XisTzudCtBeRUDAd7kD2WSZUEKDjDiwu8nQu76",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "bigillia.nearlytrade.near",
+      "name": "BigIllia",
+      "symbol": "BIGILLIA",
+      "creator": "kolosun.tg",
+      "created_at_ms": 1794504244295,
+      "complete": true,
+      "opening_buyers": 7,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.5,
+      "total_near": 14.9,
+      "first_block": 224243502,
+      "read_block": 224358026,
+      "computed_at": "2026-11-13T11:37:08.267Z",
+      "buyers": [
+        {
+          "wallet": "fastest.user.intear.near",
+          "near": 9.9,
+          "first_tx": "2dBoDAkUfDP7MizKhdM6WfEGdXLxVfMFEuAWoQtG8uhx",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "4Vo9FUqakgD85D9W1SBuR2HZPhtvrUCBL6pNugRfcdJ7",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 1,
+          "first_tx": "2PQUBjU99mwG9ZQJfnTvvpi9nNoSYGcQWkhWjMRh6j4J",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "HXcrqijWtJwgPEmipKkkCNY1b3TKEBjUWgdijPRmsm3z",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "5FvjFYqXvqsBq1Gx8rVhpUVRpzirHau7D5trkUp8LUMB",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "kolosun.tg",
+          "near": 0.5,
+          "first_tx": "FqV5u2Y8NznoKxoP43oqaTWD7BjTfZ8cEFfCUWQtPZaX",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "Ens1oBANGoYUyJXEsnQQ4KHZetNi6Tfop45nyuYzj1KX",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "huang.nearlytrade.near",
+      "name": "Jensen Huang",
+      "symbol": "HUANG",
+      "creator": "slowtag1642.near",
+      "created_at_ms": 1794502739288,
+      "complete": true,
+      "opening_buyers": 2,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 1,
+      "total_near": 1.6877500303161497,
+      "first_block": 224240867,
+      "read_block": 224358031,
+      "computed_at": "2026-11-13T11:37:11.128Z",
+      "buyers": [
+        {
+          "wallet": "slowtag1642.near",
+          "near": 1,
+          "first_tx": "FZYnJitQrCEjicMgozcycDMmDmivTSFGBU5CnTce6Wrx",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "pool.near-meme-router.near",
+          "near": 0.6877500303161498,
+          "first_tx": "9MzGUVc9w1Lrr2Y4TZQFiFhj1fYDenP1va1c4ogDMwho",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "huangover.nearlytrade.near",
+      "name": "HUANGOVER",
+      "symbol": "HUANGOVER",
+      "creator": "nearmonza.near",
+      "created_at_ms": 1794502042978,
+      "complete": true,
+      "opening_buyers": 10,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 40.00000000000001,
+      "total_near": 81.15,
+      "first_block": 224239632,
+      "read_block": 224358109,
+      "computed_at": "2026-11-13T11:37:55.806Z",
+      "buyers": [
+        {
+          "wallet": "nearmonza.near",
+          "near": 40.00000000000001,
+          "first_tx": "4AJS2kiB8VEWcBGxVLKpw6peL1fjSVnxNSC1hKTbccJG",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "franky.user.intear.near",
+          "near": 29.7,
+          "first_tx": "LzKddWv3MZ7vUPBCYLFf9ShJ932RqVxdprq43oqWuHc",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "ethereal_tentacle6.user.intear.near",
+          "near": 4.95,
+          "first_tx": "EL2YspUdVD7y14QwEaL7DuXmAu5jnHgFUZDXAMbCMz3K",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 1,
+          "first_tx": "GvqtD2Wdp9oJkzimcRy7GXqosiwt46iKbCLabqN51Wes",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "K45vp5KyFWhDJSgbsBYfbZyqWWwrKkZxckHCmV9EHng",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "8a9SK9EFZwjSkMDwDTsWvGnaTrSt2gQChvWbW1B9wJ2o",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "8x8MaNfVNKg9ENUj4RsjC45RQei7T8UhUi3mGkR6NGc5",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "6xfJQE16Z8ArJMUybJmxy9zgCYCQFLWjtjJuv5gkbBV",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "alola.near",
+          "near": 1,
+          "first_tx": "6uCM6o5ssczMDNiyjx6CVp9GfmB9Rbx2tW3xmstzaGGc",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "CYNxp9CZb1e2NaqmuHhw2xuMk684duKq7QS3jY226yUa",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "jsn.nearlytrade.near",
+      "name": "JENSEN",
+      "symbol": "JSN",
+      "creator": "throller.near",
+      "created_at_ms": 1794501635232,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 1,
+      "first_block": 224238919,
+      "read_block": 224358114,
+      "computed_at": "2026-11-13T11:37:58.389Z",
+      "buyers": [
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "3SpaVAKpgBgXCjpvMd3AuJsDD95PqGvVKh3Vo5jHo5cX",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "jensen-2.nearlytrade.near",
+      "name": "Jensen Coin",
+      "symbol": "JENSEN",
+      "creator": "tropofarmer.near",
+      "created_at_ms": 1794500880346,
+      "complete": true,
+      "opening_buyers": 7,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 42,
+      "total_near": 167.568777123755,
+      "first_block": 224237594,
+      "read_block": 224358186,
+      "computed_at": "2026-11-13T11:38:38.441Z",
+      "buyers": [
+        {
+          "wallet": "56c9a6ef438223bd.trade.unrlzd.near",
+          "near": 94,
+          "first_tx": "5XJT8BZjwKoakn8AxZiWCeX6cy4niwt3o7jrWo4EhdqG",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "tropofarmer.near",
+          "near": 42,
+          "first_tx": "6MJAz8YKHpDey8pcm91fZckU7o8CvDhix7cjUsxtUWhc",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "3ab30e9ce2099d06fc0e119965f1dc36d8d74b7b35feb96e1e0e68de2a7c3804",
+          "near": 14.568777123755028,
+          "first_tx": "4BwGAaVbv9GrVuLCCvWoopKdzDt9BmLEUKstom8ongvZ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "wrapz-z.near",
+          "near": 9.999999999999998,
+          "first_tx": "Cmq3feSbCWwi9SS4pZq9HVSUN9LnCJNrQACFqRJxGVqk",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "sarthakz.near",
+          "near": 5.000000000000001,
+          "first_tx": "3gerR45tXW6xchj6WjdDB5UEsCzT6AxZB2tySKJQUiZX",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "8Xq39jKYCfM17APgF1wvto8MAnmT4j82EnwbydwBoFJu",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "4Gb8NGL5PMghWgq4jym9iwB2iMERFx9DaSrYSVpeRpYq",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "neargotchiai.nearlytrade.near",
+      "name": "NEARGOTCHI AI",
+      "symbol": "NEARGOTCHIAI",
+      "creator": "slowtag1642.near",
+      "created_at_ms": 1794495843026,
+      "complete": true,
+      "opening_buyers": 2,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 2,
+      "total_near": 16.75202056141137,
+      "first_block": 224229594,
+      "read_block": 224358191,
+      "computed_at": "2026-11-13T11:38:40.957Z",
+      "buyers": [
+        {
+          "wallet": "3ab30e9ce2099d06fc0e119965f1dc36d8d74b7b35feb96e1e0e68de2a7c3804",
+          "near": 14.752020561411372,
+          "first_tx": "HoQcVD7DeTQS4DRvS5Wz99pz6rUZ8Ut2kXzxJ56QKE4Q",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "slowtag1642.near",
+          "near": 2,
+          "first_tx": "Cn7ebdtRbgCsmFHhesP71yLNwuKN4zghzFrghVpXGa3n",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "sdc.nearlytrade.near",
+      "name": "U",
+      "symbol": "SDC",
+      "creator": "nixy28.near",
+      "created_at_ms": 1794495628408,
+      "complete": true,
+      "opening_buyers": 8,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.001,
+      "total_near": 15.501,
+      "first_block": 224229295,
+      "read_block": 224358246,
+      "computed_at": "2026-11-13T11:39:12.153Z",
+      "buyers": [
+        {
+          "wallet": "wrapz-z.near",
+          "near": 9.999999999999998,
+          "first_tx": "DpiGQGMkxyhJYjzJKCB6q6koXovk6yQhDZfyXaKn5o93",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 1,
+          "first_tx": "AfSiUkeAav3jQRBj2oz7dKp7fSFmQhg8KnqgzNJyRYSj",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "5EbDbdaVzARz1oJx6jMRhr3zRtWpMPxe2s5kv7XoqdzZ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "F1D8LH1V2VxxWnvGiUbyv8iF6sanWBMfqKjohUAsUxwy",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "57Kh9QoghgkYqwA1779uss5Qe8hwhBk7vpo2JNL24uFf",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "AZGWvXqRVUMrUq8H2Tia5ffMomVnEJERUn78bgWYXy3t",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "GoF5sY4LfYwovDahDEnJcdHdeWjqNYarWL8w8YwSPLC",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "nixy28.near",
+          "near": 0.001,
+          "first_tx": "CwNnDMmhZxkn5Jjx4fTPDYY7WedmckitvqbELXkCk33J",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "pocketgotchi.nearlytrade.near",
+      "name": "$pocketgotchi?",
+      "symbol": "POCKETGOTCHI",
+      "creator": "tiadoyinnn.near",
+      "created_at_ms": 1794493224529,
+      "complete": true,
+      "opening_buyers": 16,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 4,
+      "total_near": 145.91245544271072,
+      "first_block": 224225860,
+      "read_block": 224358411,
+      "computed_at": "2026-11-13T11:40:47.805Z",
+      "buyers": [
+        {
+          "wallet": "96952333f9d98624d4603b37f4fcab2c6457c8152b39376e7d52e9238f4d9f77",
+          "near": 29.80264101837973,
+          "first_tx": "Hi8u31oZwEJRUaACE4bTWPhNBBHBTcXfhTdajShrgmLT",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "3ab30e9ce2099d06fc0e119965f1dc36d8d74b7b35feb96e1e0e68de2a7c3804",
+          "near": 29.781788021405855,
+          "first_tx": "BT8LnDL4tLz5uH8iu6LEsDZxqHyUPAEMTiEXK7QDAk3b",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "slowtag1642.near",
+          "near": 31,
+          "first_tx": "7XEB7F1WucJpjxv95acbx2ysC3ZekmNdG9F6sgc18Y3q",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "3024eac17eb799369d84f66729c2691eb236867cfeb65e0e108abb57918234cc",
+          "near": 14.901763410579049,
+          "first_tx": "GbUVfazuE2ycxHhojGtibirBnBBRmKyNbEawsU5mRxeM",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "wrapz-z.near",
+          "near": 9.999999999999998,
+          "first_tx": "4wUEcSTeMREdZe3J1N7XwpsWsSEosLtRnGrguFD24nZo",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "futureis.user.intear.near",
+          "near": 9.9,
+          "first_tx": "HDxm97pT56Gb429V9YbnUVTLUDoB6JtptWLBRQon2F3y",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "3e5f029edb67f024d37b82ddf5d6356188594729596b469616ebeef92e84bd45",
+          "near": 5.9577259054467255,
+          "first_tx": "9VzuiwUTLrYJFTwa1tkBbAhE6Rxsd8XAcz3DKYq2mwE5",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "tiadoyinnn.near",
+          "near": 4,
+          "first_tx": "6V5GEkAdC3DBAXaJFTrzAfVh3ERk28qyVmQbSmCxPK8t",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "748545ba09e20b4f16f48318aade9bf30530623e4d5a58696f265ed7dc950999",
+          "near": 2.9812468773340046,
+          "first_tx": "52eSLzUfD9xbqB6vhicoR2S9Hq9rELoszni3LMRxSpQ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "1070fb609924e7317f099ea67df0a87e33de6d8895d50793d397a674dee7cc3b",
+          "near": 2.0872902095653583,
+          "first_tx": "8yNLDyUm4kASxhQjtpof4qKDBhonZ72LWEx2CUtVmhDe",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "8n4XxJYqrWCvhu3Dsq9u73sdKtrEFtz1knfitQMsACUD",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "9gj2QK3mtpTKvY6ocSb8uHjn2P4Yccd3SAzCZTdQo8EG",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "4BYG8YNosXZQCrfUPNsNTHN7PZmp57pyXKbPmZBZPfiV",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "8cLrsQxspzyP9bofwBZkVM2Rn6LSQyEjNSmheVeAnDqF",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "alola.near",
+          "near": 1,
+          "first_tx": "CmT4mev1X8q6r8C5AKnXpUQCG1g7vdPFam7HBUj3NuQs",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "CxKXPzBr2TxRHMWD3VfaCvFHNs848tJzPqkK8EwFQoVd",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "attention-4.nearlytrade.near",
+      "name": "ATTENTION",
+      "symbol": "ATTENTION",
+      "creator": "slowtag1642.near",
+      "created_at_ms": 1794473076725,
+      "complete": true,
+      "opening_buyers": 2,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 20.000000000000004,
+      "total_near": 21,
+      "first_block": 224191098,
+      "read_block": 224358415,
+      "computed_at": "2026-11-13T11:40:50.559Z",
+      "buyers": [
+        {
+          "wallet": "slowtag1642.near",
+          "near": 20.000000000000004,
+          "first_tx": "9V9YTrYKR5VSw4FGENq6uaKNqHHe3k9itEyrWDdAu2fN",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "HD5JmFTURqQE7WmBnka6ckzKcYxaiAnmHJdXTHWKmUyY",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "bobo.nearlytrade.near",
+      "name": "bobo",
+      "symbol": "BOBO",
+      "creator": "bethebull.near",
+      "created_at_ms": 1794468993992,
+      "complete": true,
+      "opening_buyers": 6,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 14.5,
+      "first_block": 224183903,
+      "read_block": 224358458,
+      "computed_at": "2026-11-13T11:41:14.456Z",
+      "buyers": [
+        {
+          "wallet": "wrapz-z.near",
+          "near": 9.999999999999998,
+          "first_tx": "FH7Tr1SVxBSPNKkpQGuopD2p8Uv1QPc5Ycu1FPjKVSgH",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "B16wPBcWgRSqJ3Pat9GA527VAXDLpN71uUoMg4WghUKW",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 1,
+          "first_tx": "3pa2JUrRZb3L657MkaZV4ehqZpeiZNzYQPovFw5ff3og",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "FR9AXEocLXrHwXckN56HHdU99xGqouZ2ciHFVFwk9gBq",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "9gcyi9oWwwLX6KD1GuaK9am3hbzy4zSvdtQrB4Drp2vw",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "Gi774n7sGQ37PGrQjEfWmpPRDwiTu4DEgFDvGxEGZBvd",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "crash.nearlytrade.near",
+      "name": "Crash Bandicoot",
+      "symbol": "CRASH",
+      "creator": "narrownook4299.near",
+      "created_at_ms": 1794468190887,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 45.00000000000001,
+      "total_near": 45.00000000000001,
+      "first_block": 224182489,
+      "read_block": 224358459,
+      "computed_at": "2026-11-13T11:41:15.203Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 45.00000000000001,
+          "first_tx": "G59VD9VKp7SVNYnoJePyhqFznpXKu5yfaHe8HG7fFXQE",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "cb.nearlytrade.near",
+      "name": "Crash Bandicoot",
+      "symbol": "CB",
+      "creator": "slmm.near",
+      "created_at_ms": 1794467790334,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 1.1,
+      "total_near": 1.1,
+      "first_block": 224181786,
+      "read_block": 224358460,
+      "computed_at": "2026-11-13T11:41:15.786Z",
+      "buyers": [
+        {
+          "wallet": "slmm.near",
+          "near": 1.1,
+          "first_tx": "EEYbFCh5nmFfy5YQGGrkfC4s8HuAixe9RecxHpVXMh5b",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "nightshift-4.nearlytrade.near",
+      "name": "NIGHTSHIFT",
+      "symbol": "NIGHTSHIFT",
+      "creator": "nightshiftxyz.near",
+      "created_at_ms": 1794467539389,
+      "complete": true,
+      "opening_buyers": 2,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 42.50834666224725,
+      "total_near": 43.508346662247256,
+      "first_block": 224181339,
+      "read_block": 224358465,
+      "computed_at": "2026-11-13T11:41:18.408Z",
+      "buyers": [
+        {
+          "wallet": "nightshiftxyz.near",
+          "near": 42.50834666224725,
+          "first_tx": "HJY6sn1zyJXUegk2SzBwQz9LyaeKQBPAHi61Pf7auUVs",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "39TKQEG9SKrkwqth8AntjUbcvBqhYwBXcUuAb6vb7KCR",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "neartroll.nearlytrade.near",
+      "name": "NEARTROLL",
+      "symbol": "NEARTROLL",
+      "creator": "newdish5526.near",
+      "created_at_ms": 1794465996811,
+      "complete": true,
+      "opening_buyers": 4,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.8,
+      "total_near": 72.5,
+      "first_block": 224178614,
+      "read_block": 224358503,
+      "computed_at": "2026-11-13T11:41:39.605Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 41,
+          "first_tx": "DmkFRDMvzHdQEkxSeghswhQNJiEZd4ckBJazvvBeWRX",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "franky.user.intear.near",
+          "near": 29.7,
+          "first_tx": "4rVLrfZ7BFEaqoVmUosDQLfWD8QA7aQXTsraSpsiH15Q",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "FhL2NM71BQscLYPBj4JqhmY915MfctbPpCQoZSEJFNXX",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "newdish5526.near",
+          "near": 0.8,
+          "first_tx": "BnFdDhyVde1c6n4PSSooVZXLVrVwVFoHZpcr48scroka",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "nsup.nearlytrade.near",
+      "name": "NEARSUPER",
+      "symbol": "NSUP",
+      "creator": "bestyard2237.near",
+      "created_at_ms": 1794464698068,
+      "complete": true,
+      "opening_buyers": 2,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.3,
+      "total_near": 40.3,
+      "first_block": 224176344,
+      "read_block": 224358515,
+      "computed_at": "2026-11-13T11:41:46.556Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 40.00000000000001,
+          "first_tx": "DtWXQnCwMMLPjqMsuRj2bmbQECxp6W5i6FZ7sRHQtEtF",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "bestyard2237.near",
+          "near": 0.3,
+          "first_tx": "9quTRQJPzURYxgBxs79nQPN3ZDnmW8PM3Qm16Xft6PYg",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "batman-18.nearlytrade.near",
+      "name": "Batman feeling scared",
+      "symbol": "BATMAN",
+      "creator": "launchbot.nearlytrade.near",
+      "created_at_ms": 1794448786664,
+      "complete": true,
+      "opening_buyers": 6,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 2,
+      "total_near": 6.5,
+      "first_block": 224148267,
+      "read_block": 224358562,
+      "computed_at": "2026-11-13T11:42:12.585Z",
+      "buyers": [
+        {
+          "wallet": "launchbot.nearlytrade.near",
+          "near": 2,
+          "first_tx": "2dksb8RRFcgDZ8C7BijLJZPLUQ3Npv8ctETHpvf3y3Mx",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 1,
+          "first_tx": "7T5fXkKABHNPMeXTchVxJb1Yv1UgxZQVkun1Q2FsmzLJ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "EmbxCmoQhBqNj8arEeRdn1KTjhvyziz4UfWCaub6SQux",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "CTvJrTvQXEjrfzhLZQ6qmpkt2dHmEHZCNr5xbJPRKs3p",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "EPkPHRwuPoifyT71FobtadGmZRmD4ADzejtihVQ5CG7t",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "CssNX7x5tZJVkucaREVpx2LnpDQdQMRuwSL8VJjjbg5q",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "mihao.nearlytrade.near",
+      "name": "Mihao",
+      "symbol": "MIHAO",
+      "creator": "hvgdtyujnbvffyuj.near",
+      "created_at_ms": 1794434821295,
+      "complete": true,
       "opening_buyers": 9,
       "funded": 0,
+      "creator_buys": 1,
       "funded_near": 0,
-      "total_near": 238.32300000000004,
-      "head_block": 222122157,
-      "computed_at": "2026-11-09T10:24:30.807Z"
+      "creator_near": 0.511762,
+      "total_near": 81.12977526993582,
+      "first_block": 224123788,
+      "read_block": 224358644,
+      "computed_at": "2026-11-13T11:42:58.846Z",
+      "buyers": [
+        {
+          "wallet": "franky.user.intear.near",
+          "near": 49.424358852459115,
+          "first_tx": "5Cj7dfbtvctZRoDDAzdmdqpDA2UKpURybTX7sm9yA5xj",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "narrownook4299.near",
+          "near": 26,
+          "first_tx": "6QyNEU8yAHnwB9mecyyyuiLmsPsu1kLPQNf9SuKnZ4Wk",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 0.9986010394542274,
+          "first_tx": "DHQUE6HCuPoarq7ctgumPn2fqWrKAeKnwvHSW65crJTC",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 0.9986010394542274,
+          "first_tx": "8d9CqGtCJ9kFPhk1zQwP5MJy7ktHqEfTCTRJh8G2KFfn",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 0.9986010394542274,
+          "first_tx": "Da8EyPBgrTufvvr4CYVnexxbSE9fp2jDXieZo7k13948",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 0.9985507793869179,
+          "first_tx": "HmHXb3FvZfE9ye6T5Ecc4TPfL1aEA2cv9XqsYsGgLq9m",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "poliag.near",
+          "near": 0.7,
+          "first_tx": "2tRFZ7LsE9f3XghXkEcQDQ3dvb2rrUUHNpDSxmkuWv4f",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.4993005197271137,
+          "first_tx": "EsN72TNddWchi5VReNmXE3h9DZr7Vx9suGerRVREAsVC",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "hvgdtyujnbvffyuj.near",
+          "near": 0.511762,
+          "first_tx": "3FbhfPfnp2XxhtLThHr7UhtDeRTmB9qyUdHAcBCqoZeT",
+          "status": "creator",
+          "path": []
+        }
+      ]
     },
     {
-      "token": "illia.nearlytrade.near",
-      "creator": "launchbot.nearlytrade.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 34,
-      "head_block": 219941058,
-      "computed_at": "2026-11-09T10:24:32.366Z"
-    },
-    {
-      "token": "claw-2.nearlytrade.near",
-      "creator": "otherzebra9700.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 0.498,
-      "head_block": 219355538,
-      "computed_at": "2026-11-09T10:24:36.662Z"
-    },
-    {
-      "token": "nrr-2.nearlytrade.near",
-      "creator": "3848827.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 5.791516345258003,
-      "head_block": 217440428,
-      "computed_at": "2026-11-09T10:24:37.969Z"
-    },
-    {
-      "token": "btc.nearlytrade.near",
-      "creator": "quickviper8793.near",
-      "opening_buyers": 2,
-      "funded": 1,
-      "funded_near": 49.18038564306341,
-      "total_near": 70.85059597328487,
-      "head_block": 217504427,
-      "computed_at": "2026-11-09T10:24:42.668Z"
-    },
-    {
-      "token": "gold.nearlytrade.near",
-      "creator": "weirdviper7373.near",
-      "opening_buyers": 1,
-      "funded": 0,
-      "funded_near": 0,
-      "total_near": 38.838722267461726,
-      "head_block": 217507432,
-      "computed_at": "2026-11-09T10:24:42.997Z"
-    },
-    {
-      "token": "ubi.nearlytrade.near",
-      "creator": "mollyholly.near",
+      "token": "neardragons-2.nearlytrade.near",
+      "name": "NEAR DRAGONS",
+      "symbol": "NEARDRAGONS",
+      "creator": "bestyard2237.near",
+      "created_at_ms": 1794432417224,
+      "complete": true,
       "opening_buyers": 3,
-      "funded": 1,
-      "funded_near": 1.9823003669724772,
-      "total_near": 71.46751549986509,
-      "head_block": 218016570,
-      "computed_at": "2026-11-09T10:24:48.510Z"
-    },
-    {
-      "token": "nearly10.nearlytrade.near",
-      "creator": "nearly10.near",
-      "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 1,
       "funded_near": 0,
-      "total_near": 35,
-      "head_block": 218033337,
-      "computed_at": "2026-11-09T10:24:52.899Z"
+      "creator_near": 0.5,
+      "total_near": 46.5,
+      "first_block": 224119785,
+      "read_block": 224358670,
+      "computed_at": "2026-11-13T11:43:13.187Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 45.00000000000001,
+          "first_tx": "32P5zA15aLykRc6FXt9sDyvWWx2yZgmw1uNzTAyQDHRP",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "EThLCzHn893gAzV7TnpYQU8cEbt6iES5cREw5BdZTfzk",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "bestyard2237.near",
+          "near": 0.5,
+          "first_tx": "ArZiNeQXfMcZ3TaNQRU2ftWPWXpgTq6EvtGPDJ9bZYaQ",
+          "status": "creator",
+          "path": []
+        }
+      ]
     },
     {
-      "token": "poor.nearlytrade.near",
-      "creator": "kingtgnik.near",
+      "token": "imeme-11.nearlytrade.near",
+      "name": "IMEME",
+      "symbol": "IMEME",
+      "creator": "realgoat8615.near",
+      "created_at_ms": 1794431783169,
+      "complete": true,
       "opening_buyers": 2,
-      "funded": 1,
-      "funded_near": 29.64671452043764,
-      "total_near": 78.99592264901881,
-      "head_block": 217264186,
-      "computed_at": "2026-11-09T10:24:56.403Z"
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.5,
+      "total_near": 40.5,
+      "first_block": 224118671,
+      "read_block": 224358697,
+      "computed_at": "2026-11-13T11:43:28.206Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 40.00000000000001,
+          "first_tx": "7uziLVAnF7vVZJ8aAnJinWwTsjoees31rtXhy9cELybe",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "realgoat8615.near",
+          "near": 0.5,
+          "first_tx": "Z8EjKe68k7fcNfV5gJ6r3Lja2vnX5sjjrAp24f6d4AK",
+          "status": "creator",
+          "path": []
+        }
+      ]
     },
     {
-      "token": "slug.nearlytrade.near",
-      "creator": "7686e3cb8dde94e65e9f2bd0801353ee4bf4c746730026e6d58f8b5123e26f87",
+      "token": "alex-2.nearlytrade.near",
+      "name": "Alex Skidanov",
+      "symbol": "ALEX",
+      "creator": "realgoat8615.near",
+      "created_at_ms": 1794429723602,
+      "complete": true,
+      "opening_buyers": 3,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.5,
+      "total_near": 101,
+      "first_block": 224115118,
+      "read_block": 224358722,
+      "computed_at": "2026-11-13T11:43:42.007Z",
+      "buyers": [
+        {
+          "wallet": "franky.user.intear.near",
+          "near": 49.5,
+          "first_tx": "EzG19hrDKoidgvrgvmX9v1SQGB3ZDq9tx44Gaz163qUL",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "narrownook4299.near",
+          "near": 51.00000000000001,
+          "first_tx": "4Po2porATaozMUDEczPLKPNrHXWNzcniRRFSQKHKdzgW",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "realgoat8615.near",
+          "near": 0.5,
+          "first_tx": "H3sqJjVJAxFMvjvYoE9N1ZkkJpakJ86o2mvjdDxv755x",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "wyrm.nearlytrade.near",
+      "name": "WYRM",
+      "symbol": "WYRM",
+      "creator": "dragon.thewyrm.near",
+      "created_at_ms": 1794428857521,
+      "complete": true,
+      "opening_buyers": 4,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 87,
+      "first_block": 224113647,
+      "read_block": 224358763,
+      "computed_at": "2026-11-13T11:44:06.122Z",
+      "buyers": [
+        {
+          "wallet": "56c9a6ef438223bd.trade.unrlzd.near",
+          "near": 72,
+          "first_tx": "2Z2ncbNHw59dGmdZeAH5b3yrqFxtnq2a3RKB795CXPeV",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "suisucks.near",
+          "near": 12,
+          "first_tx": "DLcGoiP4NStfKe6tF6sLk2az1UfDbPtojYhpwTuFx4oD",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 2,
+          "first_tx": "7pqizv4gpRmcLLroyFnWgRNMemzfTSnEW9bD7uQpeSLo",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "GoS6Y1kBZzhBo8fg7rKwph59FHySQjLykJyshKsoaFEi",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "eagle-2.nearlytrade.near",
+      "name": "EAGLE",
+      "symbol": "EAGLE",
+      "creator": "likelyelk6314.near",
+      "created_at_ms": 1794426233087,
+      "complete": true,
+      "opening_buyers": 10,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.1,
+      "total_near": 36.6,
+      "first_block": 224109459,
+      "read_block": 224358883,
+      "computed_at": "2026-11-13T11:45:14.628Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 20.000000000000004,
+          "first_tx": "7v92aEKsPvg8hPsKJYu9fjAgP5E22QS35tNoVFgamEwj",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "wrapz-z.near",
+          "near": 9.999999999999998,
+          "first_tx": "2TTiPe8mAd56tBDimjSxkyrFut9DVH8kFHP4tKufFjDT",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "2suEexktvGbQH7HAd9vPHbXLP8JZxkeU3ASdRdPgDXB3",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "BZyTxEmaaxqhGgQU5q3vUc8AkBZWcYg7jAoF5SzF8cCt",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "4LG9AwKCjhQgFHN88BL6oqHVCHyFVxjiQmy8S1tjepix",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 1,
+          "first_tx": "6uYiSdmJULk2F677F2BnstYNKAmbQDHe5Cjp4iWn28UV",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "GZFWKM7fstSJK5Vs82V8JE239wrvCRSgw5XgNacmUAWN",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "alola.near",
+          "near": 1,
+          "first_tx": "4HdWFTRZ7YAnBhS1PMDLGUVxDjB59gcBkK7Tw3RxpXKE",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "59HFvKkPcojk4VCLo9X3kzJKK8QfaC1rsEHy3UEaF9z9",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "likelyelk6314.near",
+          "near": 0.1,
+          "first_tx": "EjCrY18pkxgVq4DkV4K69ypmy2XxjrcH4K59Dd414vUZ",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "otterly.nearlytrade.near",
+      "name": "otterly",
+      "symbol": "OTTERLY",
+      "creator": "0xtrtt.near",
+      "created_at_ms": 1794422569576,
+      "complete": true,
       "opening_buyers": 1,
       "funded": 0,
+      "creator_buys": 1,
       "funded_near": 0,
-      "total_near": 0.9907740660738871,
-      "head_block": 217498914,
-      "computed_at": "2026-11-09T10:25:00.522Z"
+      "creator_near": 0.5,
+      "total_near": 0.5,
+      "first_block": 224103406,
+      "read_block": 224358885,
+      "computed_at": "2026-11-13T11:45:15.201Z",
+      "buyers": [
+        {
+          "wallet": "0xtrtt.near",
+          "near": 0.5,
+          "first_tx": "6SiTWbAf79Y1VeqGqvaT5VH7EnhGuACTTDtnGHGqVgB1",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "tamagotchi.nearlytrade.near",
+      "name": "TAMAGOTCHI",
+      "symbol": "TAMAGOTCHI",
+      "creator": "tamagotchiai.near",
+      "created_at_ms": 1794422206593,
+      "complete": true,
+      "opening_buyers": 12,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.5,
+      "total_near": 49.299,
+      "first_block": 224102772,
+      "read_block": 224359016,
+      "computed_at": "2026-11-13T11:46:29.504Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 19.3,
+          "first_tx": "J8943eLNmLejAXxLW7fVobXwPCCM5LXAnqZ6WamTngah",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "gokalpkg.near",
+          "near": 12,
+          "first_tx": "CQaEdvJBab62pe96PrV3NUtHhaSEj6RVBkfzf1KpMif2",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "sneering_yeti.near",
+          "near": 9.999,
+          "first_tx": "8QAad62SLjDrnugEzVzTYJuxnePnHcTFDKuZMSKTgPVF",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "GncB7KGnnPu1pUzY5ADSM2VWqWWFz4YRV8tz21UdXz5X",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "8MELonr58mCfTcAV3v6hiASm5Qpesj2krmq37fB2PVuG",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "Gd8Cg7Bmo8vkvkXhyWjoFVnoUg9pVMvWnntVa5NTxviQ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 1,
+          "first_tx": "As5GLWzZYW5fhibP6HMe5RTdRoSprH9K2PcHMJ7852yV",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "4CZqmDhLngHiep4CmBavpwi1EQ2ZmDr8gQu6gxvnUjaA",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "alola.near",
+          "near": 1,
+          "first_tx": "2NURwLxAtqMGxEPYKkAsVBn8V5cnsbjTiussjiqATCbq",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b8185e452876272952a4393be7a349f77070de1ec910223590ada995f84dff87",
+          "near": 1,
+          "first_tx": "7W2E5kVyj8NqK5TVjwhgSDcoDaWpVQaGThtuvcH9Aikr",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "tamagotchiai.near",
+          "near": 0.5,
+          "first_tx": "9bh4UaGGur4wBJbLofguxfRRXq4PAXbhTSSchc6eeP15",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "EDjUdyGspXfQJbF1TV46QPJf4NGW9h3ERM41uvSBpoRD",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "nearmela.nearlytrade.near",
+      "name": "NEARMELA",
+      "symbol": "NEARMELA",
+      "creator": "firmfile5132.near",
+      "created_at_ms": 1794418277462,
+      "complete": true,
+      "opening_buyers": 11,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.5,
+      "total_near": 149.26891375923387,
+      "first_block": 224096159,
+      "read_block": 224359103,
+      "computed_at": "2026-11-13T11:47:19.455Z",
+      "buyers": [
+        {
+          "wallet": "56c9a6ef438223bd.trade.unrlzd.near",
+          "near": 94,
+          "first_tx": "F7KWkqP4zidXyu7tJrgsJm8JCWadCjkND7NgfUFCLtnW",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "narrownook4299.near",
+          "near": 25,
+          "first_tx": "8U7TKYD2XumfgvjEg9gvuJYXvF86XAkgsPttGHReh7zT",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "3024eac17eb799369d84f66729c2691eb236867cfeb65e0e108abb57918234cc",
+          "near": 13.268913759233872,
+          "first_tx": "8YFNwQcMzNW59fW2QyjkT37cN4LGwSb9Aww1E5K2JBcj",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 11,
+          "first_tx": "AQKSTj5wCDQY9ynx6UPrnScRAajavieKKEgR9YdbipHz",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "3wnfyqDZdCG9FuJCM25bMzsEdmnPw7TRAfrheaeguFgS",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "9s8dZ8AhHD6pdURDLeZQiuk8XxmAXANUCYVDejZdzCWM",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "oMTHooz2rFjK2PvQMhB95VLLM1z5fRAgik8y84E4Mvq",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "HJTBpYbxPCv6AVSw9qeK8ueF9ZGBCgRTHJReFg3ZaBx2",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "alola.near",
+          "near": 1,
+          "first_tx": "2mGHZ9YwF2nZMWmyxFk9KkacDJFdHhB2NzZCBqQXnvXZ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "9DwLvJyk4DWL76uh8DzMKv75iWtAw1y4DFqs1TJoTU4",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "firmfile5132.near",
+          "near": 0.5,
+          "first_tx": "7DgneBDcetnfex2stpf2dZuT9QEAQ3bTSYaMFqKgek2Y",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "superinu-2.nearlytrade.near",
+      "name": "SUPERINU",
+      "symbol": "SUPERINU",
+      "creator": "longsite7788.near",
+      "created_at_ms": 1794416677375,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 26,
+      "first_block": 224093746,
+      "read_block": 224359108,
+      "computed_at": "2026-11-13T11:47:22.058Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 26,
+          "first_tx": "BHmjh8UWU7E3ZYPxCoq9Sp5UTZwYcgAH9yDrfSNHRtNB",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "sherrifcat.nearlytrade.near",
+      "name": "SHERRIFCAT",
+      "symbol": "SHERRIFCAT",
+      "creator": "longsite7788.near",
+      "created_at_ms": 1794415416706,
+      "complete": true,
+      "opening_buyers": 5,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.4,
+      "total_near": 57.1,
+      "first_block": 224091249,
+      "read_block": 224359141,
+      "computed_at": "2026-11-13T11:47:41.111Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 26,
+          "first_tx": "5XzGSmvh5Y1SPB14JkvwwfsBVm7w7YwWnQBg9Mfp1hHd",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "franky.user.intear.near",
+          "near": 19.8,
+          "first_tx": "5QWKQcfMGVrmzPyzAjzWBRcwzF3s1idQn4orLiofVpce",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "hybrid.user.intear.near",
+          "near": 9.9,
+          "first_tx": "5cjBTyAhY8oMF6LngDNb2eMDvZ9nATu1RS7YMGMshdaT",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "9GkzYSGCVLmhEn8i6LdecQrWYfPTfVfGA5H19U7SPpws",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "longsite7788.near",
+          "near": 0.4,
+          "first_tx": "5iM6YjpzBnh8ozmSexxd5QR5JJcFpt23zPcc55ECdZJq",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "3way.nearlytrade.near",
+      "name": "3way coin",
+      "symbol": "3WAY",
+      "creator": "0xtrtt.near",
+      "created_at_ms": 1794414064524,
+      "complete": true,
+      "opening_buyers": 1,
+      "funded": 0,
+      "creator_buys": 0,
+      "funded_near": 0,
+      "creator_near": 0,
+      "total_near": 1,
+      "first_block": 224088992,
+      "read_block": 224359146,
+      "computed_at": "2026-11-13T11:47:43.760Z",
+      "buyers": [
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "EjE4LhEYvwwmNSzPFLrLTKe56o7aT5BFVaneJpg1BTL3",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "doomslug-3.nearlytrade.near",
+      "name": "DOOMSLUG",
+      "symbol": "DOOMSLUG",
+      "creator": "roundzip6566.near",
+      "created_at_ms": 1794414040653,
+      "complete": true,
+      "opening_buyers": 2,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.1,
+      "total_near": 27.1,
+      "first_block": 224089037,
+      "read_block": 224359152,
+      "computed_at": "2026-11-13T11:47:46.893Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 27,
+          "first_tx": "Hp3ziqdbdHB2iJcvdENZqqBhjM9Vf52vnrZN6o9j4yeh",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "roundzip6566.near",
+          "near": 0.1,
+          "first_tx": "5EjrqzximVAg7hSeKdyVJiBHS4si8gGQk59P9Y35N4k2",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "nrwa.nearlytrade.near",
+      "name": "ReallyWealthyAgain",
+      "symbol": "NRWA",
+      "creator": "the7thplanet.near",
+      "created_at_ms": 1794412779343,
+      "complete": true,
+      "opening_buyers": 10,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.2,
+      "total_near": 21.7,
+      "first_block": 224086768,
+      "read_block": 224359234,
+      "computed_at": "2026-11-13T11:48:34.760Z",
+      "buyers": [
+        {
+          "wallet": "wrapz-z.near",
+          "near": 9.999999999999998,
+          "first_tx": "4gwWAQkQuGua8vLF9MzusmH3mTyxdHy15DUAzjzoeyRL",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "darkoasis5043.near",
+          "near": 5.000000000000001,
+          "first_tx": "53MH7YKMJu2g392U2YwodQbaVSF8D6NArZmUz6UYaeLv",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "jopka.sendler-b.near",
+          "near": 1,
+          "first_tx": "AHMC8mQ8HbNdj5b8YGVLRTT3mSwWF23YU4RhaVSwi72u",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "trade.sendler-b.near",
+          "near": 1,
+          "first_tx": "ATdS5F2gwsMdSxaVSYWuUfcP5D9qRWk1crWpYH8KhqFY",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "dolph.sendler-b.near",
+          "near": 1,
+          "first_tx": "9FGWxcneU5dHmPGyEoMRLLofMWpJAYDjBqFEdJ1PMrtt",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "c8bde0e9209ac7329ca89867b8373add78bd2712a2543914eec7b8af96901899",
+          "near": 1,
+          "first_tx": "CbPo9ocjGZBD2pvLBX8ZxZBrQycDh9k6z7myj5nhqSxr",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "3jB8YirwJN2sxztAiJ6xQPjfc2n1wd98ySc2WrEhUBGE",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "alola.near",
+          "near": 1,
+          "first_tx": "4wDziQwpVVpe1Mgv3TRgkQsrfEk3nWdL2sr3mcaZbbtQ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "yazaplakal.sendler-b.near",
+          "near": 0.5,
+          "first_tx": "CZqPDcRv2BdSPJqhjFVZdDMwfe2FV5y6Hdx6M2K8ChD2",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "the7thplanet.near",
+          "near": 0.2,
+          "first_tx": "BmNTPpaabUVBTAFf7ECPeucGGsd224TbishnLL5tPVfb",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "superwoman.nearlytrade.near",
+      "name": "SUPER WOMAN",
+      "symbol": "SUPERWOMAN",
+      "creator": "roundzip6566.near",
+      "created_at_ms": 1794412404672,
+      "complete": true,
+      "opening_buyers": 5,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 1,
+      "total_near": 81.7,
+      "first_block": 224086103,
+      "read_block": 224359267,
+      "computed_at": "2026-11-13T11:48:53.436Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 40.00000000000001,
+          "first_tx": "5d79odAo61Gcc4x8vquLtB9cQpyoztrPwHSSqtV36SAJ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "franky.user.intear.near",
+          "near": 29.7,
+          "first_tx": "FHsArT38Y8P3tR1kQMVAZA9SvjphfBJWsBUrZ984jZLy",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "darkoasis5043.near",
+          "near": 10.000000000000002,
+          "first_tx": "CBTXzWCZ3duRH9kS27KA8GaBNXrVNCqk3GyENvBK4B2g",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "HLjR9paLXGSKNRgBw4j9Jik93LDevwvXMqWdoRrjZ1bb",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "roundzip6566.near",
+          "near": 1,
+          "first_tx": "DmUxo281rkGm4V5jwCu6SRdNWKgA643uDvqyt2Dy7HPu",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "cosmicfrog.nearlytrade.near",
+      "name": "COSMICFROG",
+      "symbol": "COSMICFROG",
+      "creator": "memewhale.near",
+      "created_at_ms": 1794407281391,
+      "complete": true,
+      "opening_buyers": 3,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.5,
+      "total_near": 46.5,
+      "first_block": 224077803,
+      "read_block": 224359302,
+      "computed_at": "2026-11-13T11:49:13.854Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 45.00000000000001,
+          "first_tx": "9t8UYqonMShu9wnsoPHHr1GQVpdB5ma8qtgXajP9nTYj",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "b4adf54a4ccc38cba50dc818140c8568baddd5b8e072d7a44992520ffdc70486",
+          "near": 1,
+          "first_tx": "EfefwivHEPUtUSna2icyFzM27aL6nLwfQ6UGsn7k47q9",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "memewhale.near",
+          "near": 0.5,
+          "first_tx": "CJWfjdhJmBEdDMmHxxqyG1RnuiBMAKiaiURRFshfpeTA",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "blocknear.nearlytrade.near",
+      "name": "BLOCKNEAR",
+      "symbol": "BLOCKNEAR",
+      "creator": "blocknear.near",
+      "created_at_ms": 1794402765406,
+      "complete": true,
+      "opening_buyers": 7,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 42.50834666224725,
+      "total_near": 131.85085372437126,
+      "first_block": 224069988,
+      "read_block": 224359373,
+      "computed_at": "2026-11-13T11:49:53.971Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 51.00000000000001,
+          "first_tx": "6bZdCK4t4BrZtaC8Akp3EWsdaiASNzPATQo296mFQtKB",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "blocknear.near",
+          "near": 42.50834666224725,
+          "first_tx": "7kZWQtiinJxqw2Q9eLK4EmMTipupEko52SFJ15veJdC2",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "unfair_virus1.user.intear.near",
+          "near": 12.502507062124012,
+          "first_tx": "4EUo2zRTKqN6XdVFbvFt5YS8fFKSSC2cTjtB8CQh8etW",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "vivid-pulse-1845.racerbot.near",
+          "near": 9.9,
+          "first_tx": "6BaCS4AaX1u7Kt4tJq2GczcCCdfHC7f2sbGZWepEn2KD",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "volat.near",
+          "near": 10.000000000000002,
+          "first_tx": "WgzvMd8Dn41dYD2mLYfPPX6kCJsv3oaDNhSzJoNT6xT",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "rusty_drone.user.intear.near",
+          "near": 4.95,
+          "first_tx": "FXsZFaMiDseTtFmNYLomUibSySJe3887knmvAWkZzfBH",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "hybrid.user.intear.near",
+          "near": 0.99,
+          "first_tx": "5tF4MTxm6X4puS5xtyEUTYKwZWCHgpq2RDnXLxDeQaZ1",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "nearhunt.nearlytrade.near",
+      "name": "NEARHUNT",
+      "symbol": "NEARHUNT",
+      "creator": "lowlemon5635.near",
+      "created_at_ms": 1794398921993,
+      "complete": true,
+      "opening_buyers": 4,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 2,
+      "total_near": 49,
+      "first_block": 224063343,
+      "read_block": 224359433,
+      "computed_at": "2026-11-13T11:50:27.868Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 36,
+          "first_tx": "fMk5f2TNQtW7vpkzxJxti4QYJvHQFLu9oWHUnnybSjQ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "wrapz-z.near",
+          "near": 7.000000000000001,
+          "first_tx": "xWf5rETLR5oziwnidMrDiu3BfyHGUrWFAaYzScH6AYQ",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "darkoasis5043.near",
+          "near": 4,
+          "first_tx": "FNeVgDJiTMfCgCBTErtcMggQMeyHxk8a1RqHkhjzGu6W",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "lowlemon5635.near",
+          "near": 2,
+          "first_tx": "AytWNpEu77fDYV5TSK4D8m3ZHraPAV6v5tUhnuvBtuFt",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "rot.nearlytrade.near",
+      "name": "BRAINROT",
+      "symbol": "ROT",
+      "creator": "truerat183.near",
+      "created_at_ms": 1794397697890,
+      "complete": true,
+      "opening_buyers": 6,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 0.3,
+      "total_near": 135.3,
+      "first_block": 224061203,
+      "read_block": 224359506,
+      "computed_at": "2026-11-13T11:51:09.272Z",
+      "buyers": [
+        {
+          "wallet": "narrownook4299.near",
+          "near": 60,
+          "first_tx": "BRSFnXVsxBF6Q8Eu7fxcRc1t7Y9BHjCA6wPU7BLSQMyV",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "vikin.near",
+          "near": 50,
+          "first_tx": "GnkziYewaP5UkEexFvXvu7vkT1UvjAywrJFffzTktGaX",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "js1112s.near",
+          "near": 10.000000000000002,
+          "first_tx": "HsAnZsKencE3VQJVUdeiPDsH6PDB6U4WJS6dNZUzc9Yq",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "51206134269a0d48.trade.unrlzd.near",
+          "near": 10.000000000000002,
+          "first_tx": "5y9gvRQpNoMBae2oMfcfrZpjXgAFJdWmKAqWF48aupHp",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "darkoasis5043.near",
+          "near": 5.000000000000001,
+          "first_tx": "GWfBEUvRHRtMcWaQhhkYUhfTWzLX9UWELNtnFqQ1QDrE",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "truerat183.near",
+          "near": 0.3,
+          "first_tx": "6JieFynZxjBaRpsrfEnT4QsPUuUN2n4E6Q8JQuH8v8bY",
+          "status": "creator",
+          "path": []
+        }
+      ]
+    },
+    {
+      "token": "goblin.nearlytrade.near",
+      "name": "GOBLIN",
+      "symbol": "GOBLIN",
+      "creator": "goblin1.near",
+      "created_at_ms": 1794395871605,
+      "complete": true,
+      "opening_buyers": 6,
+      "funded": 0,
+      "creator_buys": 1,
+      "funded_near": 0,
+      "creator_near": 49,
+      "total_near": 174.33766856277768,
+      "first_block": 224058043,
+      "read_block": 224359607,
+      "computed_at": "2026-11-13T11:52:05.645Z",
+      "buyers": [
+        {
+          "wallet": "goblin1.near",
+          "near": 49,
+          "first_tx": "6YPuG7zJMNabCRutD8xxDt65bSFxSaqSCA5fAJJr34TU",
+          "status": "creator",
+          "path": []
+        },
+        {
+          "wallet": "vikin.near",
+          "near": 50,
+          "first_tx": "DY6PvXee4QtdbWm6hqkTkQuvW6ALD6U3t7DHckKZtkjL",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "narrownook4299.near",
+          "near": 42,
+          "first_tx": "DPEYrqVjNbfAki32kwyUVQzmb3eVjvUeVsTr9tkTYwEq",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "3ab30e9ce2099d06fc0e119965f1dc36d8d74b7b35feb96e1e0e68de2a7c3804",
+          "near": 27.422566382620087,
+          "first_tx": "EHz5mW4KjSpkrVtmwSrNQXyUK7ZYV5oNUba798se3u3y",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "newear.near",
+          "near": 4,
+          "first_tx": "FWMHgCfXTxxm7kTARZpxbYCfJgFtmfCxn8MW29LsP82P",
+          "status": "unlinked",
+          "path": []
+        },
+        {
+          "wallet": "1070fb609924e7317f099ea67df0a87e33de6d8895d50793d397a674dee7cc3b",
+          "near": 1.9151021801576114,
+          "first_tx": "EBzUEGUg22oPsN6tuj17tk3nkRGQPLZyZpE2XrYpPfNw",
+          "status": "unlinked",
+          "path": []
+        }
+      ]
     }
   ]
 }

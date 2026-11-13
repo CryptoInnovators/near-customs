@@ -1,0 +1,37 @@
+{
+  "token": "customs26-token.testnet",
+  "name": "Customs coin",
+  "symbol": "CUSTOMS",
+  "creator": "customs26-creator.testnet",
+  "net": "testnet",
+  "created_at_ms": null,
+  "complete": true,
+  "opening_buyers": 2,
+  "funded": 1,
+  "creator_buys": 0,
+  "read_block": 277505494,
+  "computed_at": "2026-11-13T11:44:32.461Z",
+  "buyers": [
+    {
+      "wallet": "customs26-buyer1.testnet",
+      "near": 0.5,
+      "first_tx": "75sREratSM2pa3iGJBx61hbwPSx3Wfa8bseN3g6CmR2T",
+      "status": "linked",
+      "path": [
+        {
+          "from": "customs26-creator.testnet",
+          "to": "customs26-buyer1.testnet",
+          "near": 1,
+          "tx": "23atwS3gdX11c1r7o3UBZK1w7UAuskk7VofmoaZiP5HU"
+        }
+      ]
+    },
+    {
+      "wallet": "customs26-buyer2.testnet",
+      "near": 0.5,
+      "first_tx": "GuTXDmdNSsSosDHgjHJLLxgQH1VwXR1Z5jSfxy1TThV5",
+      "status": "unlinked",
+      "path": []
+    }
+  ]
+}

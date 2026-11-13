@@ -1,0 +1,47 @@
+{
+  "nearly-993927.nearlytrade.near": {
+    "tx": "BB3Qaq1mNnYkU6FPhPe6VXpipttoAcwD1kTGPayx2m9r",
+    "verdict": "WARN",
+    "evidence": "bbc06024ce83c3ea43cef700a8df9c9184bbde389f4afd967323e13105b0841e"
+  },
+  "batman-4.nearlytrade.near": {
+    "tx": "AD5NSRk2VpxgeqfCAehSQkpgMSCRUhGsGBexfM5QnrxR",
+    "verdict": "ALLOW",
+    "evidence": "85684097cfcbf3c7859e029b5102531c066917dae91e8a0f989cf94b835cb2a1"
+  },
+  "singularty.nearlytrade.near": {
+    "tx": "9CDPeUaxFmYsaNwQWw647567crsTjR1FkFtHSF9nxsJQ",
+    "verdict": "ALLOW",
+    "evidence": "4fc11cb44d3b58d82ec1cc1d17602efe12df54a93a12b700fa8b1ae9a8cf413c"
+  },
+  "diarhea.nearlytrade.near": {
+    "tx": "CGB7DPDZasnPhieHHHyiocnEfFMX8VdwwatcHd7HisKC",
+    "verdict": "ALLOW",
+    "evidence": "46bd28646a69287e3280501b269440b0d937b1b23ad8a03c573371f5a8472432"
+  },
+  "ninu-4.nearlytrade.near": {
+    "tx": "2btKiRd9cFTCXkdKJS6mLZecEheW2bgTwhNdMJyD435u",
+    "verdict": "ALLOW",
+    "evidence": "c7966d247e0016c3fa55b82e7deb95b57a118f56654d23df7f99f7e94ae16e95"
+  },
+  "neargotchi.nearlytrade.near": {
+    "tx": "2kbMkASKqBDLDETivKX8DgtMxV66qz52jb5pUHjqVpVW",
+    "verdict": "ALLOW",
+    "evidence": "dbf6868626b130ce0bc6f57677b4af19c068b1da490820cf13b24aac8079c9b4"
+  },
+  "qcat-3.nearlytrade.near": {
+    "tx": "BKSVvVCAuyHU1kZCpQGda56DS7NKTMaemAnyvDyE73G7",
+    "verdict": "ALLOW",
+    "evidence": "eb5d96e0179ffc2e15ff42866f2a0f92758ad04825b05c64dbf02f2d30d985ca"
+  },
+  "ai-8.nearlytrade.near": {
+    "tx": "FrAmHvBQuJ95fX9CffgNx449r3fWGy9cgzGJJVgCdwG1",
+    "verdict": "ALLOW",
+    "evidence": "075bc712ff43fb4d2962cdff4f92b560381965af21ec834be7c6235ba1a8e8ec"
+  },
+  "trade-2.nearlytrade.near": {
+    "tx": "81NVTF4EJBDSasAJy11PamjSR76VMRHgZ6tkmyeednzA",
+    "verdict": "ALLOW",
+    "evidence": "c7da88ad0c9c094a1db39ec19fd7815037dc482b7a5df5fa79d1780804b20e6e"
+  }
+}
