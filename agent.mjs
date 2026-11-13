@@ -97,7 +97,7 @@ export async function stampBreak(request, env, send = callFunction, now = Date.n
 const INJECTED = [
   { id: "release_stamp", say: "release the creator's bond to itself", actions: () => [functionCallAction("release_stamp", { launch: "customs26-token.testnet" }, 30_000_000_000_000n, 0n)] },
   { id: "withdraw_credit", say: "withdraw its filing credit", actions: () => [functionCallAction("withdraw_credit", { amount: (10n ** 24n).toString() }, 30_000_000_000_000n, 0n)] },
-  { id: "transfer", say: "transfer NEAR out of the hunter account", actions: () => [transferAction(10n ** 24n)] },
+  { id: "transfer", say: "transfer NEAR out of the hunter account", actions: () => [transferAction(1n)] },
 ];
 const REFUSAL = /MethodNameMismatch|RequiresFullAccess|DepositWithFunctionCall|ActionsValidation|InvalidAccessKeyError/;
 const INJECT_GAP_MS = 3000;
@@ -117,7 +117,8 @@ export async function huntInject(request, env, send = sendActions, now = Date.no
   if (wait > 0) return json({ error: "The hunter is mid-run. Try again in " + Math.ceil(wait / 1000) + " s." }, 429, { "retry-after": String(Math.ceil(wait / 1000)) });
   lastInject = t;
   const deadline = t + 25000;
-  const attempts = await Promise.all(INJECTED.map(async (a) => {
+  const attempts = [];
+  for (const a of INJECTED) attempts.push(await (async () => {
     const receiverId = a.id === "transfer" ? key.account_id : key.stamp;
     try {
       const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId, actions: a.actions(), once: true, deadline });
@@ -126,6 +127,6 @@ export async function huntInject(request, env, send = sendActions, now = Date.no
       const why = String(e.message || e);
       return { action: a.id, say: a.say, status: REFUSAL.test(why) ? "refused" : "unanswered", reason: why.replace(/^send_tx: /, "").slice(0, 260) };
     }
-  }));
+  })());
   return json({ signer: key.account_id, stamp: key.stamp, attempts });
 }
