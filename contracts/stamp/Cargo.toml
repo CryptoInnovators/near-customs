@@ -1,0 +1,30 @@
+[package]
+name = "customs-stamp"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "5.30.0"
+customs-common = { path = "../../crates/common" }
+
+[dev-dependencies]
+near-sdk = { version = "5.30.0", features = ["unit-testing"] }
+
+# its own workspace: the stamp builds and ships apart from the token, the checker and the gate
+[workspace]
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
+
+[features]
+# Test builds only: skips the published-judge check so a sandbox can run its own checker build. The wasm that ships is built without it.
+sandbox = []
