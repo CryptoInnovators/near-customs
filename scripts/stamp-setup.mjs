@@ -4,10 +4,15 @@
 // node scripts/stamp-setup.mjs <path to customs_stamp.wasm>
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
+import { spawnSync } from "node:child_process";
 import { addFunctionCallKeyAction, createAccountAction, addFullAccessKeyAction, deployContractAction, functionCallAction, newKeyPair, sendActions, transferAction, b58decode } from "../near-tx.mjs";
 import { RPC, rpc, view, secretOf, saveCred, sleep, link } from "./lib-testnet.mjs";
 
-const STAMP = "customs28-stamp.testnet", FILER = "customs28-hunter.testnet", FUNDER = "customs26-buyer1.testnet", CREATOR = "customs26-creator.testnet";
+// SLOT picks the stamp instance (default 28, the first). Every slot is a separate contract holding its own bond on the same launch,
+// so one breakable stamp can be broken by a prover while the next is still standing. FUNDER pays accounts and credit.
+const SLOT = process.env.SLOT || "28";
+const STAMP = `customs${SLOT}-stamp.testnet`, FILER = `customs${SLOT}-hunter.testnet`, FUNDER = process.env.FUNDER || "customs26-buyer1.testnet", CREATOR = "customs26-creator.testnet";
+const KEY_FILE = SLOT === "28" ? "filer-key.json" : `filer-key-${SLOT}.json`;
 const LAUNCH = "customs26-token.testnet", MARKET = "dclv2.ref-dev.testnet";
 const NEAR = (n) => BigInt(Math.round(n * 1e6)) * 10n ** 18n;
 const wasm = new Uint8Array(await readFile(process.argv[2]));
@@ -48,10 +53,14 @@ if (!initialised) {
     },
   };
   // a 275 KB upload outlives most free RPC timeouts: deploy with near-cli over an archival endpoint, then this script only initialises
+  if (!code) {
+    const d = spawnSync("near", ["contract", "deploy", STAMP, "use-file", process.argv[2], "without-init-call", "network-config", "testnet-archival", "sign-with-legacy-keychain", "send"], { encoding: "utf8", timeout: 400_000 });
+    if (d.status !== 0) throw Error("near-cli deploy failed: " + (d.stderr || d.stdout).slice(-300));
+    console.log("deployed " + STAMP);
+  }
   const actions = [functionCallAction("new", init, 60_000_000_000_000n, 0n)];
-  if (!code) actions.unshift(deployContractAction(wasm));
   const r = await as(STAMP, STAMP, actions);
-  log((code ? "initialised " : "deployed and initialised ") + STAMP, r.hash);
+  log("initialised " + STAMP, r.hash);
 }
 
 let key = await view(STAMP, "verdict_key");
@@ -81,5 +90,5 @@ const fullSecret = await secretOf(FILER);
 const fullPub = b58decode(fullSecret.replace(/^ed25519:/, "")).slice(32);
 await sendActions({ rpcUrl: RPC, signerId: FILER, secretKey: fullSecret, receiverId: FILER, actions: [addFunctionCallKeyAction(fc.publicKey, STAMP, ["challenge"], NEAR(0.25))] });
 await mkdir(`${homedir()}/.config/customs`, { recursive: true });
-await writeFile(`${homedir()}/.config/customs/filer-key.json`, JSON.stringify({ account_id: FILER, public_key: fc.publicKeyStr, secret_key: fc.secretKey }), { mode: 0o600 });
-console.log("filer function-call key written to ~/.config/customs/filer-key.json", fc.publicKeyStr);
+await writeFile(`${homedir()}/.config/customs/${KEY_FILE}`, JSON.stringify({ account_id: FILER, public_key: fc.publicKeyStr, secret_key: fc.secretKey }), { mode: 0o600 });
+console.log("filer function-call key written to ~/.config/customs/"+KEY_FILE+"", fc.publicKeyStr);

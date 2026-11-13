@@ -56,28 +56,31 @@ export async function stampBreak(request, env, send = callFunction, now = Date.n
   let b;
   try { b = await request.json(); } catch { return json({ error: "Send JSON with launch, wallet and path." }, 400); }
   const ok = (v) => typeof v === "string" && v.length <= 64 && ACCOUNT.test(v);
-  if (!b || !ok(b.launch) || !ok(b.wallet) || (b.payout_to !== undefined && !ok(b.payout_to))) return json({ error: "launch, wallet and payout_to must be NEAR account ids." }, 400);
+  if (!b || !ok(b.launch) || !ok(b.wallet) || (b.payout_to !== undefined && !ok(b.payout_to)) || (b.stamp !== undefined && !ok(b.stamp))) return json({ error: "launch, wallet and payout_to must be NEAR account ids." }, 400);
   if (!Array.isArray(b.path) || b.path.length < 2 || b.path.length > 13 || !b.path.every((h) => typeof h === "string" && TX_HASH.test(h))) return json({ error: "path must be 2 to 13 transaction hashes." }, 400);
   if (!env.FILER_KEY) return json({ error: "The filing key is not configured on this host." }, 503);
+  /* FILER_KEY is one key object (the first stamp) or an array of them, each naming the stamp contract it is scoped to */
+  const keys = [].concat(JSON.parse(env.FILER_KEY)).map((k) => ({ ...k, stamp: k.stamp || STAMP }));
+  const key = keys.find((k) => k.stamp === (b.stamp || STAMP));
+  if (!key) return json({ error: "That stamp contract has no filing key on this host." }, 400);
   const t = now();
   while (filedAt.length && t - filedAt[0] > 3600_000) filedAt.shift();
   const wait = Math.max(lastFiled + FILE_GAP_MS - t, filedAt.length >= FILE_PER_HOUR ? filedAt[0] + 3600_000 - t : 0);
   if (wait > 0) return json({ error: "The filing key is rate limited. Try again in " + Math.ceil(wait / 1000) + " s." }, 429, { "retry-after": String(Math.ceil(wait / 1000)) });
   lastFiled = t;
   filedAt.push(t);
-  const key = JSON.parse(env.FILER_KEY);
   try {
-    const params = JSON.parse(new TextDecoder().decode(new Uint8Array((await view(STAMP, "stamp_params", {})).result)));
+    const params = JSON.parse(new TextDecoder().decode(new Uint8Array((await view(key.stamp, "stamp_params", {})).result)));
     const args = { launch: b.launch, wallet: b.wallet, path: b.path, bond: params.min_bond, payout_to: b.payout_to || null };
-    const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId: STAMP, method: "challenge", args, gas: 200_000_000_000_000n });
+    const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId: key.stamp, method: "challenge", args, gas: 200_000_000_000_000n });
     const failure = outcome?.status?.Failure;
     if (failure) {
       const m = /stamp: [^"\\]*/.exec(JSON.stringify(failure));
-      return json({ tx: hash, signer: key.account_id, status: "refused", reason: m ? m[0] : JSON.stringify(failure).slice(0, 200) });
+      return json({ tx: hash, signer: key.account_id, stamp: key.stamp, status: "refused", reason: m ? m[0] : JSON.stringify(failure).slice(0, 200) });
     }
     const logs = (outcome.receipts_outcome || []).flatMap((r) => r.outcome.logs || []);
     const filed = logs.map((l) => { try { return JSON.parse(l.replace("EVENT_JSON:", "")); } catch { return null; } }).find((e) => e && e.event === "challenge_filed");
-    return json({ tx: hash, signer: key.account_id, status: "filed", challenge_id: filed ? filed.data.challenge_id : null });
+    return json({ tx: hash, signer: key.account_id, stamp: key.stamp, status: "filed", challenge_id: filed ? filed.data.challenge_id : null });
   } catch (e) {
     return json({ error: "The filing transaction did not complete: " + String(e.message || e).slice(0, 160) }, 502);
   }

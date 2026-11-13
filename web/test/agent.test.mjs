@@ -62,7 +62,7 @@ test("sponsored filing validates the path, files the bond from the contract's ow
   assert.equal((await post({ launch: "A B", wallet: "b.testnet", path: [H, H] })).status, 400);
   assert.equal(calls.length, 0);
   const r = await post({ launch: "a.testnet", wallet: "b.testnet", path: [H, H], payout_to: "judge.testnet" });
-  assert.deepEqual(await r.json(), { tx: "F1", signer: "filer.testnet", status: "filed", challenge_id: 7 });
+  assert.deepEqual(await r.json(), { tx: "F1", signer: "filer.testnet", stamp: "customs28-stamp.testnet", status: "filed", challenge_id: 7 });
   assert.equal(calls[0].method, "challenge");
   assert.equal(calls[0].args.bond, "100000000000000000000000");
   assert.equal(calls[0].args.payout_to, "judge.testnet");
@@ -75,4 +75,16 @@ test("a challenge the contract refuses is reported as refused with the contract'
   const body = await r.json();
   assert.equal(body.status, "refused");
   assert.match(body.reason, /^stamp: the filing credit is below bond \+ exec_fee/);
+});
+
+test("a stamp slot with no key on the host is refused and the named slot's own key signs", async () => {
+  const calls = [];
+  const send = async (c) => { calls.push(c); return { hash: "F3", outcome: filedOutcome }; };
+  const env = { FILER_KEY: JSON.stringify([{ stamp: "customs28-stamp.testnet", account_id: "f28.testnet", secret_key: "ed25519:a" }, { stamp: "customs29-stamp.testnet", account_id: "f29.testnet", secret_key: "ed25519:b" }]) };
+  const post = (b, now) => stampBreak(new Request("https://x/stamp/break", { method: "POST", body: JSON.stringify({ launch: "a.testnet", wallet: "b.testnet", path: [H, H], ...b }) }), env, send, () => now, view);
+  assert.equal((await post({ stamp: "customs99-stamp.testnet" }, 200_000_000)).status, 400);
+  assert.equal(calls.length, 0);
+  const r = await post({ stamp: "customs29-stamp.testnet" }, 300_000_000);
+  assert.equal((await r.json()).signer, "f29.testnet");
+  assert.equal(calls[0].receiverId, "customs29-stamp.testnet");
 });

@@ -33,3 +33,16 @@ An agent account holding only a function-call key scoped to `buy` on the gate as
 | Must fail | `never-anchored-launch.nearlytrade.near`, no verdict | refused `NO VERDICT`, venue +0 | https://testnet.nearblocks.io/txns/FuUPNefaNHbMfEPhDecBSdLz4D8YAmuN6HRUKnyRKXnr |
 
 Gate wasm sha256 `61926181abf26e6af4406315c6795c4a09db9aa16a8eb775d1b6f42fcb36beb6` (CI run 43419838536); the agent account's only key is the function-call key (full-access key deleted in `5TVs3wM4jK2ZqYzravgPQs9MvYaDaH7c37GZfb1RXJUR` and `8ahWMk5hqowuVzED9bft4ErFK6nzLyc75gKRBey5JYWN`).
+
+## Stamp on testnet (`customs28-stamp.testnet`)
+
+The creator of `customs26-token.testnet` posts a 1 NEAR bond. A sponsored filing account holding only a function-call key scoped to `challenge` spends prepaid credit to file a funding path. The pinned WASI checker runs in an OutLayer TDX enclave, answers through yield/resume, and the contract verifies the enclave's ed25519 signature before it moves money. Produced by `node scripts/stamp-live.mjs`, every run polls the challenge to a terminal state and asserts a balance change only completion can produce.
+
+| Run | Path filed | Result | FINAL transaction |
+|---|---|---|---|
+| Success | creator to `customs26-buyer1`, then its opening buy | Upheld: stamp reads Broken, prover `customs26-hunter.testnet` gained the 1 NEAR bond plus its 0.1 NEAR filing bond (1.1 NEAR) | https://testnet.nearblocks.io/txns/Ex66obG5KReivgotwKPQNrS5VAKUdix2NHiL2AFPcqHT |
+| Must fail | a real receipt that does not pay the clean buyer `customs26-buyer2` | Rejected: the 0.1 NEAR filing bond is forfeited, the stamp stands | https://testnet.nearblocks.io/txns/12rqdqCenMvUSda35KuHd9B1ZQvfHs1SHWjwWL7pqsgw |
+| Must fail | a hop that is not a real transaction | Unanswered: the checker refuses, no verdict applied | https://testnet.nearblocks.io/txns/CPyH9SjWPfwZLpGdjXEsYNxYSQYMeUiMMRFkR9cQHvjq |
+| Must fail | a bond above the sponsored credit | the call fails on chain, nothing filed | https://testnet.nearblocks.io/txns/7D5mHWdoSRDWxMhWfkPhUEddSdQrTGJYKsKCob27PggG |
+
+Pinned verdict key `ed25519:Akwz7rSe9k1uWuPBHesPfxeYMGJksCQmHLd2ABETTsgw` (pin tx `BcG2RpoKVbsketB5Fb76aAKEr5i6qzeppE9HpqDtoAyV`); wasm sha256 `a93c9bb0ac81a82760fd9bc18b3a6631a45a204dd4eb4c504b5ef0daacb418d2` (CI run 43425059150); the filing account's full-access key is deleted (`BGZRYWAnuvoii6UzRDiwXm5c3GGXZk2D7RWFPk5QT5qW`).
