@@ -102,6 +102,8 @@
     const funded = replay.buyers.find((b) => b.wallet === FUNDED.wallet);
     if (!funded || !funded.path.length) return;
     const hop = funded.path[0];
+    const cap = q("#path-caption");
+    if (cap) cap.replaceChildren(document.createTextNode("The stamp claims no creator money reached a buyer. The chain shows "), Object.assign(document.createElement("b"), { textContent: short(hop.from) }), document.createTextNode(" sent " + hop.near + " NEAR to "), Object.assign(document.createElement("b"), { textContent: short(funded.wallet) }), document.createTextNode(" before it bought. Break the stamp and the bond is yours."));
     el.path.replaceChildren(chain([
       { id: hop.from, role: "Creator", hot: true },
       { edge: hop.near + " NEAR", tx: hop.tx, label: "transfer" },
@@ -112,6 +114,9 @@
   }
 
   /* the unstamped launch: a real mainnet launch whose opening buyers Customs has already traced, so there is a real first buyer to name */
+  const proofHash = q("#proof-hash");
+  if (proofHash) view(SLOTS[0], "stamp_params", {}).then((p) => { proofHash.textContent = "sha256 " + p.module_sha256.slice(0, 10) + "…" + p.module_sha256.slice(-8) + " pinned in the stamp contract"; }).catch(() => { proofHash.textContent = "pinned in the stamp contract"; });
+
   let bare = null;
   async function loadBare() {
     const v = await (await fetch("data/verdicts.json")).json();
