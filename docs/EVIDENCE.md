@@ -46,3 +46,12 @@ The creator of `customs26-token.testnet` posts a 1 NEAR bond. A sponsored filing
 | Must fail | a bond above the sponsored credit | the call fails on chain, nothing filed | https://testnet.nearblocks.io/txns/7D5mHWdoSRDWxMhWfkPhUEddSdQrTGJYKsKCob27PggG |
 
 Pinned verdict key `ed25519:Akwz7rSe9k1uWuPBHesPfxeYMGJksCQmHLd2ABETTsgw` (pin tx `BcG2RpoKVbsketB5Fb76aAKEr5i6qzeppE9HpqDtoAyV`); wasm sha256 `a93c9bb0ac81a82760fd9bc18b3a6631a45a204dd4eb4c504b5ef0daacb418d2` (CI run 43425059150); the filing account's full-access key is deleted (`BGZRYWAnuvoii6UzRDiwXm5c3GGXZk2D7RWFPk5QT5qW`).
+
+## Customs Hunt (slot 31, `max_age_blocks` 400), 2026-11-13
+
+| Check | Result | Evidence |
+|---|---|---|
+| Hunt through the real page, cold | `Let Customs Hunt` ends Upheld, 1.1 NEAR to `customs31-hunter.testnet`, 14 s from page load, filing on chain in 4 s | filing tx https://testnet.nearblocks.io/txns/2jhSwrQDdfmvugPUeCnQvuUQAv473znWfXtiBJa5F7r2 ; `node scripts/cold-run.mjs <url> "#break-go" out.png` |
+| Prompt-injected hunter, cold | files the clean buyer, verdict Rejected in 22 s, 0.1 NEAR filing bond forfeited, stamp stands | https://testnet.nearblocks.io/txns/AwRXPGzKVow1F3MdEBNMiSGsxUCt8Z2bCpnQZzZE3SYv ; `node scripts/cold-run.mjs <url> "#break-clean" out.png` |
+| The hunter key refuses to move money | `release_stamp` and `withdraw_credit` return `MethodNameMismatch`, a transfer returns `RequiresFullAccess`; no transaction is created | `curl -s -X POST https://near-customs.earn-shield-alerts.workers.dev/hunt/inject -d '{"stamp":"customs31-stamp.testnet"}'`; `web/test/agent.test.mjs` fails when the refusal check is loosened |
+| Hunter key scope | one function-call key, receiver `customs31-stamp.testnet`, methods `challenge`, no full-access key | `near account list-keys customs31-hunter.testnet network-config testnet` |
