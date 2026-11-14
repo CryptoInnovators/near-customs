@@ -93,7 +93,7 @@ export default {
     }
     if (cacheKey && upstream.status === 200) {
       const copy = upstream.clone();
-      ctx.waitUntil(caches.default.put(cacheKey, new Response(copy.body, { status: 200, headers: { "content-type": "application/json", "cache-control": "public, max-age=600" } })));
+      ctx.waitUntil(caches.default.put(cacheKey, new Response(copy.body, { status: 200, headers: { "content-type": "application/json", "cache-control": "public, max-age=21600" } })));
     }
     const headers = { "content-type": upstream.headers.get("content-type") || "application/json", "cache-control": "no-store" };
     const retry = upstream.headers.get("retry-after");
