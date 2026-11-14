@@ -29,16 +29,20 @@ async function mcRoute(url) {
   try {
     if (url.pathname === "/mc/launches") {
       const all = await mcGet("/meme", 60_000);
-      const picks = all.filter((m) => m.pool_id && m.token_id && m.staker_count >= 2 && m.image).sort((a, b) => b.meme_id - a.meme_id).slice(0, 12)
-        .map((m) => ({ id: m.meme_id, owner: m.owner, name: m.name, symbol: m.symbol, image: m.image, created_ms: m.created_timestamp_ms, deposit: m.total_deposit, hard_cap: m.hard_cap, soft_cap: m.soft_cap, stakers: m.staker_count, pool_id: m.pool_id, token_id: m.token_id }));
-      return new Response(JSON.stringify({ total: all.length, launches: picks, read_ms: Date.now() }), { headers: JSON_HEAD });
+      const now = Date.now();
+      const slim = (m, status) => ({ id: m.meme_id, owner: m.owner, name: m.name, symbol: m.symbol, image: m.image, created_ms: m.created_timestamp_ms, end_ms: m.end_timestamp_ms ?? null, deposit: m.total_deposit, hard_cap: m.hard_cap, soft_cap: m.soft_cap, stakers: m.staker_count, pool_id: m.pool_id ?? null, token_id: m.token_id ?? null, total_supply: m.total_supply ?? null, decimals: m.decimals ?? null, is_finalized: !!m.is_finalized, team_allocation: m.team_allocation ?? null, description: (m.description || "").slice(0, 160), status });
+      const newest = (list, n) => list.sort((a, b) => b.meme_id - a.meme_id).slice(0, n);
+      const cooked = newest(all.filter((m) => m.pool_id && m.token_id && m.staker_count >= 2 && m.image), 12).map((m) => slim(m, "cooked"));
+      const cooking = newest(all.filter((m) => !m.is_finalized && m.end_timestamp_ms > now && m.image), 6).map((m) => slim(m, "cooking"));
+      const spoiled = newest(all.filter((m) => !m.is_finalized && m.end_timestamp_ms && m.end_timestamp_ms <= now && m.staker_count >= 3 && m.image && BigInt(m.total_deposit || "0") < BigInt(m.soft_cap || "0")), 3).map((m) => slim(m, "spoiled"));
+      return new Response(JSON.stringify({ total: all.length, launches: [...cooking, ...cooked, ...spoiled], read_ms: now }), { headers: JSON_HEAD });
     }
     if (url.pathname === "/mc/trades") {
       const id = url.searchParams.get("meme_id");
       if (!/^\d{1,6}$/.test(id || "")) return new Response("meme_id must be a number", { status: 400 });
       const t = await mcGet("/trades?meme_id=" + id, 20_000);
-      const deposits = t.filter((x) => x.is_deposit).map((x) => ({ account: x.account_id, amount: x.amount, ts: x.timestamp_ms, receipt: x.receipt_id })).sort((a, b) => a.ts - b.ts);
-      return new Response(JSON.stringify({ meme_id: Number(id), trades: t.length, deposits }), { headers: JSON_HEAD });
+      const side = (isDeposit) => t.filter((x) => !!x.is_deposit === isDeposit).map((x) => ({ account: x.account_id, amount: x.amount, ts: x.timestamp_ms, receipt: x.receipt_id })).sort((a, b) => a.ts - b.ts);
+      return new Response(JSON.stringify({ meme_id: Number(id), trades: t.length, deposits: side(true), withdrawals: side(false) }), { headers: JSON_HEAD });
     }
     const img = url.pathname.match(/^\/mc\/img\/([A-Za-z0-9]{40,70})$/);
     if (img) {
