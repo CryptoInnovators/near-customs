@@ -58,3 +58,15 @@ test("status follows the pool and the end time; the meter never exceeds 20 cells
   assert.equal(L.meterCells(0, 500), 0);
   assert.equal(L.meterCells(1, 500), 1);
 });
+
+test("the header count is driven by fact.own: true when the creator's own account deposited, false for an outside top wallet", () => {
+  const own = L.insiderFact("creator.near", { deposits: [dep("creator.near", 9.95, 1), dep("b.near", 1, 2)], withdrawals: [] });
+  const out = L.insiderFact("creator.near", { deposits: [dep("a.near", 9, 1), dep("b.near", 1, 2)], withdrawals: [] });
+  assert.equal(own.own, true);
+  assert.notEqual(out.own, true);
+});
+
+test("account names are never cut mid-word, only 64-hex implicit accounts are abbreviated", () => {
+  assert.equal(L.short("customs26-creator.testnet"), "customs26-creator.testnet");
+  assert.equal(L.short("a".repeat(64)), "aaaaaaaa…aaaaaaaa");
+});

@@ -13,7 +13,8 @@
     return n.toPrecision(2);
   };
   const near = (v) => num(nearNum(v));
-  const short = (a, n = 22) => (a.length > n ? a.slice(0, n - 9) + "…" + a.slice(-8) : a);
+  /* an account name is never cut mid-word: only a 64-hex implicit account or a name over 40 characters is abbreviated */
+  const short = (a) => (/^[0-9a-f]{64}$/.test(a) || a.length > 40 ? a.slice(0, 8) + "…" + a.slice(-8) : a);
   const shortTx = (t) => t.slice(0, 6) + "…" + t.slice(-4);
   const age = (ms) => {
     const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
@@ -50,8 +51,8 @@
     const n = order.indexOf(owner) + 1;
     const own = net.get(owner) || 0n;
     if (n && own > 0n) {
-      if (n <= 6) return { text: "Creator's own account is opener " + n + ", " + num(nearNum(own)) + " N, " + Math.round(pct(own, total)) + "% of the raise", acct: null };
-      return { text: "Creator deposited " + num(nearNum(own)) + " N into its own raise", acct: null };
+      if (n <= 6) return { text: "Creator's own account is opener " + n + ", " + num(nearNum(own)) + " N, " + Math.round(pct(own, total)) + "% of the raise", acct: null, own: true };
+      return { text: "Creator deposited " + num(nearNum(own)) + " N into its own raise", acct: null, own: true };
     }
     let top = order[0];
     for (const a of order) if (net.get(a) > net.get(top)) top = a;

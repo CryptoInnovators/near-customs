@@ -50,6 +50,7 @@
     if (l.t) return l.t;
     const t = await C.getJSON("/mc/trades?meme_id=" + l.id);
     l.t = t; l.fact = L.insiderFact(l.owner, t);
+    paintStrip();
     return t;
   }
   async function readPool(l) {
@@ -230,11 +231,11 @@
   function showBonded() { return (S.filter === "all" || S.filter === "bonded") && (!S.term || "customs coin customs26-creator.testnet".includes(S.term)); }
 
   function stripHtml() {
-    const tracedN = S.launches.filter((l) => ["clean", "funded", "unread"].includes(l.trace.kind)).length;
+    const read = S.launches.filter((l) => l.fact), readN = read.length, ownN = read.filter((l) => l.fact.own).length;
     return `<div><b>${S.total ? S.total.toLocaleString("en-US") : "…"}</b><span>launches on meme.cooking</span></div>
       <div><b>${S.stamps ? L.num(bondSum()) + " NEAR" : "…"}</b><span>bond standing on $CUSTOMS</span></div>
       <div><b>${S.stamps ? L.num(S.stamps.paid) + " NEAR" : "…"}</b><span>paid to hunters</span></div>
-      <div><b id="found">${S.found}</b><span>creator-funded openers found across ${tracedN} of ${S.launches.length} launches traced this visit</span></div>`;
+      <div><b id="found">${ownN} of ${readN}</b><span>${readN === 1 ? "launch" : "launches"} where the creator's own account is an opening buyer${S.found ? ", plus " + S.found + " buyer" + (S.found === 1 ? "" : "s") + " the creator funded" : ""}</span></div>`;
   }
   function paintStrip() { const s = $(".strip"); if (s) s.innerHTML = stripHtml(); }
 
