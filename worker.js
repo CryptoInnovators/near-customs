@@ -68,6 +68,10 @@ async function sha256(text) {
 }
 
 export default {
+  /* cron: keep one bond standing without a visitor's click */
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(stampArm(new Request("https://cron.invalid/stamp/arm", { method: "POST" }), env));
+  },
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/agent/buy") return request.method === "POST" ? agentBuy(request, env) : new Response("Use POST", { status: 405 });

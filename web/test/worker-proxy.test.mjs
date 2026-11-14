@@ -47,3 +47,12 @@ test("a mainnet tx read is served from the edge cache the second time, one upstr
     assert.equal(calls, 2);
   } finally { globalThis.fetch = real; }
 });
+
+test("the cron trigger runs the arm route through waitUntil so a bond stands without a click", async () => {
+  const pending = [];
+  await worker.scheduled({ cron: "*/3 * * * *" }, {}, { waitUntil: (p) => pending.push(p) });
+  assert.equal(pending.length, 1);
+  const res = await pending[0];
+  assert.equal(res.status, 503);
+  assert.match((await res.json()).error, /creator key/);
+});
