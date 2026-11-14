@@ -2,7 +2,7 @@
 set -u
 cd "$(dirname "$0")/.." || exit 1
 account='customs26-token.testnet'
-page='https://near-customs.earn-shield-alerts.workers.dev/'
+page='https://near-customs.nearbuild.workers.dev/'
 test_cmd='cargo test --workspace'
 pass=0
 rpc_log=$(mktemp)

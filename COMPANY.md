@@ -17,7 +17,7 @@ A creator posts a NEAR bond on a stamp contract. The hunter, a testnet account w
 | The hunter's page run ended Upheld and moved 1.1 NEAR to the hunter account. | Filing path through the live page, slot 33, cold run: filing transaction [5T5v5cJc...](https://testnet.nearblocks.io/txns/5T5v5cJc7Zghs6mw3Pb9MB9ewKidEKJNNgv4q8fsMpaD), `challenge_of(1)` is `Upheld` with `paid` 1.1 NEAR to `customs33-hunter.testnet`; an earlier run on slot 29: [transaction](https://testnet.nearblocks.io/txns/FY68EWNPp3w9ggT62BURc36PvxHF4DPaLnYuESFZybCY); details in [docs/EVIDENCE.md](docs/EVIDENCE.md). |
 | A false hunt against a clean buyer ended Rejected and forfeited the filing bond; the stamp stands. | [Transaction](https://testnet.nearblocks.io/txns/BDPr2cw4dX7pF11iEK3uLr9GjVchkUY85gE2gjeGHkF2). |
 | The hunter's key is function-call only and scoped to `challenge`. | `near account list-keys customs34-hunter.testnet network-config testnet`; the page reads the same list from the chain. |
-| A prompt-injected hunter signing `release_stamp`, `withdraw_credit` and a transfer is refused by the NEAR node. | `curl -s -X POST https://near-customs.earn-shield-alerts.workers.dev/hunt/inject -d '{}'` returns each refusal (`MethodNameMismatch`, `RequiresFullAccess`); no transaction is created. |
+| A prompt-injected hunter signing `release_stamp`, `withdraw_credit` and a transfer is refused by the NEAR node. | `curl -s -X POST https://near-customs.nearbuild.workers.dev/hunt/inject -d '{}'` returns each refusal (`MethodNameMismatch`, `RequiresFullAccess`); no transaction is created. |
 | The live testnet token's upheld challenge seized the configured share of a creator-funded buyer's unvested balance; a second challenge was rejected. | `scripts/testnet-live.sh`; filing transactions [upheld](https://testnet.nearblocks.io/txns/3Nr9SzTP8jBpZxTwV9W9hPfd2KMjfSsYqPBGyru3RuVN) and [rejected](https://testnet.nearblocks.io/txns/FVbjGgwXwyGAVkqR8JMLXKLyvRuGgZ65QLTBp2vJ1ECq), details in [docs/EVIDENCE.md](docs/EVIDENCE.md). |
 | The OutLayer checker hash is pinned to the testnet token and matches the published module. | [`scripts/testnet-live.sh`](docs/EVIDENCE.md); checker upload [transaction](https://testnet.nearblocks.io/txns/DbC5Gk49XJV3L4mvZnFC4xXRnb7ufLUWFk9Vouaxf5Q2). |
 | An agent-buy gate allowed an anchored ALLOW and refused a BLOCK and a missing verdict. | [ALLOW](https://testnet.nearblocks.io/txns/3o7YxL8qhHr2WyVAkRTRT8CtTaFfuyXSSXLyvu5MLNLh), [BLOCK refusal](https://testnet.nearblocks.io/txns/7incABozUXcN92RdSdKRMczvsMmAg38uCLDRmKFwAEfD), [missing-verdict refusal](https://testnet.nearblocks.io/txns/FuUPNefaNHbMfEPhDecBSdLz4D8YAmuN6HRUKnyRKXnr). |
@@ -26,7 +26,7 @@ A creator posts a NEAR bond on a stamp contract. The hunter, a testnet account w
 
 ## Try it in 60 seconds
 
-Open [the Customs demo](https://near-customs.earn-shield-alerts.workers.dev) and click **Hunt for 1.10 NEAR** on the Customs coin card: the filing transaction appears in about 5 s, then the enclave verdict. Click **Hunt a clean buyer instead** to watch the checker reject a false path and the filing bond forfeit.
+Open [the Customs demo](https://near-customs.nearbuild.workers.dev) and click **Hunt for 1.10 NEAR** on the Customs coin card: the filing transaction appears in about 5 s, then the enclave verdict. Click **Hunt a clean buyer instead** to watch the checker reject a false path and the filing bond forfeit.
 
 ## Why NEAR
 

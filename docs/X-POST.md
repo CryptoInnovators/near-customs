@@ -7,7 +7,7 @@ The human edits and posts these. Attach the demo video from `docs/DEMO-SCRIPT.md
 ```unknown
 An agent with one function-call key hunts NEAR memecoin launches whose creator funded their own first buyer.
 
-Built at #NEARHackathon: Customs Hunt. A proven path pays the creator's bond to the agent. A false one forfeits the agent's bond. https://near-customs.earn-shield-alerts.workers.dev/ @NEARProtocol
+Built at #NEARHackathon: Customs Hunt. A proven path pays the creator's bond to the agent. A false one forfeits the agent's bond. https://near-customs.nearbuild.workers.dev/ @NEARProtocol
 ```
 
 ## B (254 characters)
@@ -15,7 +15,7 @@ Built at #NEARHackathon: Customs Hunt. A proven path pays the creator's bond to 
 ```unknown
 A hijacked agent files a false path: Rejected, its 0.1 NEAR filing bond forfeited. Then the same key tries release_stamp, withdraw_credit and a transfer. The node refuses each.
 
-Built at #NEARHackathon: Customs Hunt. https://near-customs.earn-shield-alerts.workers.dev/ @NEARProtocol
+Built at #NEARHackathon: Customs Hunt. https://near-customs.nearbuild.workers.dev/ @NEARProtocol
 ```
 
 ## C (254 characters)
@@ -23,7 +23,7 @@ Built at #NEARHackathon: Customs Hunt. https://near-customs.earn-shield-alerts.w
 ```unknown
 Press Hunt this launch. An agent files a funding path, an OutLayer enclave replays it, and 1.1 NEAR lands in the hunter's account about 90 seconds later with a NearBlocks link.
 
-Built at #NEARHackathon: Customs Hunt. https://near-customs.earn-shield-alerts.workers.dev/ @NEARProtocol
+Built at #NEARHackathon: Customs Hunt. https://near-customs.nearbuild.workers.dev/ @NEARProtocol
 ```
 
 ## Long form (960 characters)
@@ -37,7 +37,7 @@ A proven path pays the creator's bond to the agent. A false hunt forfeits the ag
 
 Press Hunt this launch on the live page, no wallet. Then press Simulate hijacked hunter and watch the false path lose its bond.
 
-Try it: https://near-customs.earn-shield-alerts.workers.dev/
+Try it: https://near-customs.nearbuild.workers.dev/
 
 @NEARProtocol @NearBuilders @NearLegion
 ```
