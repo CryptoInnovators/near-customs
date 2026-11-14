@@ -154,7 +154,14 @@
       const slot = info.best && info.best.stamp && info.best.stamp.state === "Standing" ? info.best : null;
       if (!slot) { out({ phase: "unavailable", text: "No funded stamp right now." }); return st; }
       out({ stamp: slot.contract, hunter: hunterOf(slot.contract), bond: L.nearNum(slot.stamp.bond) });
-      const r = await postBreak({ stamp: slot.contract, launch: LAUNCH, wallet: target.wallet, path: target.path, payout_to: payout || undefined });
+      let r = await postBreak({ stamp: slot.contract, launch: LAUNCH, wallet: target.wallet, path: target.path, payout_to: payout || undefined });
+      /* the filing key takes one filing at a time: a second visitor waits its turn (up to 3 tries) instead of being turned away */
+      for (let tries = 0; r.status === 429 && r.retry && r.retry <= 20 && tries < 3; tries++) {
+        out({ wait: r.retry });
+        await new Promise((ok) => setTimeout(ok, (r.retry + 1) * 1000));
+        out({ wait: 0 });
+        r = await postBreak({ stamp: slot.contract, launch: LAUNCH, wallet: target.wallet, path: target.path, payout_to: payout || undefined });
+      }
       if (r.status === 429) { out({ phase: "busy", retry: r.retry || 20, text: "Another visitor is hunting. Free again in " + (r.retry || 20) + " s." }); return st; }
       if (r.status === 503) { out({ phase: "unavailable", text: "No funded stamp right now." }); return st; }
       if (r.status !== 200) { out({ phase: "error", text: (r.body && r.body.error) || "The filing did not complete (HTTP " + r.status + ")." }); return st; }

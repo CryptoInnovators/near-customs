@@ -54,3 +54,11 @@ test("a non-numeric meme_id is refused and a bad image id never reaches the gate
   assert.equal((await call("/mc/trades?meme_id=1;drop")).status, 400);
   assert.equal((await call("/mc/img/not-a-cid")).status, 404);
 });
+
+test("a launch picture the gateway no longer has answers 200 with a tile, so the page logs no failed request", async () => {
+  globalThis.caches = { default: { match: async () => undefined, put: async () => {} } };
+  const r = await call("/mc/img/" + "Q".repeat(46));
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get("content-type"), "image/svg+xml");
+  assert.match(await r.text(), /<svg/);
+});

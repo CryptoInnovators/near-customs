@@ -102,6 +102,14 @@
 
   /* ------------------------------------------------------------ card pieces */
   const meter = (raised, cap) => { const on = L.meterCells(raised, cap); return `<span class="meter" aria-hidden="true">${"<b></b>".repeat(on)}${"<s></s>".repeat(20 - on)}</span>`; };
+  /* A picture that fails to load becomes a tile in a hue taken from the symbol, never the browser's broken glyph. */
+  document.addEventListener("error", (e) => {
+    const t = e.target;
+    if (!t || t.tagName !== "IMG" || !t.classList.contains("pic") || t.classList.contains("fallback")) return;
+    let h = 0; for (const c of t.currentSrc || t.src) h = (h * 31 + c.charCodeAt(0)) % 360;
+    t.classList.add("fallback"); t.style.setProperty("--h", String(h));
+    t.removeAttribute("src");
+  }, true);
   const pic = (l, cls = "") => `<img class="pic ${cls}" src="/mc/img/${esc(l.image)}" alt="" loading="lazy" decoding="async" width="92" height="92">`;
 
   function badge(l) {
@@ -169,7 +177,7 @@
     const num = (n, s, t) => `<li data-state="${s}"><i>${n}</i><span>${t}</span></li>`;
     let s1, s2, s3, res = "";
     const filed = h.tx ? `Challenge filed, bond locked in ${h.filedS} s ${nbT(h.tx)}` : "";
-    if (h.phase === "filing") { s1 = num(1, "run", "Filing on chain"); s2 = num(2, "idle", "Checker"); s3 = num(3, "idle", "Verdict"); }
+    if (h.phase === "filing") { s1 = num(1, "run", h.wait ? "Another hunt is filing. Yours goes next in " + h.wait + " s" : "Filing on chain"); s2 = num(2, "idle", "Checker"); s3 = num(3, "idle", "Verdict"); }
     else if (h.phase === "checking") { s1 = num(1, "done", filed); s2 = num(2, "run", "Checker running " + L.clock(h.secs == null ? h.filedS : h.secs)); s3 = num(3, "idle", "Verdict"); }
     else if (h.phase === "late") { s1 = num(1, "done", filed); s2 = num(2, "run", "Checker queue at the enclave " + L.clock(h.secs == null ? h.filedS : h.secs)); s3 = num(3, "idle", "Verdict"); res = "The enclave is signing later than the stamp's 200 block wait. Its signed verdict is read from the chain and handed to the stamp, which checks it against the pinned key before it moves anything."; }
     else if (h.phase === "paid") { s1 = num(1, "done", filed); s2 = num(2, "done", "Checker verified in " + h.secs + " s" + (h.relayTx ? " " + nbT(h.relayTx) : "")); s3 = num(3, "done", "+" + L.num(h.paid) + " NEAR to " + acctT(h.who)); res = `<b class="payoff">+${L.num(h.paid)} NEAR</b>Upheld. ${L.num(h.paid)} NEAR moved to ${acctT(h.who)} in ${h.secs} s. ${acctT(h.stamp)}`; }
@@ -183,9 +191,10 @@
     return `<ol id="stage-steps" class="huntsteps" aria-live="polite">${s1}${s2}${s3}</ol>${res ? `<p class="result">${res}</p>` : ""}`;
   }
 
+  const EXPECT = `<p class="expect">Challenge filed and bond locked with a transaction link in about 6 s. The checker's verdict follows in 1 to 4 minutes, timed separately.</p>`;
   function huntBody() {
     if (S.stampsError) return `<p class="result">The testnet node did not answer. <button class="retry" type="button" data-reload-stamps>Read again</button></p><button class="huntbtn" id="break-go" type="button" data-reload-stamps>Read the stamps again</button>`;
-    if (!S.stamps) return `<button class="huntbtn" id="break-go" type="button" disabled>Reading the stamps</button>`;
+    if (!S.stamps) return `<button class="huntbtn" id="break-go" type="button" data-hunt="funded">Hunt this launch</button>${EXPECT}`;
     const h = S.h;
     const live = h && !["paid", "rejected", "refused", "busy", "unavailable", "unanswered", "timeout", "error"].includes(h.phase);
     const canHunt = S.stamps.best && S.stamps.best.stamp && S.stamps.best.stamp.state === "Standing";
@@ -193,7 +202,7 @@
       : S.arming ? `<button class="huntbtn" id="break-go" type="button" disabled aria-busy="true">Posting the creator's bond</button>`
       : `<p class="result">${esc(S.armNote || "Every bond on this launch has been hunted.")}</p><button class="huntbtn" id="break-go" type="button" data-arm>Post the next 1 NEAR bond</button>`;
     const clean = canHunt ? `<button class="linkbtn" id="break-clean" type="button" data-hunt="clean">Hunt a clean buyer instead and watch the checker reject it</button>` : "";
-    if (!h) return btn + lastHunt() + `<p class="last">${clean}</p>`;
+    if (!h) return btn + (canHunt ? EXPECT : "") + lastHunt() + `<p class="last">${clean}</p>`;
     return huntSteps(h) + (live ? "" : btn + `<p class="last">${clean}</p>`);
   }
 
@@ -436,6 +445,13 @@
     if (!C.payoutOk(v)) { hint.textContent = "That is not a NEAR account id. Use something like you.testnet, or leave it empty."; hint.hidden = false; input.setAttribute("aria-invalid", "true"); openPop(true); input.focus(); return; }
     try { localStorage.setItem("customs.payout", v); } catch { /* private mode */ }
     markPayout();
+    if (!S.stamps || S.stamps.failed) {
+      /* clicked before the stamps were read: read them now, then hunt the standing one */
+      const b = $("#break-go"); if (b) { b.disabled = true; b.textContent = "Reading the stamps"; b.setAttribute("aria-busy", "true"); }
+      await loadStamps();
+      paintBonded(); paintHunt();
+      if (!S.stamps || S.stamps.failed || !(S.stamps.best && S.stamps.best.stamp && S.stamps.best.stamp.state === "Standing")) return;
+    }
     S.h = { phase: "filing", kind, t0: Date.now() };
     paintHunt();
     document.querySelectorAll("[data-hunt],[id^=break-]").forEach((b) => { b.disabled = true; });

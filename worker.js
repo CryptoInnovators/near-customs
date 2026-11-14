@@ -51,7 +51,12 @@ async function mcRoute(url) {
       if (hit) return hit;
       const r = await fetch("https://gateway.pinata.cloud/ipfs/" + img[1]);
       const type = r.headers.get("content-type") || "";
-      if (!r.ok || !type.startsWith("image/")) return new Response("No image", { status: 404 });
+      if (!r.ok || !type.startsWith("image/")) {
+        /* The launch's picture is gone from IPFS: answer with a tile in a hue taken from the CID, so the card keeps a picture slot and the console stays clean. */
+        let h = 0; for (const c of img[1]) h = (h * 31 + c.charCodeAt(0)) % 360;
+        const tile = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 92"><rect width="92" height="92" fill="hsl(${h} 28% 20%)"/><circle cx="46" cy="46" r="20" fill="none" stroke="hsl(${h} 40% 46%)" stroke-width="3"/></svg>`;
+        return new Response(tile, { headers: { "content-type": "image/svg+xml", "cache-control": "public, max-age=300" } });
+      }
       const out = new Response(r.body, { headers: { "content-type": type, "cache-control": "public, max-age=86400" } });
       await caches.default.put(key, out.clone());
       return out;
