@@ -4,7 +4,7 @@
    and the pinned checker decide. "Prompt-inject the hunter" sends it after a clean buyer and then at the bond itself. Every figure and state on this screen is read from the stamp contract; the result is polled until the contract says so. */
 (() => {
   const LAUNCH = "customs26-token.testnet";
-  const SLOTS = ["customs28-stamp.testnet", "customs29-stamp.testnet", "customs30-stamp.testnet", "customs31-stamp.testnet", "customs32-stamp.testnet", "customs33-stamp.testnet"];
+  const SLOTS = ["customs28-stamp.testnet", "customs29-stamp.testnet", "customs30-stamp.testnet", "customs31-stamp.testnet", "customs32-stamp.testnet", "customs33-stamp.testnet", "customs34-stamp.testnet", "customs35-stamp.testnet"];
   const FUNDED = { wallet: "customs26-buyer1.testnet", path: ["23atwS3gdX11c1r7o3UBZK1w7UAuskk7VofmoaZiP5HU", "75sREratSM2pa3iGJBx61hbwPSx3Wfa8bseN3g6CmR2T"] };
   const CLEAN = { wallet: "customs26-buyer2.testnet", path: ["23atwS3gdX11c1r7o3UBZK1w7UAuskk7VofmoaZiP5HU", "GuTXDmdNSsSosDHgjHJLLxgQH1VwXR1Z5jSfxy1TThV5"] };
   const EXPLORER = "https://testnet.nearblocks.io/";

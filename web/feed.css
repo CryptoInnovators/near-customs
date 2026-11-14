@@ -151,6 +151,8 @@
 .rail li[data-state=reject]{color:var(--text)}.rail li[data-state=reject] i{background:var(--busted);border-color:var(--busted);color:#fff}
 .rail li[data-state=error]{color:var(--text)}.rail li[data-state=error] i{border-color:var(--busted);color:var(--busted)}
 .rail-note{margin:0 0 var(--space-2);font-size:12px;line-height:1.4;color:var(--muted)}
+.rail-receipt b{color:var(--text)}
+.rail-receipt a{color:inherit;text-decoration:underline}
 .rail a{flex:none;font:600 12px/1 var(--font-mono);color:var(--lime);text-decoration:underline;margin-left:var(--space-1)}
 .rail time{font:500 12px/1 var(--font-mono);color:var(--muted);font-variant-numeric:tabular-nums;margin-left:var(--space-1)}
 .mcard-feature .stage-steps:not(:empty){background:none;border:0;border-top:1px solid var(--line-soft);border-radius:0;padding:0;margin-top:var(--space-4)}
