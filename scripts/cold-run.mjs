@@ -28,6 +28,10 @@ await s("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, device
 const t0 = Date.now();
 await s("Page.navigate", { url });
 for (let i = 0; i < 60; i++) { if (await ev(`document.querySelector("#seal-state")?.textContent`) && !/the contract|not readable/.test(await ev(`document.querySelector("#seal-state").textContent`))) break; await new Promise((r) => setTimeout(r, 500)); }
+let ready = false;
+for (let i = 0; i < 180 && !ready; i++) { ready = await ev(`!!document.querySelector("#break-go") && !document.querySelector("#break-go").disabled`); if (!ready) await new Promise((r) => setTimeout(r, 500)); }
+console.log("huntable after", ((Date.now() - t0) / 1000).toFixed(1), "s from navigation");
+if (!ready) { console.log("stamps never became huntable; errors:", errors.slice(0, 6), await ev(`document.body.innerText.slice(0, 400)`)); process.exit(2); }
 console.log("stamp on load:", await ev(`document.querySelector("#seal-amount").textContent + " " + document.querySelector("#seal-state").textContent`));
 if (payout) await ev(`(() => { const i = document.querySelector("#payout"); i.value = ${JSON.stringify(payout)}; i.dispatchEvent(new Event("input")); })()`);
 const t1 = Date.now();
@@ -36,7 +40,7 @@ let text = "";
 for (let i = 0; i < 400; i++) {
   await new Promise((r) => setTimeout(r, 1000));
   text = await ev(`document.querySelector("#stage-steps").innerText`);
-  if (/Upheld\.|Rejected\.|Refused|No verdict yet|could not|did not complete|free again|Try again/.test(text)) break;
+  if (/Upheld in|Rejected in|Upheld\.|Rejected\.|Refused|No verdict yet|could not|did not complete|free again|Try again/.test(text)) break;
 }
 const secs = ((Date.now() - t1) / 1000).toFixed(0);
 await ev(`document.querySelector("#stage-steps").scrollIntoView({block:"center"})`);

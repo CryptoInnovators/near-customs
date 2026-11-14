@@ -123,7 +123,7 @@
     let kind = tr.kind, text = "", extra = "";
     if (tr.kind === "queued") { const prev = S.launches.slice(0, idx).reverse().find((x) => x.trace.kind === "tracing" || x.trace.kind === "queued"); text = prev ? "Queued after $" + esc(prev.symbol.toUpperCase()) : "Queued"; }
     else if (tr.kind === "tracing") text = tr.n ? "Tracing opener " + tr.i + " of " + tr.n : "Reading deposits";
-    else if (tr.kind === "clean") text = "None of the first " + tr.n + " openers took money from " + esc(L.short(l.owner, 22)) + ". Read " + L.age(Date.now() - tr.at).replace(/ ago$/, "") + " ago";
+    else if (tr.kind === "clean") text = "None of the first " + tr.n + " openers took money from " + esc(L.short(l.owner, 22)) + ".";
     else if (tr.kind === "funded") {
       const r = tr.rows.find((x) => x.funded);
       text = esc(L.short(r.account, 20)) + " got NEAR from " + esc(L.short(l.owner, 20)) + " before depositing " + L.near(r.amount) + " N " + nbM(r.funded, "funding tx");
@@ -243,7 +243,7 @@
     const log = [...S.session.filter((x) => ["paid", "rejected"].includes(x.phase)).map(sessionRow), ...S.paid.map(paidRow)].slice(0, 5).join("");
     return `<aside class="rail">
       <section id="rail"><h2>Open bounties</h2><ul class="bounties">${S.stamps ? (bounties || `<li class="empty">No bond is standing right now.</li>`) : `<li class="empty">Reading the stamps</li>`}</ul>
-        ${S.stamps ? `<p class="note">stamp_of read at testnet block ${C.lastBlock().toLocaleString("en-US")}. A creator posts a bond on a Customs stamp to pay whoever proves an opening buyer was their own money.</p>` : ""}</section>
+        ${S.stamps ? `<p class="note">Stamps read at testnet block ${C.lastBlock().toLocaleString("en-US")}. A creator posts a bond on a Customs stamp to pay whoever proves an opening buyer was their own money.</p>` : ""}</section>
       <section id="log"><h2>Hunt log</h2><ul class="log">${log || `<li class="empty">No hunt yet.</li>`}</ul>
         <p class="note"><a class="tx" href="attack-lab.html">How the check works</a></p></section>
     </aside>`;
@@ -383,7 +383,7 @@
     const bond = lastPaid ? `<h3 class="sub">The bond moving</h3><div class="bondline"><span class="end"><b>${esc(lastPaid.contract)}</b><small>creator bond plus filing bond</small></span><span class="rail-line"><span class="block">+${L.num(lastPaid.paid)} NEAR</span></span><span class="end right"><b>${esc(L.short(lastPaid.payout_to, 28))}</b><small>stamp reads Broken at block ${C.lastBlock().toLocaleString("en-US")}</small></span></div>` : "";
     const table = r ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Wallet</th><th>First deposit</th><th>Receipt</th><th>Result</th></tr></thead><tbody>${r.buyers.map((b) => `<tr><td class="mono">${esc(b.wallet)}${b.wallet === r.creator ? "<em>creator</em>" : ""}</td><td class="mono">${L.num(b.near)} N</td><td>${nbT(b.first_tx)}</td><td>${b.path && b.path.length ? `<span class="res-funded">Creator-funded ${nbT(b.path[0].tx)}</span>` : `<span class="res-clean">clean</span>`}</td></tr>`).join("")}</tbody></table></div>` : "";
     const key = S.key, hunter = hunterOfBest();
-    const others = st ? st.live.filter((s) => !st.best || s.contract !== st.best.contract).map((s) => `<li><span class="mono nw">slot ${esc((s.contract.match(/customs(\d+)/) || [])[1])}</span><span>${s.stamp.state === "Standing" ? L.num(L.nearNum(s.stamp.bond)) + " NEAR standing" : s.stamp.state.Broken ? "broken, paid " + L.num(L.nearNum(s.stamp.state.Broken.paid)) + " NEAR" : "released"}</span></li>`).join("") : "";
+    const others = st ? st.live.filter((s) => !st.best || s.contract !== st.best.contract).map((s) => `<li><span class="mono nw">slot ${esc((s.contract.match(/customs(\d+)/) || [])[1])}</span><span class="r2">${s.stamp.state === "Standing" ? L.num(L.nearNum(s.stamp.bond)) + " NEAR standing" : s.stamp.state.Broken ? "broken, paid " + L.num(L.nearNum(s.stamp.state.Broken.paid)) + " NEAR" : "released"}</span></li>`).join("") : "";
     view.innerHTML = `<section class="tok-head"><a class="back" href="#/">Board</a><img class="pic big" src="img/customs.svg" alt="" width="72" height="72">
         <div class="tok-id"><h1>Customs coin <span class="tk">$CUSTOMS</span></h1><p class="by mono">customs26-token.testnet · NEAR testnet · by <b>customs26-creator.testnet</b></p></div>
         <dl class="metrics">${metrics.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl></section>

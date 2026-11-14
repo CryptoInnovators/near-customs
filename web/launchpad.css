@@ -328,3 +328,7 @@ ul, ol { list-style: none; }
 .connect.set { background: var(--mint); }
 @media (max-width: 700px) { .pop { position: fixed; left: 10px; right: 10px; top: 56px; width: auto; } }
 .errline[hidden], .pop[hidden] { display: none; }
+
+.cbox .log li { display: flex; gap: 12px; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+.huntcard p.last { color: #3a3a00; }
+.huntcard p.last b, .huntcard p.last .tx { color: var(--ink); }
