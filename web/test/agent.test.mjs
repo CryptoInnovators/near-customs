@@ -177,3 +177,60 @@ test("filing is refused before any transaction when the hunter's filing credit i
   assert.equal((await (await post()).json()).status, "filed");
   assert.equal(calls.length, 1);
 });
+
+/* ---------------------------------------------------------------- the late-verdict relay */
+import { stampRelay, findAnswers } from "../../agent.mjs";
+
+const relayEnv = { RELAY_KEY: JSON.stringify([{ stamp: "s1.testnet", account_id: "relay.testnet", secret_key: "ed25519:unused" }]) };
+const relayReq = (b) => new Request("https://x/stamp/relay", { method: "POST", body: JSON.stringify(b) });
+const chain = (state, created = 1000, head = 1400) => async () => ({ block_height: head, result: [...new TextEncoder().encode(JSON.stringify({ launch: "l.testnet", wallet: "w.testnet", path_hash: "ph", created_block: created, state }))] });
+const answer = { op: "verify_funding_path", token: "l.testnet", wallet: "w.testnet", challenge_id: 3, path_hash: "ph", block: 1000, verdict: "upheld", sig: "S", reason: null, hub_list: { version: 1 } };
+
+test("the relay hands the enclave's late answer to late_verdict with only the verdict fields, and reports the transaction", async () => {
+  const calls = [];
+  const send = async (c) => { calls.push(c); return { hash: "R1", outcome: { status: { SuccessValue: "" }, receipts_outcome: [] } }; };
+  const r = await (await stampRelay(relayReq({ stamp: "s1.testnet", challenge_id: 3 }), relayEnv, send, () => 5_000_000, chain("Unanswered"), async () => [answer])).json();
+  assert.equal(r.status, "relayed");
+  assert.equal(r.tx, "R1");
+  assert.equal(calls[0].receiverId, "s1.testnet");
+  assert.equal(calls[0].method, "late_verdict");
+  assert.deepEqual(calls[0].args, { challenge_id: 3, verdict: { token: "l.testnet", wallet: "w.testnet", challenge_id: 3, path_hash: "ph", verdict: "upheld", block: 1000, sig: "S" } });
+});
+
+test("the relay sends nothing while the yield is open, once settled, with no answer on chain, or past the late window", async () => {
+  const send = async () => { throw Error("must not send"); };
+  const run = (state, find, head, n) => stampRelay(relayReq({ stamp: "s1.testnet", challenge_id: 3 }), relayEnv, send, () => n, chain(state, 1000, head), find).then((r) => r.json());
+  assert.equal((await run("Pending", async () => [answer], 1100, 10_000_000)).status, "pending");
+  assert.equal((await run({ Upheld: { paid: "1" } }, async () => [answer], 1400, 20_000_000)).status, "settled");
+  assert.equal((await run("Unanswered", async () => [], 1400, 30_000_000)).status, "waiting");
+  assert.equal((await run("Unanswered", async () => [answer], 2201, 40_000_000)).status, "closed");
+});
+
+test("the relay reports the contract's own words when it refuses the answer, and validates its input and key", async () => {
+  const send = async () => ({ hash: "R2", outcome: { status: { Failure: { ActionError: { kind: { FunctionCallError: { ExecutionError: "Smart contract panicked: stamp: verdict signature does not verify against the pinned key" } } } } } } });
+  const r = await (await stampRelay(relayReq({ stamp: "s1.testnet", challenge_id: 3 }), relayEnv, send, () => 50_000_000, chain("Unanswered"), async () => [answer])).json();
+  assert.equal(r.status, "refused");
+  assert.equal(r.reason, "stamp: verdict signature does not verify against the pinned key");
+  assert.equal((await stampRelay(relayReq({ stamp: "Bad!", challenge_id: 3 }), relayEnv, send)).status, 400);
+  assert.equal((await stampRelay(relayReq({ stamp: "s1.testnet", challenge_id: -1 }), relayEnv, send)).status, 400);
+  assert.equal((await stampRelay(relayReq({ stamp: "s1.testnet", challenge_id: 3 }), {}, send)).status, 503);
+  assert.equal((await stampRelay(relayReq({ stamp: "other.testnet", challenge_id: 3 }), relayEnv, send)).status, 400);
+});
+
+test("findAnswers picks the worker's late answer for this challenge out of other requests' resolves", async () => {
+  const resolve = (v) => ({ transaction: { actions: [{ FunctionCall: { method_name: "resolve_execution", args: btoa(JSON.stringify({ request_id: 1, response: { output: { Json: v } } })) } }] } });
+  const other = resolve({ ...answer, wallet: "x.testnet" }), mine = resolve(answer), noise = { transaction: { actions: [{ FunctionCall: { method_name: "store_wallet_policy", args: "e30=" } }] } };
+  const realFetch = globalThis.fetch;
+  const seen = [];
+  globalThis.fetch = async (url, init) => {
+    const body = JSON.parse(init.body);
+    seen.push([url, body]);
+    return new Response(JSON.stringify(url.endsWith("/v0/account") ? { account_txs: [{ transaction_hash: "a" }, { transaction_hash: "b" }, { transaction_hash: "c" }] } : { transactions: [other, noise, mine] }));
+  };
+  try {
+    const found = await findAnswers({ launch: "l.testnet", wallet: "w.testnet", path_hash: "ph", created_block: 1000 }, 1400);
+    assert.deepEqual(found.map((v) => v.sig), ["S"]);
+    assert.equal(seen[0][1].from_tx_block_height, 1180);
+    assert.equal(seen[0][1].account_id, "worker.outlayer.testnet");
+  } finally { globalThis.fetch = realFetch; }
+});

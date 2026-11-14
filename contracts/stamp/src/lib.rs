@@ -19,6 +19,9 @@ const VERDICT_GAS: Gas = Gas::from_tgas(60);
 const PIN_GAS: Gas = Gas::from_tgas(30);
 const MIN_RECLAIM_BLOCKS: u64 = 201;
 const MAX_VERDICT_BYTES: usize = 16 * 1024;
+/// Blocks after filing during which an `Unanswered` challenge still takes the enclave's signed answer through `late_verdict`.
+/// OutLayer's yield window is 200 blocks; a busy worker can answer minutes later. The filing bond stays held until this window closes.
+const LATE_BLOCKS: u64 = 1200;
 
 #[derive(BorshSerialize, BorshStorageKey)]
 #[borsh(crate = "near_sdk::borsh")]
@@ -334,26 +337,21 @@ impl StampBook {
                 return false;
             }
         };
-        let mut ch = ch;
-        let mut stamp = self.stamps.get(&ch.launch).cloned().unwrap_or_else(|| env::panic_str("stamp: unknown stamp"));
         self.release_wallet(&ch, challenge_id);
-        stamp.open = stamp.open.saturating_sub(1);
-        if verdict.verdict == VERDICT_REJECTED {
-            self.forfeited += ch.bond.0;
-            ch.state = ChallengeState::Rejected;
-            self.challenges.insert(challenge_id, ch.clone());
-            self.stamps.insert(ch.launch.clone(), stamp);
-            self.event("challenge_rejected", json!({"challenge_id": challenge_id, "launch": ch.launch, "wallet": ch.wallet, "forfeited": ch.bond}));
-            return false;
+        self.close_open(&ch.launch);
+        self.settle(challenge_id, ch, &verdict, false)
+    }
+
+    /// The enclave's signed answer to a challenge that closed `Unanswered` because it arrived after the yield window. Anyone may deliver it:
+    /// it is accepted only if it verifies against the pinned verdict key and names this challenge, and then moves money exactly as `on_verdict` does.
+    pub fn late_verdict(&mut self, challenge_id: u64, verdict: Verdict) -> bool {
+        let ch = self.challenges.get(&challenge_id).cloned().unwrap_or_else(|| env::panic_str("stamp: unknown challenge"));
+        require!(ch.state == ChallengeState::Unanswered, "stamp: this challenge is not waiting for a late answer");
+        require!(env::block_height() <= ch.created_block + LATE_BLOCKS, "stamp: the late answer window has closed");
+        if let Err(why) = self.check_verdict(&ch, challenge_id, &verdict, LATE_BLOCKS) {
+            env::panic_str(&why);
         }
-        let paid = stamp.bond.0 + ch.bond.0;
-        stamp.state = StampState::Broken { prover: ch.payout_to.clone(), wallet: ch.wallet.clone(), challenge_id, paid: U128(paid) };
-        self.stamps.insert(ch.launch.clone(), stamp.clone());
-        ch.state = ChallengeState::Upheld { paid: U128(paid) };
-        self.challenges.insert(challenge_id, ch.clone());
-        let _ = near_sdk::Promise::new(ch.payout_to.clone()).transfer(NearToken::from_yoctonear(paid));
-        self.event("stamp_broken", json!({"challenge_id": challenge_id, "launch": ch.launch, "wallet": ch.wallet, "prover": ch.payout_to, "paid": U128(paid)}));
-        true
+        self.settle(challenge_id, ch, &verdict, true)
     }
 
     /// Return the filing bond of a challenge the enclave never answered.
@@ -362,7 +360,7 @@ impl StampBook {
         require!(env::predecessor_account_id() == ch.challenger, "stamp: only the challenger reclaims");
         match ch.state {
             ChallengeState::Pending => require!(env::block_height() >= ch.created_block + self.params.reclaim_blocks, "stamp: the enclave may still answer"),
-            ChallengeState::Unanswered => {}
+            ChallengeState::Unanswered => require!(env::block_height() > ch.created_block + LATE_BLOCKS, "stamp: the enclave's late answer may still arrive"),
             _ => env::panic_str("stamp: challenge already resolved"),
         }
         if ch.state == ChallengeState::Pending {
@@ -435,7 +433,12 @@ impl StampBook {
             Ok(None) => return Err("stamp: no verdict from the enclave".into()),
             Err(e) => return Err(format!("stamp: the enclave's answer is not a verdict: {e}")),
         };
-        let p = &self.params;
+        self.check_verdict(ch, challenge_id, &v, self.params.max_age_blocks)?;
+        Ok(v)
+    }
+
+    /// Every check an answer must pass before it moves money, whichever route delivered it.
+    fn check_verdict(&self, ch: &Challenge, challenge_id: u64, v: &Verdict, max_age: u64) -> Result<(), String> {
         let check = |ok: bool, why: &str| if ok { Ok(()) } else { Err(why.to_string()) };
         check(v.token == ch.launch, "stamp: verdict names another launch")?;
         check(v.wallet == ch.wallet, "stamp: verdict names another wallet")?;
@@ -445,7 +448,7 @@ impl StampBook {
         let head = env::block_height();
         check(v.block == ch.created_block, "stamp: verdict names another block than the challenge")?;
         check(v.block <= head, "stamp: verdict names a future block")?;
-        check(head - v.block <= p.max_age_blocks, "stamp: verdict is stale")?;
+        check(head - v.block <= max_age, "stamp: verdict is stale")?;
         let msg = verdict_message(&v.token.to_string(), &v.wallet.to_string(), v.challenge_id, &v.path_hash, &v.verdict, v.block);
         let sig: [u8; 64] = near_sdk::bs58::decode(&v.sig).into_vec().ok().and_then(|b| b.try_into().ok()).ok_or("stamp: malformed signature")?;
         let key: [u8; 32] = self.verdict_key.as_ref().ok_or("stamp: no pinned verdict key")?.as_bytes()[1..].try_into().map_err(|_| "stamp: malformed pinned key")?;
@@ -454,7 +457,27 @@ impl StampBook {
             let stamp = self.stamps.get(&ch.launch).ok_or("stamp: unknown stamp")?;
             check(stamp.state == StampState::Standing, "stamp: the stamp was already broken or released")?;
         }
-        Ok(v)
+        Ok(())
+    }
+
+    /// Apply a checked verdict: forfeit the filing bond, or break the stamp and pay the prover. `late` marks an answer delivered through `late_verdict`.
+    fn settle(&mut self, challenge_id: u64, mut ch: Challenge, verdict: &Verdict, late: bool) -> bool {
+        if verdict.verdict == VERDICT_REJECTED {
+            self.forfeited += ch.bond.0;
+            ch.state = ChallengeState::Rejected;
+            self.challenges.insert(challenge_id, ch.clone());
+            self.event("challenge_rejected", json!({"challenge_id": challenge_id, "launch": ch.launch, "wallet": ch.wallet, "forfeited": ch.bond, "late": late}));
+            return false;
+        }
+        let mut stamp = self.stamps.get(&ch.launch).cloned().unwrap_or_else(|| env::panic_str("stamp: unknown stamp"));
+        let paid = stamp.bond.0 + ch.bond.0;
+        stamp.state = StampState::Broken { prover: ch.payout_to.clone(), wallet: ch.wallet.clone(), challenge_id, paid: U128(paid) };
+        self.stamps.insert(ch.launch.clone(), stamp);
+        ch.state = ChallengeState::Upheld { paid: U128(paid) };
+        self.challenges.insert(challenge_id, ch.clone());
+        let _ = near_sdk::Promise::new(ch.payout_to.clone()).transfer(NearToken::from_yoctonear(paid));
+        self.event("stamp_broken", json!({"challenge_id": challenge_id, "launch": ch.launch, "wallet": ch.wallet, "prover": ch.payout_to, "paid": U128(paid), "late": late}));
+        true
     }
 
     fn close_unanswered(&mut self, challenge_id: u64, mut ch: Challenge, why: &str) {
@@ -626,5 +649,61 @@ mod tests {
         b.deposit_credit(accounts(4));
         ctx(accounts(5), 0, 201);
         let _ = b.withdraw_credit(U128(1));
+    }
+
+    fn unanswered(b: &mut StampBook, created_block: u64) -> Verdict {
+        b.verdict_key = Some("ed25519:6E8sCci9badyRkXb3JoRpBj5p8C6Tw41ELDZoiihKEtp".parse().unwrap());
+        let ch = Challenge { launch: accounts(2), wallet: accounts(5), challenger: accounts(4), bond: U128(E24 / 10), payout_to: accounts(4), from_credit: true, path: vec![], path_hash: "ab".into(), created_block, state: ChallengeState::Unanswered };
+        b.challenges.insert(0, ch);
+        Verdict { token: accounts(2), wallet: accounts(5), challenge_id: 0, path_hash: "ab".into(), verdict: VERDICT_UPHELD.into(), block: created_block, sig: near_sdk::bs58::encode([7u8; 64]).into_string() }
+    }
+    fn at_block(height: u64) {
+        testing_env!(VMContextBuilder::new().predecessor_account_id(accounts(4)).block_height(height).build());
+    }
+
+    #[test]
+    #[should_panic(expected = "verdict signature does not verify against the pinned key")]
+    fn a_late_answer_with_a_forged_signature_is_refused() {
+        let mut b = book();
+        let v = unanswered(&mut b, 1000);
+        at_block(1300);
+        b.late_verdict(0, v);
+    }
+
+    #[test]
+    #[should_panic(expected = "the late answer window has closed")]
+    fn a_late_answer_after_the_window_is_refused() {
+        let mut b = book();
+        let v = unanswered(&mut b, 1000);
+        at_block(1000 + LATE_BLOCKS + 1);
+        b.late_verdict(0, v);
+    }
+
+    #[test]
+    #[should_panic(expected = "not waiting for a late answer")]
+    fn a_late_answer_for_a_pending_challenge_is_refused() {
+        let mut b = book();
+        let v = unanswered(&mut b, 1000);
+        b.challenges.get_mut(&0).unwrap().state = ChallengeState::Pending;
+        at_block(1300);
+        b.late_verdict(0, v);
+    }
+
+    #[test]
+    #[should_panic(expected = "late answer may still arrive")]
+    fn the_filing_bond_stays_held_while_the_late_answer_can_still_arrive() {
+        let mut b = book();
+        let _ = unanswered(&mut b, 1000);
+        at_block(1300);
+        let _ = b.reclaim_bond(0);
+    }
+
+    #[test]
+    fn the_filing_bond_is_reclaimable_after_the_late_window() {
+        let mut b = book();
+        let _ = unanswered(&mut b, 1000);
+        at_block(1000 + LATE_BLOCKS + 1);
+        let _ = b.reclaim_bond(0);
+        assert_eq!(b.challenge_of(0).unwrap().state, ChallengeState::Reclaimed);
     }
 }

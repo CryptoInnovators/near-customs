@@ -9,6 +9,7 @@
   const CLEAN = { wallet: "customs26-buyer2.testnet", path: ["23atwS3gdX11c1r7o3UBZK1w7UAuskk7VofmoaZiP5HU", "GuTXDmdNSsSosDHgjHJLLxgQH1VwXR1Z5jSfxy1TThV5"] };
   const ACCOUNT = /^[a-z0-9]+(?:[-_.][a-z0-9]+)*$/;
   const WNEAR = "wrap.near", REF = "v2.ref-finance.near";
+  const LATE_BLOCKS_S = 1200; /* the stamp accepts a late enclave answer for 1200 blocks, about 20 minutes */
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const hunterOf = (contract) => contract.replace("-stamp.", "-hunter.");
 
@@ -119,8 +120,15 @@
     return { status: res.status, retry: Number(res.headers.get("retry-after")) || 0, body: j };
   }
 
+  async function postRelay(body) {
+    const res = await fetch("/stamp/relay", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(45000) });
+    let j = {};
+    try { j = await res.json(); } catch { /* reported by status */ }
+    return { status: res.status, body: j };
+  }
+
   /* The hunt. kind "funded" files the creator-funded buyer; "clean" files a clean buyer (the checker rejects it).
-     emit(state) is called on every change: phase filing, checking, paid, rejected, refused, busy, unavailable, unanswered, timeout, error. */
+     emit(state) is called on every change: phase filing, checking, late, paid, rejected, refused, busy, unavailable, unanswered, timeout, error. */
   let busy = false;
   async function hunt(kind, { payout, stamps, emit }) {
     if (busy) return null;
@@ -146,21 +154,32 @@
       if (f.status === "refused") { out({ phase: "refused", tx: f.tx, text: "Refused by the contract: " + String(f.reason || "").replace(/^stamp: /, "").replace(/^./, (c) => c.toLowerCase()) + "." }); return st; }
       const filedS = Math.round((Date.now() - t0) / 1000);
       out({ phase: "checking", tx: f.tx, challenge: f.challenge_id, filedS });
-      let ch = null;
+      let ch = null, relay = null, relayAt = 0, relayTx = null;
       const tick = setInterval(() => emit({ ...st, secs: Math.floor((Date.now() - t0) / 1000) }), 1000);
       try {
-        for (let i = 0; i < 180; i++) {
-          await sleep(2000);
+        /* OutLayer's worker queue can answer after the 200 block yield window: the stamp then reads Unanswered and the enclave's signed answer
+           is delivered through /stamp/relay, which the contract verifies against the pinned key before it moves anything. */
+        const budgetMs = (LATE_BLOCKS_S + 120) * 1000;
+        while (Date.now() - t0 < budgetMs) {
+          /* the first minute is the fast path; after it the page reads the chain every 10 s, the cap the shared worker budget allows */
+          await sleep(Date.now() - t0 < 60000 ? 5000 : 10000);
           ch = await testView(f.stamp, "challenge_of", { challenge_id: f.challenge_id }).catch(() => null);
-          if (ch && ch.state !== "Pending") break;
+          const name = ch ? (typeof ch.state === "string" ? ch.state : Object.keys(ch.state)[0]) : "Pending";
+          if (name === "Pending") continue;
+          if (name !== "Unanswered" || (relay && ["closed", "refused"].includes(relay.status))) break;
+          if (st.phase !== "late") out({ phase: "late", tx: f.tx, challenge: f.challenge_id, filedS });
+          if (Date.now() - relayAt >= 8000) {
+            relayAt = Date.now();
+            relay = (await postRelay({ stamp: f.stamp, challenge_id: f.challenge_id }).catch(() => ({ body: {} }))).body;
+            if (relay.status === "relayed") relayTx = relay.tx;
+          }
         }
       } finally { clearInterval(tick); }
       const secs = Math.round((Date.now() - t0) / 1000);
-      const state = ch ? (typeof ch.state === "string" ? ch.state : Object.keys(ch.state)[0]) : "Pending";
       const after = await testView(f.stamp, "stamp_of", { launch: LAUNCH }).catch(() => null);
       const paid = after && after.state && after.state.Broken ? after.state.Broken.paid : null;
-      if (state === "Upheld" && paid) out({ phase: "paid", secs, paid: L.nearNum(paid), who: ch.payout_to });
-      else if (state === "Rejected") out({ phase: "rejected", secs, filingBond: L.nearNum(ch.bond) });
+      if (state === "Upheld" && paid) out({ phase: "paid", secs, paid: L.nearNum(paid), who: ch.payout_to, relayTx });
+      else if (state === "Rejected") out({ phase: "rejected", secs, filingBond: L.nearNum(ch.bond), relayTx });
       else if (state === "Unanswered") out({ phase: "unanswered", secs });
       else out({ phase: "timeout", secs });
       return st;

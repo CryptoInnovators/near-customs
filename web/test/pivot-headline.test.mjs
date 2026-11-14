@@ -23,7 +23,8 @@ test("the hunt files through the sponsored worker endpoint and polls the contrac
   const js = await read("lp-chain.js");
   assert.match(js, /\/stamp\/break/);
   assert.match(js, /challenge_of/);
-  assert.match(js, /state !== "Pending"/);
+  assert.match(js, /name === "Pending"/);
+  assert.match(js, /\/stamp\/relay/);
 });
 
 test("each card is a meme.cooking launch with its own trace, Rhea pool read and one inline verdict", async () => {

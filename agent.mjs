@@ -100,6 +100,89 @@ export async function stampBreak(request, env, send = callFunction, now = Date.n
   }
 }
 
+/* ---------------------------------------------------------------- late verdicts: the enclave answers after the yield window
+
+   OutLayer answers a request through a worker queue. NEAR closes a yield after 200 blocks, so when the queue is slower than that the stamp records
+   the challenge as Unanswered while the enclave's signed answer is still on its way, and lands on chain as a rejected resolve_execution call.
+   POST /stamp/relay {stamp, challenge_id} reads that answer from the chain and hands it to the stamp's `late_verdict`, which accepts it only if
+   it verifies against the key OutLayer's enclave proved it holds. The relay holds keys that can call `late_verdict` and nothing else. */
+
+const TX_API = "https://tx.test.fastnear.com";
+const OUTLAYER_WORKER = "worker.outlayer.testnet";
+const LATE_BLOCKS = 1200;
+const YIELD_BLOCKS = 180;
+const RELAY_GAP_MS = 4000;
+const relayedAt = new Map();
+
+const readView = (id, method, args, deadline) => rpc(RPC, "query", { request_type: "call_function", finality: "final", account_id: id, method_name: method, args_base64: btoa(JSON.stringify(args)) }, deadline);
+const decodeView = (r) => (r.result.length ? JSON.parse(new TextDecoder().decode(new Uint8Array(r.result))) : null);
+const txApi = async (path, body) => {
+  const r = await fetch(TX_API + path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) throw Error("FastNEAR answered HTTP " + r.status);
+  return r.json();
+};
+
+/* Every signed answer the OutLayer worker put on chain for this challenge after the yield window: the verdicts naming its launch, wallet, path and block. */
+export async function findAnswers(ch, head) {
+  const found = [];
+  let resume;
+  for (let page = 0; page < 3; page++) {
+    const list = await txApi("/v0/account", { account_id: OUTLAYER_WORKER, is_real_signer: true, from_tx_block_height: ch.created_block + YIELD_BLOCKS, to_tx_block_height: head, sort_order: "asc", limit: 100, ...(resume ? { resume_token: resume } : {}) });
+    const hashes = [...new Set((list.account_txs || []).map((t) => t.transaction_hash))];
+    for (let i = 0; i < hashes.length; i += 20) {
+      for (const t of (await txApi("/v0/transactions", { tx_hashes: hashes.slice(i, i + 20) })).transactions || []) {
+        const call = t.transaction.actions[0] && t.transaction.actions[0].FunctionCall;
+        if (!call || !/^(resolve_execution|submit_execution_output_and_resolve)$/.test(call.method_name)) continue;
+        let v;
+        try { v = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(call.args), (c) => c.charCodeAt(0)))).response?.output?.Json; } catch { continue; }
+        if (v && v.op === "verify_funding_path" && v.token === ch.launch && v.wallet === ch.wallet && v.path_hash === ch.path_hash && v.block === ch.created_block && typeof v.sig === "string" && typeof v.verdict === "string") found.push(v);
+      }
+    }
+    resume = list.resume_token;
+    if (!resume) break;
+  }
+  return found;
+}
+
+/* POST /stamp/relay {stamp, challenge_id}: status pending (the yield is still open), waiting (no answer on chain yet), relayed (late_verdict accepted),
+   refused (the contract rejected the answer), settled (already Upheld, Rejected or Reclaimed) or closed (the late window has passed). */
+export async function stampRelay(request, env, send = callFunction, now = Date.now, view = readView, find = findAnswers) {
+  let b;
+  try { b = await request.json(); } catch { return json({ error: "Send JSON with stamp and challenge_id." }, 400); }
+  const ok = (v) => typeof v === "string" && v.length <= 64 && ACCOUNT.test(v);
+  if (!b || !ok(b.stamp) || !Number.isSafeInteger(b.challenge_id) || b.challenge_id < 0) return json({ error: "stamp must be a NEAR account id and challenge_id a number." }, 400);
+  if (!env.RELAY_KEY) return json({ error: "The relay key is not configured on this host." }, 503);
+  const key = [].concat(JSON.parse(env.RELAY_KEY)).find((k) => k.stamp === b.stamp);
+  if (!key) return json({ error: "That stamp contract has no relay key on this host." }, 400);
+  const id = b.stamp + "#" + b.challenge_id, t = now();
+  const wait = (relayedAt.get(id) || 0) + RELAY_GAP_MS - t;
+  if (wait > 0) return json({ error: "A scan for this challenge is running. Try again in " + Math.ceil(wait / 1000) + " s." }, 429, { "retry-after": String(Math.ceil(wait / 1000)) });
+  relayedAt.set(id, t);
+  const deadline = t + 40000;
+  try {
+    const read = await view(b.stamp, "challenge_of", { challenge_id: b.challenge_id }, deadline);
+    const ch = decodeView(read);
+    if (!ch) return json({ error: "That stamp has no such challenge." }, 404);
+    const state = typeof ch.state === "string" ? ch.state : Object.keys(ch.state)[0];
+    if (state === "Pending") return json({ status: "pending", state });
+    if (state !== "Unanswered") return json({ status: "settled", state });
+    const head = read.block_height;
+    if (head > ch.created_block + LATE_BLOCKS) return json({ status: "closed", state, waited_blocks: head - ch.created_block });
+    for (const v of await find(ch, head)) {
+      const verdict = { token: v.token, wallet: v.wallet, challenge_id: v.challenge_id, path_hash: v.path_hash, verdict: v.verdict, block: v.block, sig: v.sig };
+      const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId: b.stamp, method: "late_verdict", args: { challenge_id: b.challenge_id, verdict }, gas: 100_000_000_000_000n, deadline });
+      const failure = outcome?.status?.Failure || (outcome?.receipts_outcome || []).map((r) => r.outcome.status?.Failure).find(Boolean);
+      if (!failure) return json({ status: "relayed", tx: hash, verdict: v.verdict, signer: key.account_id });
+      const m = /stamp: [^"\\]*/.exec(JSON.stringify(failure));
+      return json({ status: "refused", tx: hash, reason: m ? m[0] : JSON.stringify(failure).slice(0, 200) });
+    }
+    return json({ status: "waiting", state, waited_blocks: head - ch.created_block });
+  } catch (e) {
+    relayedAt.delete(id);
+    return json({ error: "The relay did not complete: " + String(e.message || e).slice(0, 160), ...(e && e.tx ? { tx: e.tx } : {}) }, 502);
+  }
+}
+
 /* ---------------------------------------------------------------- the prompt-injected hunter: what its key refuses */
 
 const INJECTED = [
