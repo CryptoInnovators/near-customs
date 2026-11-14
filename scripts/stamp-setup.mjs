@@ -107,5 +107,14 @@ await sendActions({ rpcUrl: RPC, signerId: FILER, secretKey: fullSecret, receive
 await mkdir(`${homedir()}/.config/customs`, { recursive: true });
 await writeFile(`${homedir()}/.config/customs/${KEY_FILE}`, JSON.stringify({ account_id: FILER, public_key: fc.publicKeyStr, secret_key: fc.secretKey }), { mode: 0o600 });
 console.log("filer function-call key written to ~/.config/customs/"+KEY_FILE+"", fc.publicKeyStr);
-const gone = await sendActions({ rpcUrl: RPC, signerId: FILER, secretKey: fullSecret, receiverId: FILER, actions: [deleteKeyAction("ed25519:" + b58encode(fullPub))] });
-log("filer full-access key deleted, only the challenge key remains", gone.hash);
+// the free RPCs sometimes time out on this transaction: retry through near-cli, then check the chain says the full-access key is gone
+const fullPubStr = "ed25519:" + b58encode(fullPub);
+try {
+  const gone = await sendActions({ rpcUrl: RPC, signerId: FILER, secretKey: fullSecret, receiverId: FILER, actions: [deleteKeyAction(fullPubStr)], deadline: Date.now() + 60_000 });
+  log("filer full-access key deleted, only the challenge key remains", gone.hash);
+} catch {
+  spawnSync("near", ["account", "delete-keys", FILER, "public-keys", fullPubStr, "network-config", "testnet", "sign-with-legacy-keychain", "send"], { encoding: "utf8", timeout: 120_000 });
+}
+const left = (await rpc("query", { request_type: "view_access_key_list", finality: "final", account_id: FILER })).keys;
+if (left.some((k) => k.access_key.permission === "FullAccess")) throw Error(FILER + " still holds a full-access key");
+console.log(FILER + " holds function-call keys only");
