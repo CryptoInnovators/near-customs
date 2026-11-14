@@ -164,7 +164,7 @@ function chainStrip(net, urls) {
       h = await read();
       if (h) paint(h);
     }
-    setTimeout(tick, h ? 12000 : 2500);
+    setTimeout(tick, document.hidden ? 2500 : 12000);
   }
   tick();
 }
