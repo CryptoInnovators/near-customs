@@ -1,59 +1,43 @@
 # X demo post drafts
 
-The human posts these; attach the 90-second video from docs/DEMO-SCRIPT.md. Character counts treat the repo link as 23 characters, because X wraps every link to that length. Each count was made with `len(re.sub(r"https?://\S+", "x"*23, text))`.
+The human edits and posts these. Attach the demo video from `docs/DEMO-SCRIPT.md` to the post. X counts any link as 23 characters, and the counts below assume that.
 
-Posting order: A matches what the repo and `spikes/replay/` show now. B, C and the long form describe the mainnet coin and its upheld challenge, so post them once those tx hashes are in docs/EVIDENCE.md.
+## A (277 characters)
 
-## A. The measured problem (274)
+```unknown
+An agent with one function-call key hunts NEAR memecoin launches whose creator funded their own first buyer.
 
-```
-Buy a NEAR memecoin in minute one and you buy from wallets that dump within a day. 4 wallets bought all 11 openings we replayed.
-
-Customs vests opening buys 24h by contract. How would you beat it?
-
-Built at NEAR HACKATHON @NEARProtocol #NEARHackathon https://github.com/kamalbuilds/near-customs
+Built at #NEARHackathon: Customs Hunt. A proven path pays the creator's bond to the agent. A false one forfeits the agent's bond. https://near-customs.earn-shield-alerts.workers.dev/ @NEARProtocol
 ```
 
-Numbers: `python3 spikes/table.py` over `spikes/replay/*.json`, eleven Nearly launches with openings 2026-10-24 to 2026-10-29. "Within a day" is the sold-within-24h column, 97.06% to 100%.
+## B (254 characters)
 
-## B. The one moment (275)
+```unknown
+A hijacked agent files a false path: Rejected, its 0.1 NEAR filing bond forfeited. Then the same key tries release_stamp, withdraw_credit and a transfer. The node refuses each.
 
-```
-NEAR snipers hide their funding behind intents.near.
-
-I filed 2 tx hashes on one. An OutLayer enclave read the Intents withdraw, the token checked its signature: 20% of the bag is mine.
-
-Your move?
-
-Built at NEAR HACKATHON @NEARProtocol #NEARHackathon https://github.com/kamalbuilds/near-customs
+Built at #NEARHackathon: Customs Hunt. https://near-customs.earn-shield-alerts.workers.dev/ @NEARProtocol
 ```
 
-## C. The dare (274)
+## C (254 characters)
 
-```
-Dev-bundled launches dump on the first buyers, so we bundled our own NEAR memecoin.
+```unknown
+Press Hunt this launch. An agent files a funding path, an OutLayer enclave replays it, and 1.1 NEAR lands in the hunter's account about 90 seconds later with a NearBlocks link.
 
-Opening buys vest 24h by contract. Prove the creator paid for one and you take 20% of it. Which wallet is ours?
-
-Built at NEAR HACKATHON @NEARProtocol #NEARHackathon https://github.com/kamalbuilds/near-customs
+Built at #NEARHackathon: Customs Hunt. https://near-customs.earn-shield-alerts.workers.dev/ @NEARProtocol
 ```
 
-## Long form (1522)
+## Long form (960 characters)
 
-```
-Buy a NEAR memecoin in its first minute and you are buying from wallets that sell to you within a day.
+```unknown
+Across 11 Nearly openings between 24 and 29 October, 247 buyers, between 97 and 100 percent of the opening tokens left the buyers within 24 hours. Often the creator's own money funded the first buyer.
 
-We replayed eleven Nearly launches from the last week of October. The same four wallets bought the opening of every one, and between 97 and 100 percent of the tokens bought in each opening were gone within 24 hours.
+We built Customs Hunt at #NEARHackathon. An autonomous NEAR agent holds one function-call key, scoped to challenge on a stamp contract. It files the funding path of a launch as receipts. A pinned checker in an OutLayer TDX enclave replays the path and signs a verdict, and the contract verifies the signature before it moves money.
 
-Customs is a memecoin with two rules, both in the token contract.
+A proven path pays the creator's bond to the agent. A false hunt forfeits the agent's filing bond. The same key cannot release the stamp, withdraw credit or transfer NEAR: the node refuses before a block includes the call.
 
-Every wallet that buys in the first ten minutes vests that buy over 24 hours. The NEP-141 transfer itself refuses an early sale and prints how much is locked and until when; no server is asked, and the token account holds no keys, so nobody can change the rule.
+Press Hunt this launch on the live page, no wallet. Then press Simulate hijacked hunter and watch the false path lose its bond.
 
-Anyone who can show the creator's money paid for an opening buy files a challenge with the transaction hashes. An OutLayer enclave reads those receipts, including a NEAR Intents withdraw, whose event names the real owner even when the wallet looks funded by intents.near. It signs a verdict; the token checks that signature against a key it pinned once and pays the challenger 20% of the wallet's unvested bag. A rejected challenge loses its bond. A silent enclave changes nothing.
+Try it: https://near-customs.earn-shield-alerts.workers.dev/
 
-In the video we bundle our own coin through a plain transfer and an Intents withdraw, then seize from it.
-
-The rule convicts only on a printed money trail, so an insider funded from an exchange still vests 24 hours but keeps the bag. Which evasion would you try first? Repo and tests: https://github.com/kamalbuilds/near-customs
-
-Built at NEAR HACKATHON @NEARProtocol #NEARHackathon @NearBuilders @NearLegion
+@NEARProtocol @NearBuilders @NearLegion
 ```
