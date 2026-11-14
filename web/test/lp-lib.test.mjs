@@ -70,3 +70,14 @@ test("account names are never cut mid-word, only 64-hex implicit accounts are ab
   assert.equal(L.short("customs26-creator.testnet"), "customs26-creator.testnet");
   assert.equal(L.short("a".repeat(64)), "aaaaaaaa…aaaaaaaa");
 });
+
+test("a partial trace never settles the headline count", () => {
+  const traced = (own) => ({ fact: { own } });
+  const pending = { fact: null };
+  assert.equal(L.traceHeadline([]).settled, false);
+  const part = L.traceHeadline([traced(true), traced(true), traced(true), pending, pending]);
+  assert.equal(part.settled, false);
+  assert.equal(part.own, 0);
+  const all = L.traceHeadline([traced(true), traced(false), traced(true)]);
+  assert.deepEqual([all.settled, all.own, all.n, all.total], [true, 2, 3, 3]);
+});

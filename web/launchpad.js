@@ -168,7 +168,7 @@
     const run = (s, t) => `<li data-state="${s}"><i>${s === "done" ? "✓" : ""}</i><span>${t}</span></li>`;
     const num = (n, s, t) => `<li data-state="${s}"><i>${n}</i><span>${t}</span></li>`;
     let s1, s2, s3, res = "";
-    const filed = h.tx ? `Filed on chain in ${h.filedS} s ${nbT(h.tx)}` : "";
+    const filed = h.tx ? `Challenge filed, bond locked in ${h.filedS} s ${nbT(h.tx)}` : "";
     if (h.phase === "filing") { s1 = num(1, "run", "Filing on chain"); s2 = num(2, "idle", "Checker"); s3 = num(3, "idle", "Verdict"); }
     else if (h.phase === "checking") { s1 = num(1, "done", filed); s2 = num(2, "run", "Checker running " + L.clock(h.secs == null ? h.filedS : h.secs)); s3 = num(3, "idle", "Verdict"); }
     else if (h.phase === "late") { s1 = num(1, "done", filed); s2 = num(2, "run", "Checker queue at the enclave " + L.clock(h.secs == null ? h.filedS : h.secs)); s3 = num(3, "idle", "Verdict"); res = "The enclave is signing later than the stamp's 200 block wait. Its signed verdict is read from the chain and handed to the stamp, which checks it against the pinned key before it moves anything."; }
@@ -234,28 +234,38 @@
   function showBonded() { return (S.filter === "all" || S.filter === "bonded") && (!S.term || "customs coin customs26-creator.testnet".includes(S.term)); }
 
   function stripHtml() {
-    const read = S.launches.filter((l) => l.fact), readN = read.length, ownN = read.filter((l) => l.fact.own).length;
-    return `<div><b>${S.total ? S.total.toLocaleString("en-US") : "…"}</b><span>launches on meme.cooking</span></div>
+    const hl = L.traceHeadline(S.launches), total = hl.total, readN = hl.n, ownN = hl.own, done = hl.settled;
+    const finding = done
+      ? `<div class="lead"><b id="found">${ownN} of ${readN}</b><span>${readN === 1 ? "launch" : "launches"} where the creator's own account is an opening buyer${S.found ? ", plus " + S.found + " buyer" + (S.found === 1 ? "" : "s") + " the creator funded" : ""}</span></div>`
+      : `<div class="lead"><b id="found" data-tracing="1">tracing ${readN} of ${total || "…"}</b><span>launches where the creator's own account is an opening buyer, counted once every opener is traced</span></div>`;
+    return finding + `<div><b>${S.total ? S.total.toLocaleString("en-US") : "…"}</b><span>launches on meme.cooking</span></div>
       <div><b>${S.stamps ? L.num(bondSum()) + " NEAR" : "…"}</b><span>bond standing on $CUSTOMS</span></div>
-      <div><b>${S.stamps ? L.num(S.stamps.paid) + " NEAR" : "…"}</b><span>paid to hunters</span></div>
-      <div><b id="found">${ownN} of ${readN}</b><span>${readN === 1 ? "launch" : "launches"} where the creator's own account is an opening buyer${S.found ? ", plus " + S.found + " buyer" + (S.found === 1 ? "" : "s") + " the creator funded" : ""}</span></div>`;
+      <div><b>${S.stamps ? L.num(S.stamps.paid) + " NEAR" : "…"}</b><span>paid to hunters</span></div>`;
   }
   function paintStrip() { const s = $(".strip"); if (s) s.innerHTML = stripHtml(); }
 
   function railHtml() {
     const bounties = standing().map((s) => `<li><p class="r1"><b class="amt">${L.num(L.nearNum(s.stamp.bond))} NEAR</b> on <b>$CUSTOMS</b>, ${esc(s.contract.replace(".testnet", ""))}</p><p class="r2">Creator can release it in ${L.left(s.stamp.release_s * 1000 - Date.now()).replace(" left", "")}. Hunter credit ${L.num(Number(s.credit) / 1e24)} NEAR.</p></li>`).join("");
-    const log = [...S.session.filter((x) => ["paid", "rejected"].includes(x.phase)).map(sessionRow), ...S.paid.map(paidRow)].slice(0, 5).join("");
+    const log = logTable(5);
     return `<aside class="rail">
       <section id="rail"><h2>Open bounties</h2><ul class="bounties">${S.stamps ? (bounties || `<li class="empty">No bond is standing right now.</li>`) : `<li class="empty">Reading the stamps</li>`}</ul>
         ${S.stamps ? `<p class="note">Stamps read at testnet block ${C.lastBlock().toLocaleString("en-US")}. A creator posts a bond on a Customs stamp to pay whoever proves an opening buyer was their own money.</p>` : ""}</section>
-      <section id="log"><h2>Hunt log</h2><ul class="log">${log || `<li class="empty">No hunt yet.</li>`}</ul>
+      <section id="log"><h2>Hunt log</h2>${log || `<p class="empty">No hunt yet.</p>`}
         <p class="note"><a class="tx" href="attack-lab.html">How the check works</a></p></section>
     </aside>`;
   }
-  const paidRow = (p) => `<li class="won"><p class="r1"><b>${esc(L.short(p.hunter, 24))}</b> proved <b>${esc(L.short(p.creator, 22))}</b> funded <b>${esc(L.short(p.wallet, 24))}</b></p><p class="r2">Upheld by the checker. <span class="amt">+${L.num(p.paid)} NEAR</span> to ${esc(L.short(p.payout_to, 24))}.</p><p class="r3">slot ${p.slot} · ${acctT(p.contract)}</p></li>`;
-  const sessionRow = (h) => h.phase === "paid"
-    ? `<li class="won"><p class="r1"><b>${esc(L.short(h.hunter, 24))}</b> proved <b>${esc(L.short(h.wallet, 24))}</b> was creator-funded</p><p class="r2">Upheld ${h.secs} s after the click. <span class="amt">+${L.num(h.paid)} NEAR</span> to ${esc(L.short(h.who, 24))}.</p><p class="r3">this visit · ${nbT(h.tx)}</p></li>`
-    : `<li class="lost"><p class="r1"><b>${esc(L.short(h.hunter, 24))}</b> filed a path for <b>${esc(L.short(h.wallet, 24))}</b></p><p class="r2">Rejected in ${h.secs} s. The ${L.num(h.filingBond)} NEAR filing bond is forfeited, the stamp stands.</p><p class="r3">this visit · ${nbT(h.tx)}</p></li>`;
+  const slotOf = (a) => Number((String(a).match(/customs(\d+)/) || [])[1]) || 0;
+  function logTable(max) {
+    const rows = [
+      ...S.session.filter((x) => ["paid", "rejected"].includes(x.phase)).map((h) => h.phase === "paid"
+        ? { slot: slotOf(h.stamp), v: "Upheld in " + h.secs + " s", cls: "won", hunter: h.hunter, amt: "+" + L.num(h.paid) + " NEAR", link: nbT(h.tx) }
+        : { slot: slotOf(h.stamp), v: "Rejected in " + h.secs + " s", cls: "lost", hunter: h.hunter, amt: "lost " + L.num(h.filingBond) + " NEAR", link: nbT(h.tx) }),
+      ...S.paid.map((p) => ({ slot: p.slot, v: "Upheld", cls: "won", hunter: p.hunter, amt: "+" + L.num(p.paid) + " NEAR", link: acctT(p.contract) })),
+    ];
+    const shown = max ? rows.slice(0, max) : rows;
+    if (!shown.length) return "";
+    return `<div class="logwrap"><table class="logtable"><thead><tr><th>Slot</th><th>Verdict</th><th>Hunter</th><th class="r">Amount</th><th>Receipt</th></tr></thead><tbody>${shown.map((r) => `<tr class="${r.cls}"><td>${r.slot}</td><td>${esc(r.v)}</td><td>${esc(L.short(r.hunter, 22))}</td><td class="r">${esc(r.amt)}</td><td>${r.link}</td></tr>`).join("")}</tbody></table></div>`;
+  }
 
   function chipsHtml() {
     const c = counts();
@@ -394,7 +404,7 @@
       <div class="tok-layout"><section class="tok-main">
         <article class="panel"><h2>The insider path</h2>${path}${bond}</article>
         <article class="panel"><h2>Opening buyers</h2>${table}${clean ? "" : ""}</article>
-        <article class="panel log" id="log"><h2>Hunts on $CUSTOMS</h2><ul class="log">${[...S.session.filter((x) => ["paid", "rejected"].includes(x.phase)).map(sessionRow), ...S.paid.map(paidRow)].join("") || `<li class="dim">No hunt yet.</li>`}</ul></article>
+        <article class="panel log" id="log"><h2>Hunts on $CUSTOMS</h2>${logTable(0) || `<p class="dim">No hunt yet.</p>`}</article>
       </section>
       <aside class="act"><div class="huntcard"><h2>Hunt this launch</h2><p class="small mono">${hunter ? esc(S.stamps.best.contract) + " · standing" : "Reading the stamps"}</p>
         <dl class="lines"><div><dt>Creator bond</dt><dd>${st ? L.num(bondOfBest()) + " NEAR" : "Reading"}</dd></div><div><dt>You file with</dt><dd>${st ? L.num(filingBond()) + " NEAR filing bond" : "Reading"}</dd></div><div><dt>Path proven: you receive</dt><dd>${st ? L.num(payNum()) + " NEAR" : "Reading"}</dd></div><div><dt>Path refused: you lose</dt><dd>${st ? L.num(filingBond()) + " NEAR" : "Reading"}</dd></div></dl>

@@ -94,7 +94,14 @@
 
   const status = (l, now) => (l.pool_id ? "cooked" : l.end_ms && l.end_ms > now ? "cooking" : "spoiled");
 
-  const api = { yocto, nearNum, num, near, short, shortTx, age, left, clock, accountsOf, insiderFact, openers, raiseSeries, meterCells, rheaPrice, status, Y };
+  /* The headline count is a verdict. It is stated only when every launch on the board has been traced: a partial trace reads "tracing n of m". */
+  function traceHeadline(launches) {
+    const total = launches.length, read = launches.filter((l) => l.fact), n = read.length;
+    if (total === 0 || n < total) return { settled: false, n, total, own: 0 };
+    return { settled: true, n, total, own: read.filter((l) => l.fact.own).length };
+  }
+
+  const api = { traceHeadline, yocto, nearNum, num, near, short, shortTx, age, left, clock, accountsOf, insiderFact, openers, raiseSeries, meterCells, rheaPrice, status, Y };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else window.LPLib = api;
 })();
