@@ -102,3 +102,12 @@ OutLayer's worker queue answered a request 4 to 7 minutes after it was filed (re
 | Forged signature | `late_verdict` panics `verdict signature does not verify against the pinned key` | `cargo test` in `contracts/stamp`, `a_late_answer_with_a_forged_signature_is_refused` |
 
 Slot 36 (`customs36-stamp.testnet`, wasm sha256 `6d654cde4fad8f7b7cb9f04de427d2bd6e4a27715dc798e787961306d833a473`): the enclave's key answer (`CRg7inCHfPGkS182ZFvLknZMSA7ef77i72x8MSKUuNZA`, token `customs36-stamp.testnet`, key `ed25519:FFs3trZsTmN2RnTCKGmHUAK69t1KBrFqvjL5oKfsUzAo`) is pinned through `late_pin` (`9Z3AEpYr5gSPrXpY5GNcv7ckrZRmzt8XsKBowUAVJtBH`). The creator's 1 NEAR bond is posted only behind that pinned key (`HX3wbFdkrEoEicqDc4jPkPWL8yA3VJwLmPC9vMDWnXth`).
+
+Cold hunts through the live page on 2026-11-14 (`https://near-customs.nearbuild.workers.dev/`, one click each, no wallet):
+
+| Run | Result | Evidence |
+|---|---|---|
+| Clean buyer, slot 36 | Rejected in 235 s, 0.1 NEAR filing bond forfeited, the stamp stands; the enclave's signed verdict arrived after the yield window and was applied by `late_verdict` | filing tx https://testnet.nearblocks.io/txns/BhZrfNzV1QhVACN4X58oXfKu5eG9HEW8LRMbUTj3RVqE , relay tx https://testnet.nearblocks.io/txns/FjnKgNnHgkiLrAUL7k5hMRAz1rCpGxSQiyHryAd9nXk3 |
+| Funded buyer, slot 36 | Upheld, 1.1 NEAR to `customs36-hunter.testnet`, applied by `late_verdict` | relay tx https://testnet.nearblocks.io/txns/7LEvagJ8tMvLzF8Mpv84xjjyFsyK4uQyLdHQc6Z3tvNb |
+| Funded buyer, slot 38 | Upheld in 24 s through the normal yield path (OutLayer `execution_completed`, 2.0 s of enclave time), 1.1 NEAR to `customs38-hunter.testnet` | filing tx https://testnet.nearblocks.io/txns/8VFYeToXMXarC9p6XT2rwvJXVfnNYPSZQVjAtNJA8Qwh |
+
