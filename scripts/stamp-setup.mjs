@@ -85,7 +85,8 @@ for (let t = 0; t < (Number(process.env.PIN_TRIES) || 1) && !key; t++) {
 console.log("verdict key pinned:", key);
 if (!key) throw Error("verdict key was not pinned");
 
-if (!(await view(STAMP, "stamp_of", { launch: LAUNCH }))) {
+// SKIP_BOND=1 provisions a spare: deployed, key pinned, hunter funded, bond not yet posted; the worker's /stamp/arm posts it when no stamp stands
+if (!process.env.SKIP_BOND && !(await view(STAMP, "stamp_of", { launch: LAUNCH }))) {
   const start = win.start_s, end = win.opening_ends_s;
   const r = await as(CREATOR, STAMP, [functionCallAction("post_stamp", { launch: LAUNCH, market: MARKET, window_start_s: start, window_end_s: end }, 30_000_000_000_000n, NEAR(1))]);
   log("creator posted the 1 NEAR bond", r.hash);

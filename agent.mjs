@@ -228,3 +228,40 @@ export async function huntInject(request, env, send = sendActions, now = Date.no
   })());
   return json({ signer: key.account_id, stamp: key.stamp, attempts });
 }
+
+/* ---------------------------------------------------------------- arm: keep a bond standing
+
+   POST /stamp/arm: when no stamp contract holds a Standing bond for the launch, the creator account posts one on the next spare stamp
+   (deployed, verdict key pinned, hunter funded, bond not yet posted). The route spends the creator's own bond and only ever calls
+   `post_stamp` on the listed spares. A visitor who finds nothing standing presses one button and the bond stands within a block. */
+export const LAUNCH = "customs26-token.testnet";
+export const MARKET = "dclv2.ref-dev.testnet";
+export const STANDING_SLOTS = ["customs36-stamp.testnet", "customs37-stamp.testnet", "customs38-stamp.testnet"];
+export const SPARE_SLOTS = ["customs39-stamp.testnet", "customs40-stamp.testnet"];
+const ARM_GAP_MS = 20000;
+let armedAt = 0;
+const viewOrNull = async (view, id, method, args, deadline) => { try { const r = await view(id, method, args, deadline); return r && r.result && r.result.length ? JSON.parse(new TextDecoder().decode(new Uint8Array(r.result))) : null; } catch { return null; } };
+
+export async function stampArm(request, env, send = callFunction, now = Date.now, view = readView) {
+  if (!env.CREATOR_KEY) return json({ error: "The creator key is not configured on this host." }, 503);
+  const key = JSON.parse(env.CREATOR_KEY);
+  const t = now(), deadline = t + 40000;
+  const wait = armedAt + ARM_GAP_MS - t;
+  if (wait > 0) return json({ error: "A bond is being posted. Try again in " + Math.ceil(wait / 1000) + " s." }, 429, { "retry-after": String(Math.ceil(wait / 1000)) });
+  const states = await Promise.all([...STANDING_SLOTS, ...SPARE_SLOTS].map(async (c) => ({ c, s: await viewOrNull(view, c, "stamp_of", { launch: LAUNCH }, deadline) })));
+  const standing = states.find((x) => x.s && x.s.state === "Standing");
+  if (standing) return json({ status: "standing", stamp: standing.c });
+  for (const c of SPARE_SLOTS) {
+    if (states.find((x) => x.c === c).s) continue;
+    if (!(await viewOrNull(view, c, "verdict_key", {}, deadline))) continue;
+    const win = await viewOrNull(view, LAUNCH, "window", {}, deadline);
+    if (!win) return json({ error: "The launch window could not be read. Try again." }, 502);
+    armedAt = t;
+    try {
+      const { hash, outcome } = await send({ rpcUrl: RPC, signerId: key.account_id, secretKey: key.secret_key, receiverId: c, method: "post_stamp", args: { launch: LAUNCH, market: MARKET, window_start_s: win.start_s, window_end_s: win.opening_ends_s }, gas: 30_000_000_000_000n, deposit: 10n ** 24n, deadline });
+      if (outcome?.status?.Failure) { armedAt = 0; return json({ error: "The bond transaction failed.", tx: hash }, 502); }
+      return json({ status: "armed", stamp: c, tx: hash });
+    } catch (e) { armedAt = 0; return json({ error: "The bond transaction did not complete: " + String(e.message || e).slice(0, 160) }, 502); }
+  }
+  return json({ status: "none", error: "Every stamp has been hunted and no spare is left to arm." }, 409);
+}

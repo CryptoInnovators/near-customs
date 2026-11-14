@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { agentBuy, huntInject, readOutcome, AMOUNT, GATE } from "../../agent.mjs";
+import { agentBuy, huntInject, readOutcome, stampArm, AMOUNT, GATE, SPARE_SLOTS, STANDING_SLOTS } from "../../agent.mjs";
 import { b58decode, b58encode, encodeTx, functionCallAction } from "../../near-tx.mjs";
 
 const req = (body) => new Request("https://x/agent/buy", { method: "POST", body: typeof body === "string" ? body : JSON.stringify(body) });
@@ -233,4 +233,45 @@ test("findAnswers picks the worker's late answer for this challenge out of other
     assert.equal(seen[0][1].from_tx_block_height, 1180);
     assert.equal(seen[0][1].account_id, "worker.outlayer.testnet");
   } finally { globalThis.fetch = realFetch; }
+});
+
+const enc = (v) => ({ result: [...new TextEncoder().encode(JSON.stringify(v))] });
+const armReq = () => new Request("https://x/stamp/arm", { method: "POST" });
+const armEnv = { CREATOR_KEY: JSON.stringify({ account_id: "creator.testnet", secret_key: "ed25519:unused" }) };
+const armView = (stamps, keys) => async (id, method) => {
+  if (method === "stamp_of") return stamps[id] ? enc(stamps[id]) : { error: "panic" };
+  if (method === "verdict_key") return keys.includes(id) ? enc("ed25519:k") : enc(null);
+  if (method === "window") return enc({ start_s: 10, opening_ends_s: 20 });
+  throw Error("unexpected view " + method);
+};
+
+test("arm posts the creator's bond on a spare only when no stamp stands, and calls nothing otherwise", async () => {
+  const calls = [];
+  const send = async (c) => { calls.push(c); return { hash: "ARM1", outcome: { status: { SuccessValue: "" } } }; };
+  let t = 5_000_000;
+  const standing = await stampArm(armReq(), armEnv, send, () => t, armView({ [STANDING_SLOTS[0]]: { state: "Standing" } }, SPARE_SLOTS));
+  assert.deepEqual(await standing.json(), { status: "standing", stamp: STANDING_SLOTS[0] });
+  assert.equal(calls.length, 0, "a standing bond means no transaction");
+  const broken = Object.fromEntries(STANDING_SLOTS.map((c) => [c, { state: { Broken: {} } }]));
+  t += 60_000;
+  const armed = await stampArm(armReq(), armEnv, send, () => t, armView(broken, SPARE_SLOTS));
+  assert.deepEqual(await armed.json(), { status: "armed", stamp: SPARE_SLOTS[0], tx: "ARM1" });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].method, "post_stamp");
+  assert.equal(calls[0].receiverId, SPARE_SLOTS[0]);
+  assert.equal(calls[0].deposit, 10n ** 24n);
+  assert.deepEqual(calls[0].args, { launch: "customs26-token.testnet", market: "dclv2.ref-dev.testnet", window_start_s: 10, window_end_s: 20 });
+  const again = await stampArm(armReq(), armEnv, send, () => t + 1000, armView(broken, SPARE_SLOTS));
+  assert.equal(again.status, 429, "a second press inside the gap posts nothing");
+  assert.equal(calls.length, 1);
+});
+
+test("arm refuses a spare whose verdict key is not pinned, reports none left, and needs the creator key", async () => {
+  const calls = [];
+  const send = async (c) => { calls.push(c); return { hash: "X", outcome: { status: { SuccessValue: "" } } }; };
+  const broken = Object.fromEntries([...STANDING_SLOTS, SPARE_SLOTS[0]].map((c) => [c, { state: { Broken: {} } }]));
+  const r = await stampArm(armReq(), armEnv, send, () => 9_000_000, armView(broken, []));
+  assert.equal(r.status, 409);
+  assert.equal(calls.length, 0, "an unpinned spare never receives a bond");
+  assert.equal((await stampArm(armReq(), {}, send, () => 9_100_000, armView({}, SPARE_SLOTS))).status, 503);
 });

@@ -1,0 +1,11 @@
+{
+  "name": "near-customs",
+  "private": true,
+  "description": "Customs: a bonded stamp on meme.cooking launches, hunted by an agent with a function-call key and judged by a pinned checker in an OutLayer TDX enclave.",
+  "scripts": {
+    "judge": "bash scripts/judge.sh",
+    "test": "node --test web/test/*.test.mjs",
+    "check": "bash scripts/check-web.sh",
+    "cold-run": "node scripts/cold-run.mjs https://near-customs.nearbuild.workers.dev/ \"#break-go\" cold-run.png"
+  }
+}

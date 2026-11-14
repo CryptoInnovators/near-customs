@@ -184,12 +184,14 @@
   }
 
   function huntBody() {
-    if (S.stampsError) return `<p class="result">The testnet node did not answer. <button class="retry" type="button" data-reload-stamps>Read again</button></p><button class="huntbtn" id="break-go" type="button" disabled>Hunt for ${L.num(payNum())} NEAR</button>`;
+    if (S.stampsError) return `<p class="result">The testnet node did not answer. <button class="retry" type="button" data-reload-stamps>Read again</button></p><button class="huntbtn" id="break-go" type="button" data-reload-stamps>Read the stamps again</button>`;
     if (!S.stamps) return `<button class="huntbtn" id="break-go" type="button" disabled>Reading the stamps</button>`;
     const h = S.h;
     const live = h && !["paid", "rejected", "refused", "busy", "unavailable", "unanswered", "timeout", "error"].includes(h.phase);
     const canHunt = S.stamps.best && S.stamps.best.stamp && S.stamps.best.stamp.state === "Standing";
-    const btn = canHunt ? `<button class="huntbtn" id="break-go" type="button" data-hunt="funded">Hunt for ${L.num(payNum())} NEAR</button>` : `<button class="huntbtn" id="break-go" type="button" disabled>No standing stamp to hunt</button>`;
+    const btn = canHunt ? `<button class="huntbtn" id="break-go" type="button" data-hunt="funded">Hunt for ${L.num(payNum())} NEAR</button>`
+      : S.arming ? `<button class="huntbtn" id="break-go" type="button" disabled aria-busy="true">Posting the creator's bond</button>`
+      : `<p class="result">${esc(S.armNote || "Every bond on this launch has been hunted.")}</p><button class="huntbtn" id="break-go" type="button" data-arm>Post the next 1 NEAR bond</button>`;
     const clean = canHunt ? `<button class="linkbtn" id="break-clean" type="button" data-hunt="clean">Hunt a clean buyer instead and watch the checker reject it</button>` : "";
     if (!h) return btn + lastHunt() + `<p class="last">${clean}</p>`;
     return huntSteps(h) + (live ? "" : btn + `<p class="last">${clean}</p>`);
@@ -431,7 +433,22 @@
     if (end && ["paid", "rejected"].includes(end.phase)) S.session.unshift(end);
     await loadStamps();
     paintHunt(); paintBonded(); if (hash() === C.LAUNCH) customsToken();
+    if (S.stamps && !S.stamps.failed && !S.stamps.standing.length) armNow();
     const steps = $("#stage-steps"); if (steps) steps.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  /* no bond standing: the creator posts the next one (worker /stamp/arm), then the slip and the button read it from the chain */
+  async function armNow() {
+    if (S.arming) return;
+    S.arming = true; S.armNote = ""; paintBonded();
+    try {
+      const r = await C.arm();
+      if (r.status !== 200) S.armNote = r.body && r.body.error ? r.body.error : "The bond could not be posted. Try again.";
+      else if (r.body.tx) S.armNote = "";
+    } catch { S.armNote = "The bond could not be posted. Try again."; }
+    S.arming = false;
+    await loadStamps();
+    paintBonded(); paintHunt(); if (hash() === C.LAUNCH) customsToken();
   }
 
   function openPop(on) { const p = $("#payout-pop"), b = $("#payout-btn"); p.hidden = !on; b.setAttribute("aria-expanded", String(on)); }
@@ -443,6 +460,7 @@
     if (t.closest("#payout-btn")) { openPop($("#payout-pop").hidden); return; }
     const jump = t.closest("[data-jump]");
     if (jump) { e.preventDefault(); if (document.body.dataset.view !== "board") location.hash = "#/"; setTimeout(() => { const n = document.getElementById(jump.dataset.jump); if (n) n.scrollIntoView({ behavior: "smooth" }); document.querySelectorAll(".tabs a").forEach((a) => a.classList.toggle("on", a === jump)); }, 40); return; }
+    if (t.closest("[data-arm]")) { armNow(); return; }
     const hunt = t.closest("[data-hunt]");
     if (hunt) { startHunt(hunt.dataset.hunt); return; }
     const f = t.closest("[data-f]");
