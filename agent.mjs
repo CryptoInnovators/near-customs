@@ -75,6 +75,9 @@ export async function stampBreak(request, env, send = callFunction, now = Date.n
   const deadline = t + FILE_DEADLINE_MS;
   try {
     const params = JSON.parse(new TextDecoder().decode(new Uint8Array((await view(key.stamp, "stamp_params", {}, deadline)).result)));
+    /* The hunter files from prepaid credit. A drained account makes the contract refuse after the transaction is already signed, so read the credit first and refuse with no transaction at all. */
+    const credit = JSON.parse(new TextDecoder().decode(new Uint8Array((await view(key.stamp, "credit_of", { account: key.account_id }, deadline)).result)));
+    if (typeof credit === "string" && BigInt(credit) < BigInt(params.min_bond) + BigInt(params.exec_fee || 0)) { lastFiled = 0; filedAt.pop(); return json({ error: "The hunter " + key.account_id + " has no filing credit left on " + key.stamp + ", so no filing was made and no bond moved.", status: "unavailable", reason: "credit" }, 503); }
     /* FastFS answers GET but 404s HEAD, so the probe is a GET. OutLayer fetches the pinned checker by URL; if its host does not serve it, a filed challenge can only end Unanswered after minutes. Say so before the bond moves. */
     if (params.module_url) {
       const served = await probe(params.module_url).catch(() => 0);

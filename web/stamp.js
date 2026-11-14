@@ -63,13 +63,16 @@
   }
 
   /* the stamp to show: the first slot still standing with no open challenge, else any standing, else the one that was broken */
-  let slot = null, lastInfo = null, fundedHop = null, usedContract = null;
+  let slot = null, lastInfo = null, fundedHop = null, usedContract = null, need = null;
+  const hunterOf = (contract) => contract.replace("-stamp.", "-hunter.");
   async function readStamp() {
-    const all = await Promise.all(SLOTS.map(async (contract) => ({ contract, stamp: await view(contract, "stamp_of", { launch: LAUNCH }).catch(() => null) })));
+    if (need === null) need = await view(SLOTS[0], "stamp_params", {}).then((p) => BigInt(p.min_bond) + BigInt(p.exec_fee)).catch(() => 0n);
+    const all = await Promise.all(SLOTS.map(async (contract) => ({ contract, stamp: await view(contract, "stamp_of", { launch: LAUNCH }).catch(() => null), credit: await view(contract, "credit_of", { account: hunterOf(contract) }).then(BigInt).catch(() => 0n) })));
     const live = all.filter((s) => s.stamp);
     const standing = live.filter((s) => s.stamp.state === "Standing");
-    const newest = [...standing].reverse();
-    slot = newest.find((s) => s.stamp.open === 0) || newest[0] || live.find((s) => s.contract === usedContract) || live[live.length - 1] || null;
+    /* a hunt is filed from the hunter's prepaid credit, so the stamp to hunt is the newest standing one whose hunter can still pay for it */
+    const newest = [...standing].reverse(), funded = newest.filter((s) => s.credit >= need);
+    slot = funded.find((s) => s.stamp.open === 0) || funded[0] || newest.find((s) => s.stamp.open === 0) || newest[0] || live.find((s) => s.contract === usedContract) || live[live.length - 1] || null;
     lastInfo = { slot, standing: standing.length, total: live.length };
     return lastInfo;
   }
@@ -249,6 +252,8 @@
     el.steps.scrollIntoView({ behavior: "smooth", block: "nearest" });
     const bareRun = kind === "bare";
     const target = bareRun ? { launch: bare.launch, wallet: bare.wallet, path: [bare.tx, bare.tx], label: bare.name } : { launch: LAUNCH, ...(kind === "clean" ? CLEAN : FUNDED), label: "Customs coin" };
+    /* another visitor may have spent this hunter's credit since the page loaded: re-pick before filing */
+    if (!bareRun && slot && (await view(slot.contract, "credit_of", { account: hunterOf(slot.contract) }).then(BigInt).catch(() => need)) < need) await readStamp();
     const stampContract = bareRun ? SLOTS[SLOTS.length - 1] : slot && slot.contract;
     usedContract = stampContract;
     if (!bareRun) { plan(kind); railReset(); railSet(0, "run", "Filing on chain"); }

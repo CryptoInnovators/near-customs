@@ -158,3 +158,22 @@ test("filing is refused before any bond moves when the host does not serve the p
   assert.equal((await served.json()).status, "filed");
   assert.equal(calls.length, 1);
 });
+
+test("filing is refused before any transaction when the hunter's filing credit is below bond + exec_fee", async () => {
+  const calls = [];
+  const send = async (c) => { calls.push(c); return { hash: "F3", outcome: filedOutcome }; };
+  const enc = (v) => ({ result: Array.from(new TextEncoder().encode(JSON.stringify(v))) });
+  let credit = "100000000000000000000000";
+  const creditView = async (_id, method) => enc(method === "credit_of" ? credit : { min_bond: "100000000000000000000000", exec_fee: "100000000000000000000000" });
+  let t = 800_000_000;
+  const post = () => stampBreak(new Request("https://x/stamp/break", { method: "POST", body: JSON.stringify({ launch: "a.testnet", wallet: "b.testnet", path: [H, H] }) }), fenv, send, () => (t += 10_000_000), creditView, async () => 200);
+  const drained = await post();
+  assert.equal(drained.status, 503);
+  const body = await drained.json();
+  assert.equal(body.status, "unavailable");
+  assert.equal(body.reason, "credit");
+  assert.equal(calls.length, 0);
+  credit = "200000000000000000000000";
+  assert.equal((await (await post()).json()).status, "filed");
+  assert.equal(calls.length, 1);
+});
