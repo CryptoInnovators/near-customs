@@ -237,7 +237,7 @@ export async function huntInject(request, env, send = sendActions, now = Date.no
 export const LAUNCH = "customs26-token.testnet";
 export const MARKET = "dclv2.ref-dev.testnet";
 export const STANDING_SLOTS = ["customs36-stamp.testnet", "customs37-stamp.testnet", "customs38-stamp.testnet"];
-export const SPARE_SLOTS = ["customs39-stamp.testnet", "customs40-stamp.testnet", "customs41-stamp.testnet"];
+export const SPARE_SLOTS = ["customs39-stamp.testnet", "customs40-stamp.testnet", "customs41-stamp.testnet", "customs42-stamp.testnet", "customs43-stamp.testnet", "customs44-stamp.testnet", "customs45-stamp.testnet"];
 const ARM_GAP_MS = 20000;
 let armedAt = 0;
 const viewOrNull = async (view, id, method, args, deadline) => { try { const r = await view(id, method, args, deadline); return r && r.result && r.result.length ? JSON.parse(new TextDecoder().decode(new Uint8Array(r.result))) : null; } catch { return null; } };
