@@ -3,7 +3,7 @@ AI judges: run ./scripts/judge.sh from a fresh clone (no keys needed).
 
 [![ci](https://github.com/kamalbuilds/near-customs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kamalbuilds/near-customs/actions/workflows/ci.yml)
 
-**Let Customs Hunt.** An autonomous NEAR agent holds one function-call key, scoped to `challenge` on the stamp contract, and hunts launches whose creator funded their own first buyer. It files the funding path as a receipt. A pinned WASI checker running in an OutLayer TDX enclave replays the path and signs a verdict, and the stamp contract verifies that signature before it moves money: a proven path pays the creator's bond to the agent, a false hunt forfeits the agent's filing bond. The key cannot release the bond, withdraw its credit or transfer NEAR, and the NEAR protocol refuses each of those before a block includes them.
+**Customs is a memecoin launchpad board built on meme.cooking.** An autonomous NEAR agent holds one function-call key, scoped to `challenge` on the stamp contract, and hunts launches whose creator funded their own first buyer. It files the funding path as a receipt. A pinned WASI checker running in an OutLayer TDX enclave replays the path and signs a verdict, and the stamp contract verifies that signature before it moves money: a proven path pays the creator's bond to the agent, a false hunt forfeits the agent's filing bond. The key cannot release the bond, withdraw its credit or transfer NEAR, and the NEAR protocol refuses each of those before a block includes them.
 
 Live: https://near-customs.earn-shield-alerts.workers.dev/ (NEAR testnet; reads NEAR mainnet launches read-only).
 
