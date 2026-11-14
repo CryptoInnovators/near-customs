@@ -91,3 +91,14 @@ Pinned verdict key `ed25519:Akwz7rSe9k1uWuPBHesPfxeYMGJksCQmHLd2ABETTsgw` (pin t
 | Slot 34 stamp is standing | `customs34-stamp.testnet` bond 1 NEAR, hunter `customs34-hunter.testnet` holds only a `challenge` function-call key (full-access key deleted, tx 79eLxaE624GJSYubxt6nJQ4jsX39YuDZLB65CZ474E6X), filing credit 1 NEAR | `near contract call-function as-read-only customs34-stamp.testnet stamp_of json-args '{"launch":"customs26-token.testnet"}' network-config testnet now` |
 | Slot 32 filing credit topped up | `customs32-hunter.testnet` holds 1.4 NEAR of filing credit through `deposit_credit` | tx JCARgKsCy97eUnDENjf9wFiR41v3V9rgs8APevePpLoL |
 | Headline hunt through the real page, cold, no wallet, slot 35 | `#break-go`: filed on chain as challenge 0 in 5 s, `Upheld` and +1.1 NEAR to `customs35-hunter.testnet` 72 s after the click; `stamp_of` reads `Broken` with prover `customs35-hunter.testnet`, paid 1.1 NEAR | filing tx https://testnet.nearblocks.io/txns/2toitSPzot7qT6hEJUku1o9ijFvjVSxsU3N629N8swwk ; `node scripts/cold-run.mjs <url> "#break-go" out.png` |
+
+## Late enclave answers (`late_verdict`), 2026-11-14
+
+OutLayer's worker queue answered a request 4 to 7 minutes after it was filed (read from `worker.outlayer.testnet`'s `resolve_execution` calls against each request's `execution_requested` timestamp). NEAR closes a yield after 200 blocks, so the stamp recorded `Unanswered` while the enclave's signed verdict landed on chain afterwards. `late_verdict` on the stamp accepts that signed answer for 1200 blocks through the same checks as `on_verdict`, and the worker's `/stamp/relay` delivers it with a key scoped to `late_verdict`. Stamp wasm sha256 `49fad19b1155e1318b9c2f5ceec77aae4816868e5454ebb935a665010666c2c6`, deployed on `customs32-stamp.testnet` and `customs34-stamp.testnet`.
+
+| Run | Result | Evidence |
+|---|---|---|
+| Clean buyer, challenge 6 on slot 32 | filed, closed `Unanswered` at block +200, the enclave's signed `rejected` delivered through `late_verdict`, `challenge_of(6)` reads `Rejected` and the event carries `"late":true` | relay tx https://testnet.nearblocks.io/txns/A565tAJgzXE7NCCmP7V5vBvmGRFpEJT6i6hvw7u9pySg |
+| Forged signature | `late_verdict` panics `verdict signature does not verify against the pinned key` | `cargo test` in `contracts/stamp`, `a_late_answer_with_a_forged_signature_is_refused` |
+
+Slot 36 (`customs36-stamp.testnet`, wasm sha256 `6d654cde4fad8f7b7cb9f04de427d2bd6e4a27715dc798e787961306d833a473`): the enclave's key answer (`CRg7inCHfPGkS182ZFvLknZMSA7ef77i72x8MSKUuNZA`, token `customs36-stamp.testnet`, key `ed25519:FFs3trZsTmN2RnTCKGmHUAK69t1KBrFqvjL5oKfsUzAo`) is pinned through `late_pin` (`9Z3AEpYr5gSPrXpY5GNcv7ckrZRmzt8XsKBowUAVJtBH`). The creator's 1 NEAR bond is posted only behind that pinned key (`HX3wbFdkrEoEicqDc4jPkPWL8yA3VJwLmPC9vMDWnXth`).

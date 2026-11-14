@@ -177,6 +177,7 @@ impl StampBook {
     pub fn post_stamp(&mut self, launch: AccountId, market: AccountId, window_start_s: u64, window_end_s: u64) {
         let creator = env::predecessor_account_id();
         let bond = env::attached_deposit().as_yoctonear();
+        require!(self.verdict_key.is_some(), "stamp: the verdict key is not pinned yet; a bond is posted only behind a pinned key");
         require!(bond >= self.params.min_stamp.0, "stamp: the bond is below min_stamp");
         require!(window_end_s > window_start_s, "stamp: the opening window must end after it starts");
         require!(creator != launch && market != launch, "stamp: the creator and the market are accounts other than the launch");
@@ -307,18 +308,15 @@ impl StampBook {
             log!("stamp: no key answer; the key stays unpinned");
             return false;
         };
-        if self.verdict_key.is_some() {
-            return false;
-        }
-        require!(out.token == env::current_account_id(), "stamp: key answer names another account");
-        let key: PublicKey = out.public_key.parse().unwrap_or_else(|_| env::panic_str("stamp: malformed public key"));
-        require!(key.curve_type() == near_sdk::CurveType::ED25519, "stamp: the verdict key must be ed25519");
-        let sig: [u8; 64] = near_sdk::bs58::decode(&out.sig).into_vec().ok().and_then(|b| b.try_into().ok()).unwrap_or_else(|| env::panic_str("stamp: malformed signature"));
-        let raw: [u8; 32] = key.as_bytes()[1..].try_into().unwrap_or_else(|_| env::panic_str("stamp: malformed public key"));
-        require!(env::ed25519_verify(&sig, &pin_message(&out.token.to_string(), &out.public_key), &raw), "stamp: the key answer is not signed by the key it reports");
-        self.verdict_key = Some(key);
-        self.event("verdict_key_pinned", json!({"public_key": out.public_key}));
-        true
+        self.pin(out, false)
+    }
+
+    /// The enclave's signed key answer to a `pin_verdict_key` whose yield window had closed. The key is accepted only if it verifies against itself
+    /// and names this contract. A bond can only be posted behind a pinned key, so the creator reads the pinned key, compares it with the
+    /// answer OutLayer's worker put on chain for the request, and posts the bond only if they match.
+    pub fn late_pin(&mut self, out: PinOutput) -> bool {
+        require!(self.verdict_key.is_none(), "stamp: the verdict key is already pinned");
+        self.pin(out, true)
     }
 
     /// Callback of the OutLayer run. An answer that fails any check closes the challenge as `Unanswered`; this never panics on the
@@ -480,6 +478,21 @@ impl StampBook {
         true
     }
 
+    fn pin(&mut self, out: PinOutput, late: bool) -> bool {
+        if self.verdict_key.is_some() {
+            return false;
+        }
+        require!(out.token == env::current_account_id(), "stamp: key answer names another account");
+        let key: PublicKey = out.public_key.parse().unwrap_or_else(|_| env::panic_str("stamp: malformed public key"));
+        require!(key.curve_type() == near_sdk::CurveType::ED25519, "stamp: the verdict key must be ed25519");
+        let sig: [u8; 64] = near_sdk::bs58::decode(&out.sig).into_vec().ok().and_then(|b| b.try_into().ok()).unwrap_or_else(|| env::panic_str("stamp: malformed signature"));
+        let raw: [u8; 32] = key.as_bytes()[1..].try_into().unwrap_or_else(|_| env::panic_str("stamp: malformed public key"));
+        require!(env::ed25519_verify(&sig, &pin_message(&out.token.to_string(), &out.public_key), &raw), "stamp: the key answer is not signed by the key it reports");
+        self.verdict_key = Some(key);
+        self.event("verdict_key_pinned", json!({"public_key": out.public_key, "late": late}));
+        true
+    }
+
     fn close_unanswered(&mut self, challenge_id: u64, mut ch: Challenge, why: &str) {
         ch.state = ChallengeState::Unanswered;
         self.challenges.insert(challenge_id, ch.clone());
@@ -537,6 +550,11 @@ mod tests {
         ctx(accounts(0), 0, 100);
         StampBook::new(params())
     }
+    fn pinned() -> StampBook {
+        let mut b = book();
+        b.verdict_key = Some("ed25519:6E8sCci9badyRkXb3JoRpBj5p8C6Tw41ELDZoiihKEtp".parse().unwrap());
+        b
+    }
 
     #[test]
     #[should_panic(expected = "module_sha256 must be the published checker module")]
@@ -549,7 +567,7 @@ mod tests {
 
     #[test]
     fn the_creator_posts_a_bond_and_only_one_stamp_per_launch_exists() {
-        let mut b = book();
+        let mut b = pinned();
         ctx(accounts(1), 2 * E24, 200);
         b.post_stamp(accounts(2), accounts(3), 150, 750);
         let s = b.stamp_of(accounts(2)).unwrap();
@@ -562,7 +580,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "this launch already has a stamp")]
     fn a_second_stamp_for_the_same_launch_is_refused() {
-        let mut b = book();
+        let mut b = pinned();
         ctx(accounts(1), 2 * E24, 200);
         b.post_stamp(accounts(2), accounts(3), 150, 750);
         ctx(accounts(1), 2 * E24, 201);
@@ -572,7 +590,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "the bond is below min_stamp")]
     fn a_dust_bond_is_refused() {
-        let mut b = book();
+        let mut b = pinned();
         ctx(accounts(1), E24 / 2, 200);
         b.post_stamp(accounts(2), accounts(3), 150, 750);
     }
@@ -591,7 +609,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "the bond is held until release_s")]
     fn the_creator_cannot_pull_the_bond_early() {
-        let mut b = book();
+        let mut b = pinned();
         ctx(accounts(1), 2 * E24, 200);
         b.post_stamp(accounts(2), accounts(3), 150, 750);
         ctx(accounts(1), 0, 900);
@@ -600,7 +618,7 @@ mod tests {
 
     #[test]
     fn the_creator_takes_the_bond_back_after_the_hold() {
-        let mut b = book();
+        let mut b = pinned();
         ctx(accounts(1), 2 * E24, 200);
         b.post_stamp(accounts(2), accounts(3), 150, 750);
         ctx(accounts(1), 0, 1300);
@@ -611,7 +629,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "only the creator releases the bond")]
     fn a_stranger_cannot_release_the_bond() {
-        let mut b = book();
+        let mut b = pinned();
         ctx(accounts(1), 2 * E24, 200);
         b.post_stamp(accounts(2), accounts(3), 150, 750);
         ctx(accounts(4), 0, 1300);
@@ -621,7 +639,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "the filing credit is below bond + exec_fee")]
     fn a_key_with_no_credit_cannot_file() {
-        let mut b = book();
+        let mut b = pinned();
         b.verdict_key = Some("ed25519:6E8sCci9badyRkXb3JoRpBj5p8C6Tw41ELDZoiihKEtp".parse().unwrap());
         ctx(accounts(1), 2 * E24, 200);
         b.post_stamp(accounts(2), accounts(3), 150, 750);
@@ -705,5 +723,41 @@ mod tests {
         at_block(1000 + LATE_BLOCKS + 1);
         let _ = b.reclaim_bond(0);
         assert_eq!(b.challenge_of(0).unwrap().state, ChallengeState::Reclaimed);
+    }
+
+    #[test]
+    #[should_panic(expected = "a bond is posted only behind a pinned key")]
+    fn a_bond_cannot_be_posted_before_the_key_is_pinned() {
+        let mut b = book();
+        ctx(accounts(1), 2 * E24, 200);
+        b.post_stamp(accounts(2), accounts(3), 150, 750);
+    }
+
+    fn pin_out(token: AccountId, sig: u8) -> PinOutput {
+        PinOutput { token, public_key: "ed25519:6E8sCci9badyRkXb3JoRpBj5p8C6Tw41ELDZoiihKEtp".into(), sig: near_sdk::bs58::encode([sig; 64]).into_string() }
+    }
+
+    #[test]
+    #[should_panic(expected = "the key answer is not signed by the key it reports")]
+    fn a_late_key_answer_with_a_forged_signature_is_refused() {
+        let mut b = book();
+        at_block(1300);
+        b.late_pin(pin_out(env::current_account_id(), 7));
+    }
+
+    #[test]
+    #[should_panic(expected = "key answer names another account")]
+    fn a_late_key_answer_for_another_contract_is_refused() {
+        let mut b = book();
+        at_block(1300);
+        b.late_pin(pin_out(accounts(5), 7));
+    }
+
+    #[test]
+    #[should_panic(expected = "the verdict key is already pinned")]
+    fn a_pinned_key_cannot_be_replaced_by_a_late_answer() {
+        let mut b = pinned();
+        at_block(1300);
+        b.late_pin(pin_out(env::current_account_id(), 7));
     }
 }

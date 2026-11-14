@@ -6,6 +6,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { addFunctionCallKeyAction, createAccountAction, addFullAccessKeyAction, deleteKeyAction, b58encode, deployContractAction, functionCallAction, newKeyPair, sendActions, transferAction, b58decode } from "../near-tx.mjs";
+import { findPins } from "../agent.mjs";
 import { RPC, rpc, view, secretOf, saveCred, sleep, link } from "./lib-testnet.mjs";
 
 // SLOT picks the stamp instance (default 28, the first). Every slot is a separate contract holding its own bond on the same launch,
@@ -64,10 +65,22 @@ if (!initialised) {
 }
 
 let key = await view(STAMP, "verdict_key");
-if (!key) {
+// OutLayer's worker can answer after the stamp's yield window. The answer is still on chain in the worker's own resolve call: hand it to
+// late_pin, which verifies the key against itself and this account. A bond is posted only behind a pinned key, after this check.
+async function latePin() {
+  const head = (await rpc("block", { finality: "final" })).header.height;
+  const [answer] = (await findPins(STAMP, head - 20000, head)).reverse();
+  if (!answer) return;
+  const late = await as(FUNDER, STAMP, [functionCallAction("late_pin", { out: { token: answer.token, public_key: answer.public_key, sig: answer.sig } }, 30_000_000_000_000n, 0n)]);
+  log("late_pin from the enclave's answer " + answer.worker_tx, late.hash);
+  for (let i = 0; i < 10 && !key; i++) { await sleep(3000); key = await view(STAMP, "verdict_key"); }
+}
+if (!key) await latePin();
+for (let t = 0; t < (Number(process.env.PIN_TRIES) || 1) && !key; t++) {
   const r = await as(FUNDER, STAMP, [functionCallAction("pin_verdict_key", {}, 150_000_000_000_000n, BigInt(params.exec_fee))]);
-  log("pin_verdict_key filed", r.hash);
+  log("pin_verdict_key filed (attempt " + (t + 1) + ")", r.hash);
   for (let i = 0; i < 40 && !key; i++) { await sleep(5000); key = await view(STAMP, "verdict_key"); }
+  if (!key) await latePin();
 }
 console.log("verdict key pinned:", key);
 if (!key) throw Error("verdict key was not pinned");
@@ -78,10 +91,11 @@ if (!(await view(STAMP, "stamp_of", { launch: LAUNCH }))) {
   log("creator posted the 1 NEAR bond", r.hash);
 }
 
+const CREDIT = Number(process.env.CREDIT ?? 1);
 const have = BigInt((await view(STAMP, "credit_of", { account: FILER })));
-if (have < NEAR(1)) {
-  const r = await as(FUNDER, STAMP, [functionCallAction("deposit_credit", { account: FILER }, 30_000_000_000_000n, NEAR(1))]);
-  log("sponsor funded the filer's credit with 1 NEAR", r.hash);
+if (have < NEAR(CREDIT)) {
+  const r = await as(FUNDER, STAMP, [functionCallAction("deposit_credit", { account: FILER }, 30_000_000_000_000n, NEAR(CREDIT))]);
+  log("sponsor funded the filer's credit with " + CREDIT + " NEAR", r.hash);
 }
 
 // the filer's key: function-call only, scoped to `challenge` on the stamp; its full-access key is deleted afterwards

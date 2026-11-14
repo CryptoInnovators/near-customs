@@ -122,12 +122,13 @@ const txApi = async (path, body) => {
   return r.json();
 };
 
-/* Every signed answer the OutLayer worker put on chain for this challenge after the yield window: the verdicts naming its launch, wallet, path and block. */
-export async function findAnswers(ch, head) {
+/* The JSON outputs the OutLayer worker put on chain between two blocks that `want` accepts: its resolve_execution and
+   submit_execution_output_and_resolve calls carry each request's output, whether or not the requesting contract was still waiting. */
+export async function workerOutputs(fromBlock, toBlock, want) {
   const found = [];
   let resume;
   for (let page = 0; page < 3; page++) {
-    const list = await txApi("/v0/account", { account_id: OUTLAYER_WORKER, is_real_signer: true, from_tx_block_height: ch.created_block + YIELD_BLOCKS, to_tx_block_height: head, sort_order: "asc", limit: 100, ...(resume ? { resume_token: resume } : {}) });
+    const list = await txApi("/v0/account", { account_id: OUTLAYER_WORKER, is_real_signer: true, from_tx_block_height: fromBlock, to_tx_block_height: toBlock, sort_order: "asc", limit: 100, ...(resume ? { resume_token: resume } : {}) });
     const hashes = [...new Set((list.account_txs || []).map((t) => t.transaction_hash))];
     for (let i = 0; i < hashes.length; i += 20) {
       for (const t of (await txApi("/v0/transactions", { tx_hashes: hashes.slice(i, i + 20) })).transactions || []) {
@@ -135,7 +136,7 @@ export async function findAnswers(ch, head) {
         if (!call || !/^(resolve_execution|submit_execution_output_and_resolve)$/.test(call.method_name)) continue;
         let v;
         try { v = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(call.args), (c) => c.charCodeAt(0)))).response?.output?.Json; } catch { continue; }
-        if (v && v.op === "verify_funding_path" && v.token === ch.launch && v.wallet === ch.wallet && v.path_hash === ch.path_hash && v.block === ch.created_block && typeof v.sig === "string" && typeof v.verdict === "string") found.push(v);
+        if (v && want(v)) found.push({ ...v, worker_tx: t.transaction.hash });
       }
     }
     resume = list.resume_token;
@@ -143,6 +144,12 @@ export async function findAnswers(ch, head) {
   }
   return found;
 }
+
+/* Every signed verdict for this challenge after the yield window: naming its launch, wallet, path and block. */
+export const findAnswers = (ch, head) => workerOutputs(ch.created_block + YIELD_BLOCKS, head, (v) => v.op === "verify_funding_path" && v.token === ch.launch && v.wallet === ch.wallet && v.path_hash === ch.path_hash && v.block === ch.created_block && typeof v.sig === "string" && typeof v.verdict === "string");
+
+/* Every signed key answer for a stamp contract since `fromBlock`. */
+export const findPins = (stamp, fromBlock, head) => workerOutputs(fromBlock, head, (v) => v.op === "public_key" && v.token === stamp && typeof v.public_key === "string" && typeof v.sig === "string");
 
 /* POST /stamp/relay {stamp, challenge_id}: status pending (the yield is still open), waiting (no answer on chain yet), relayed (late_verdict accepted),
    refused (the contract rejected the answer), settled (already Upheld, Rejected or Reclaimed) or closed (the late window has passed). */
