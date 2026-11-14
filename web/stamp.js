@@ -20,7 +20,13 @@
   const near = (y) => { const n = Number(BigInt(y) / 10n ** 20n) / 1e4; return (n % 1 === 0 ? String(n) : n.toFixed(2).replace(/0+$/, "").replace(/\.$/, "")) + " NEAR"; };
   const RAIL_IDLE = ["Filed on chain", "Enclave verdict", "Bond paid"];
   const railSet = (i, state, text) => { const li = el.rail.children[i]; li.dataset.state = state; li.querySelector("span").textContent = text == null ? RAIL_IDLE[i] : text; };
-  const railReset = () => RAIL_IDLE.forEach((_, i) => railSet(i, "idle"));
+  const railReset = () => { RAIL_IDLE.forEach((_, i) => railSet(i, "idle")); [...el.rail.querySelectorAll("a")].forEach((n) => n.remove()); };
+  const railLink = (i, href, text) => {
+    const li = el.rail.children[i];
+    let l = li.querySelector("a");
+    if (!l) { l = document.createElement("a"); l.target = "_blank"; l.rel = "noopener"; li.append(l); }
+    l.href = href; l.textContent = text;
+  };
   const a = (href, text) => { const x = document.createElement("a"); x.href = href; x.target = "_blank"; x.rel = "noreferrer"; x.textContent = text; return x; };
   const txLink = (hash, text) => a(EXPLORER + "txns/" + hash, text || "View the transaction");
   const short = (id) => (id.length > 26 ? id.slice(0, 12) + "…" + id.slice(-12) : id);
@@ -216,7 +222,7 @@
 
   let busy = false;
   const buttons = () => [el.go, el.clean, ...document.querySelectorAll(".hunt")];
-  function lock(on) { busy = on; buttons().forEach((b) => { b.disabled = on; }); }
+  function lock(on) { busy = on; window.CustomsHunting = on; buttons().forEach((b) => { b.disabled = on; }); }
 
   async function postBreak(body) {
     const res = await fetch("/stamp/break", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(50000) });
@@ -274,7 +280,7 @@
         if (bareRun) step("Nothing moved. A launch with no stamp has no bond to take.", "done");
         return;
       }
-      if (!bareRun) { railSet(0, "done", "Filed in " + Math.round((Date.now() - t0) / 1000) + " s"); railSet(1, "run", "Enclave checking"); }
+      if (!bareRun) { railSet(0, "done", "Filed in " + Math.round((Date.now() - t0) / 1000) + " s"); railSet(1, "run", "Enclave checking"); railLink(0, EXPLORER + "txns/" + f.tx, "tx"); }
       setState(filing, "done");
       filing.textContent = "Filed on chain as challenge " + f.challenge_id + " in " + Math.round((Date.now() - t0) / 1000) + " s. ";
       filing.append(txLink(f.tx, "Filing transaction"));
@@ -297,13 +303,13 @@
       const paid = after && typeof after.state === "object" && after.state.Broken ? after.state.Broken.paid : null;
       if (state === "Upheld" && paid) {
         setState(wait, "done"); wait.textContent = "The enclave signed its verdict and the contract verified the signature.";
-        if (!bareRun) { railSet(1, "done", "Verified in " + secs + " s"); railSet(2, "done", "+" + near(paid) + " to " + short(who)); }
+        if (!bareRun) { railSet(1, "done", "Verified in " + secs + " s"); railSet(2, "done", "+" + near(paid) + " to " + short(who)); railLink(1, EXPLORER + "address/" + f.stamp, "stamp"); railLink(2, EXPLORER + "address/" + who, "account"); }
         const up = step("Upheld. The stamp is broken and " + near(paid) + " moved to " + who + " in " + secs + " s.", "upheld", a(EXPLORER + "address/" + who, "See the account"));
         up.prepend(Object.assign(document.createElement("strong"), { className: "payoff", textContent: "+" + near(paid) }));
         step("The hunter stops. The stamp it broke was its one hunt, and its key reaches nothing else.", "done");
       } else if (state === "Rejected") {
         setState(wait, "done"); wait.textContent = "The enclave signed its verdict and the contract verified the signature.";
-        if (!bareRun) { railSet(1, "done", "Verified in " + secs + " s"); railSet(2, "reject", "Filing bond forfeited"); }
+        if (!bareRun) { railSet(1, "done", "Verified in " + secs + " s"); railSet(2, "reject", "Filing bond forfeited"); railLink(1, EXPLORER + "address/" + f.stamp, "stamp"); }
         step("Rejected. " + short(target.wallet) + " was not funded by the creator, so the stamp stands and the " + near(ch.bond) + " filing bond is forfeited (" + secs + " s).", "rejected");
         step("The hunter stops. It lost its filing bond and cannot withdraw its credit or change the policy.", "done");
       } else if (state === "Unanswered") {

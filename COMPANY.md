@@ -14,7 +14,7 @@ A creator posts a NEAR bond on a stamp contract. The hunter, a testnet account w
 
 | Fact | Evidence |
 |---|---|
-| The hunter's page run ended Upheld and moved 1.1 NEAR to the hunter account. | Filing path through the live page, slot 29: [transaction](https://testnet.nearblocks.io/txns/FY68EWNPp3w9ggT62BURc36PvxHF4DPaLnYuESFZybCY); details in [docs/EVIDENCE.md](docs/EVIDENCE.md). |
+| The hunter's page run ended Upheld and moved 1.1 NEAR to the hunter account. | Filing path through the live page, slot 33, cold run: filing transaction [5T5v5cJc...](https://testnet.nearblocks.io/txns/5T5v5cJc7Zghs6mw3Pb9MB9ewKidEKJNNgv4q8fsMpaD), `challenge_of(1)` is `Upheld` with `paid` 1.1 NEAR to `customs33-hunter.testnet`; an earlier run on slot 29: [transaction](https://testnet.nearblocks.io/txns/FY68EWNPp3w9ggT62BURc36PvxHF4DPaLnYuESFZybCY); details in [docs/EVIDENCE.md](docs/EVIDENCE.md). |
 | A false hunt against a clean buyer ended Rejected and forfeited the filing bond; the stamp stands. | [Transaction](https://testnet.nearblocks.io/txns/BDPr2cw4dX7pF11iEK3uLr9GjVchkUY85gE2gjeGHkF2). |
 | The hunter's key is function-call only and scoped to `challenge`. | `near account list-keys customs32-hunter.testnet network-config testnet`; the page reads the same list from the chain. |
 | A prompt-injected hunter signing `release_stamp`, `withdraw_credit` and a transfer is refused by the NEAR node. | `curl -s -X POST https://near-customs.earn-shield-alerts.workers.dev/hunt/inject -d '{}'` returns each refusal (`MethodNameMismatch`, `RequiresFullAccess`); no transaction is created. |

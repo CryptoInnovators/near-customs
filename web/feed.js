@@ -24,7 +24,10 @@
 
   async function getJSON(url, body, tries = 4) {
     for (let i = 0; i < tries; i++) {
+      const shared = /^\/fastnear\//.test(url) && window.FastnearLimiter;
+      if (shared) await window.FastnearLimiter.take();
       const r = await fetch(url, body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : undefined);
+      if (shared) window.FastnearLimiter.response(r.status);
       if (r.ok) return r.json();
       if (r.status !== 429 && r.status < 500) throw Error("HTTP " + r.status);
       await sleep(600 * 2 ** i);
@@ -178,7 +181,7 @@
     root.dataset.live = "on";
     /* the cards trace one after another so the shared read budget serves every visitor */
     cards.forEach((c) => readRhea(c));
-    for (const c of cards) { await run(c); await sleep(300); }
+    for (const c of cards) { while (window.CustomsHunting) await sleep(1000); await run(c); await sleep(300); }
   }).catch(() => { if (clock) clock.textContent = "meme.cooking did not answer. Reload to read it again."; });
 
   window.CustomsFeed = { cards };

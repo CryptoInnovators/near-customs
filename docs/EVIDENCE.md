@@ -62,9 +62,17 @@ Pinned verdict key `ed25519:Akwz7rSe9k1uWuPBHesPfxeYMGJksCQmHLd2ABETTsgw` (pin t
 |---|---|---|
 | Hunter key scope | one function-call key on `customs32-hunter.testnet`, receiver `customs32-stamp.testnet`, methods `challenge`, no full-access key | `near account list-keys customs32-hunter.testnet network-config testnet` |
 | Prompt-injected hunter through the real page, cold | files the clean buyer, challenge 2 filed in 5 s and Rejected 14 s after the click, 0.1 NEAR filing bond forfeited, the stamp stands | https://testnet.nearblocks.io/txns/Cat19u9mE74gGk8DcjMbjzdB9Mu2aTxmoRNqiJR8Kgxk ; `challenge_of(2)` is `Rejected` |
-| Second standing stamp | `customs33-stamp.testnet` bond 1 NEAR posted by `customs26-creator.testnet` (tx DMQTw3aAm49zHKKtCUMKsJF8xYNL6Ms8tsE4JgUPq9xv), verdict key pinned through OutLayer, hunter `customs33-hunter.testnet` holds only a `challenge` function-call key (full-access key deleted, tx 9xtXvigP3MnjQrhXVWRzniEzARejScGTCARXH1h8JVRS) | `near contract call-function as-read-only customs33-stamp.testnet stamp_of json-args '{"launch":"customs26-token.testnet"}' network-config testnet now` |
+| Slot 33 stamp, posted then broken by a hunt | `customs33-stamp.testnet` bond 1 NEAR posted by `customs26-creator.testnet` (tx DMQTw3aAm49zHKKtCUMKsJF8xYNL6Ms8tsE4JgUPq9xv), verdict key pinned through OutLayer, hunter `customs33-hunter.testnet` holds only a `challenge` function-call key (full-access key deleted, tx 9xtXvigP3MnjQrhXVWRzniEzARejScGTCARXH1h8JVRS) | `near contract call-function as-read-only customs33-stamp.testnet stamp_of json-args '{"launch":"customs26-token.testnet"}' network-config testnet now` |
 | Hunt lifecycle rail on the card | the card shows Filed on chain, Enclave verdict, Bond paid or forfeited, each lit from the contract state it reads | `node scripts/cold-run.mjs <url> "#break-clean" out.png` |
 | The page refuses to file when the checker module is not served | `POST /stamp/break` returns 503 with `status: unavailable` before any bond moves; `web/test/agent.test.mjs` goes red when the guard is removed | `node --test web/test/agent.test.mjs` |
+
+## Headline hunt on slot 33 (`customs33-stamp.testnet`), 2026-11-14
+
+| Check | Result | Evidence |
+|---|---|---|
+| Hunt through the real page, cold, no wallet | filing on chain 5 s after the click; `Upheld` and +1.1 NEAR on the card 89 s after the click | filing tx https://testnet.nearblocks.io/txns/5T5v5cJc7Zghs6mw3Pb9MB9ewKidEKJNNgv4q8fsMpaD |
+| Contract state | `challenge_of(1)` is `Upheld`, `stamp_of` reads `Broken` with prover `customs33-hunter.testnet`, wallet `customs26-buyer1.testnet`, paid 1.1 NEAR (1,100,000,000,000,000,000,000,000 yocto) | `near contract call-function as-read-only customs33-stamp.testnet stamp_of json-args '{"launch":"customs26-token.testnet"}' network-config testnet now` |
+| Standing stamp for the next hunt | `customs32-stamp.testnet`, bond 1 NEAR, hunter key `challenge` only | same command against `customs32-stamp.testnet` |
 
 ## meme.cooking and Rhea integration (read-only mainnet), 2026-11-14
 | Fact | Evidence | Command |

@@ -1,7 +1,7 @@
 "use strict";
 
-const FASTNEAR_RATE = 5;
-const FASTNEAR_BURST = 5;
+const FASTNEAR_RATE = 3;
+const FASTNEAR_BURST = 3;
 const limiter = (() => {
   let rate = FASTNEAR_RATE, tokens = FASTNEAR_BURST, updated = Date.now(), reducedUntil = 0, clean = 0;
   return {
@@ -70,3 +70,4 @@ function fastnearBase(network, kind) {
 }
 
 if (typeof module !== "undefined") module.exports = { postWithRetry };
+if (typeof window !== "undefined") window.FastnearLimiter = limiter;

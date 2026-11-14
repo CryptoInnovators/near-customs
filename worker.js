@@ -58,8 +58,13 @@ async function mcRoute(url) {
   }
 }
 
+async function sha256(text) {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/agent/buy") return request.method === "POST" ? agentBuy(request, env) : new Response("Use POST", { status: 405 });
     if (url.pathname === "/hunt/inject") return request.method === "POST" ? huntInject(request, env) : new Response("Use POST", { status: 405 });
@@ -72,12 +77,23 @@ export default {
     if (!base || request.method !== "POST") return new Response("Not found", { status: 404 });
     const body = await request.text();
     if (body.length > 65536) return new Response("Body too large", { status: 413 });
+    /* mainnet tx reads of finished launches do not change: serve them from the edge cache so a page load costs the shared upstream budget once, not once per visitor */
+    const cacheable = m[1] === "tx-main";
+    const cacheKey = cacheable ? new Request(url.origin + "/__cache" + url.pathname + "/" + await sha256(body)) : null;
+    if (cacheKey) {
+      const hit = await caches.default.match(cacheKey);
+      if (hit) return new Response(hit.body, { status: 200, headers: { "content-type": "application/json", "cache-control": "no-store", "x-edge-cache": "hit" } });
+    }
     /* FastNEAR rate limits (429) hard under a page's burst; absorb it here so the browser sees a 200 and no failed request */
     let upstream;
-    for (let attempt = 0; attempt < 5; attempt++) {
+    for (let attempt = 0; attempt < 6; attempt++) {
       upstream = await fetch(base + (m[2] || "/"), { method: "POST", headers: { "content-type": "application/json" }, body });
       if (upstream.status !== 429) break;
-      await new Promise((r) => setTimeout(r, Math.min(3000, 400 * 2 ** attempt)));
+      await new Promise((r) => setTimeout(r, Math.min(2500, 400 * 2 ** attempt)));
+    }
+    if (cacheKey && upstream.status === 200) {
+      const copy = upstream.clone();
+      ctx.waitUntil(caches.default.put(cacheKey, new Response(copy.body, { status: 200, headers: { "content-type": "application/json", "cache-control": "public, max-age=600" } })));
     }
     const headers = { "content-type": upstream.headers.get("content-type") || "application/json", "cache-control": "no-store" };
     const retry = upstream.headers.get("retry-after");
