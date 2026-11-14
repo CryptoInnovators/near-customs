@@ -10,3 +10,5 @@ node_modules/
 mitm_mcp_traffic.db
 __pycache__/
 .wrangler/
+
+.agentctx/
