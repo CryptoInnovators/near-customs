@@ -40,7 +40,7 @@ let text = "";
 for (let i = 0; i < 400; i++) {
   await new Promise((r) => setTimeout(r, 1000));
   text = await ev(`document.querySelector("#stage-steps").innerText`);
-  if (/Upheld in|Rejected in|Upheld\.|Rejected\.|Refused|No verdict yet|could not|did not complete|free again|Try again/.test(text)) break;
+  if (/Upheld in|Rejected in|Checker verified in \d+ s|Filing bond forfeited|Upheld\.|Rejected\.|Refused|No verdict yet|could not|did not complete|free again|Try again/.test(text)) break;
 }
 const secs = ((Date.now() - t1) / 1000).toFixed(0);
 await ev(`document.querySelector("#stage-steps").scrollIntoView({block:"center"})`);

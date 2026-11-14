@@ -111,3 +111,14 @@ Cold hunts through the live page on 2026-11-14 (`https://near-customs.nearbuild.
 | Funded buyer, slot 36 | Upheld, 1.1 NEAR to `customs36-hunter.testnet`, applied by `late_verdict` | relay tx https://testnet.nearblocks.io/txns/7LEvagJ8tMvLzF8Mpv84xjjyFsyK4uQyLdHQc6Z3tvNb |
 | Funded buyer, slot 38 | Upheld in 24 s through the normal yield path (OutLayer `execution_completed`, 2.0 s of enclave time), 1.1 NEAR to `customs38-hunter.testnet` | filing tx https://testnet.nearblocks.io/txns/8VFYeToXMXarC9p6XT2rwvJXVfnNYPSZQVjAtNJA8Qwh |
 
+## A bond always stands: arm route and schedule, 2026-11-14
+
+| Fact | Evidence |
+|---|---|
+| Creator bonds posted on slots 37 and 38, release windows run past 2026-11-15 06:00 IST | `customs37-stamp.testnet` credit tx https://testnet.nearblocks.io/txns/3b2Ju6iyk58TuqohaSRz4mQTXJEA5A9VKFb2MRC7z5fC , `customs38-stamp.testnet` bond tx https://testnet.nearblocks.io/txns/FsnVn2bmnF9FHJQ5Zn5VhMPtX31vGCZEABCyqZsySztX |
+| Hunter keys are function-call only | near-cli deleted the full-access keys; `view_access_key_list` on `customs37-hunter`, `customs38-hunter`, `customs39-hunter`, `customs40-hunter` shows 0 full and 1 function-call key scoped to `challenge` |
+| `POST /stamp/arm` posts the creator's 1 NEAR bond on the next pinned spare when no stamp stands, and does nothing when one stands | `web/test/agent.test.mjs` (standing, armed, refused and none-left cases; the standing check disabled makes one test fail), live `curl -X POST https://near-customs.nearbuild.workers.dev/stamp/arm` answers `{"status":"standing","stamp":"customs37-stamp.testnet"}` |
+| The worker runs the same route on a schedule every 3 minutes | `wrangler.toml` `[triggers] crons = ["*/3 * * * *"]`, `web/test/worker-proxy.test.mjs` (deleting the `scheduled` handler fails it) |
+| Headline hunt through the real page, cold, no wallet, slot 37 | `node scripts/cold-run.mjs https://near-customs.nearbuild.workers.dev/ "#break-go"`: filed on chain in 6 s (https://testnet.nearblocks.io/txns/4eKWMonMTH7kHnPnRV8aL1cstKpJ6JGXnexarhM9ZGDm), checker verified in 171 s (relay https://testnet.nearblocks.io/txns/4nSXJK4ZXBTGuFVjDKjEydMLt7oofHTS22GMn9vThdL4), +1.10 NEAR to `customs37-hunter.testnet` |
+| Clean buyer through the real page, slot 37 | `#break-clean`: filed on chain in 8 s (https://testnet.nearblocks.io/txns/4eDdNHQb1xuNkS7y1trQbYbV7yVU3hz4WEyWAvqdnij1), checker verified in 82 s, filing bond forfeited, the stamp stood |
+
