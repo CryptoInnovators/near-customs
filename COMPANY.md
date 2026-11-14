@@ -27,7 +27,7 @@ A creator posts a NEAR bond on a stamp contract. The hunter, a testnet account w
 
 ## Try it in 60 seconds
 
-Open [the Customs demo](https://near-customs.nearlive.workers.dev) and click **Hunt for 1.10 NEAR** on the Customs coin card: the challenge is filed and the bond locked in about 6 s (transaction link on the card); the enclave verdict is a second timer on the same card, 86 s median over eight recorded cold hunts, 24 s to 227 s. Click **Hunt a clean buyer instead** to watch the checker reject a false path and the filing bond forfeit.
+Open [the Customs demo](https://near-customs.nearlive.workers.dev) and click **Hunt for 1.10 NEAR** on the Customs coin card: the challenge is filed and the bond locked in about 6 s (transaction link on the card); the enclave verdict is a second timer on the same card, 89 s median over nine recorded cold hunts, 24 s to 227 s. Click **Hunt a clean buyer instead** to watch the checker reject a false path and the filing bond forfeit.
 
 ## Why NEAR
 
