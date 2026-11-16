@@ -103,7 +103,7 @@ ul, ol { list-style: none; }
 /* the bonded card spans two columns, slip sits to the right */
 .card.bonded { grid-column: span 2; flex-direction: row; cursor: default; }
 .card.bonded:hover { transform: none; }
-.card.bonded .card-main { flex: 1; padding: 14px; min-width: 0; }
+.card.bonded .card-main { flex: 1; flex-direction: column; padding: 14px; min-width: 0; }
 .card.bonded .pic { width: 120px; height: 120px; }
 .card.bonded h3 { font-size: 30px; margin: 6px 0; }
 .card.bonded .slip { width: 320px; flex: none; margin: 0; background: var(--yellow); color: var(--ink); padding: 14px 16px; border: 0; display: flex; flex-direction: column; }
